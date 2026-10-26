@@ -1,0 +1,16 @@
+app:
+  sql-logging:
+    enabled: false
+
+logging:
+  level:
+    com.seegene.local: warn
+    org.hibernate.SQL: "OFF"
+    org.hibernate.orm.jdbc.bind: "OFF"
+    p6spy: warn
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

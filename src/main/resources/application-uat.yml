@@ -1,0 +1,14 @@
+app:
+  sql-logging:
+    enabled: true
+
+logging:
+  level:
+    com.seegene.local: debug
+    p6spy: info
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

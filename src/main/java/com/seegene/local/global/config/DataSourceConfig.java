@@ -1,4 +1,4 @@
-package com.seegene.local.config;
+package com.seegene.local.global.config;
 
 import javax.sql.DataSource;
 

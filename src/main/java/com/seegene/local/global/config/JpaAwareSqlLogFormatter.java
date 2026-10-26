@@ -1,4 +1,4 @@
-package com.seegene.local.config;
+package com.seegene.local.global.config;
 
 import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
 import com.p6spy.engine.spy.appender.MultiLineFormat;

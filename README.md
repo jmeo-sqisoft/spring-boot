@@ -6,15 +6,16 @@
 ## 구성
 
 - JDK 21 (LTS), Spring Boot 4.1.1, Gradle 9.6.1 (Kotlin DSL)
-- MyBatis 4.0.1, Spring Data JPA, PostgreSQL 42.7.13
-- HikariCP, p6spy 3.9.1 (DataSource 수동 래핑, JPA SQL 포맷 유지)
-- Lombok 1.18.46, springdoc-openapi 3.0.3 (Swagger UI), Actuator
+- MyBatis 4.0.1, Spring Data JPA 4.1.1, PostgreSQL 42.7.13
+- HikariCP 7.0.2, p6spy 3.9.1 (DataSource 수동 래핑, JPA SQL 포맷 유지)
+- Lombok 1.18.46, springdoc-openapi 3.0.3 (Swagger UI), Actuator 4.1.1
 - Checkstyle 13.5.0, JaCoCo, SonarQube Gradle Plugin 6.3.1.5724
 - 한국어/영어 메시지와 CORS 공통 설정
 
 group: `com.seegene.local`, artifact: `spring-boot`
 
 버전과 의존성 override는 참조 프로젝트의 실제 빌드 파일을 기준으로 유지했습니다.
+Spring Data JPA, HikariCP, Actuator 버전은 Spring Boot 4.1.1의 의존성 관리로 결정되며, 현재 빌드 산출물에서 확인한 버전입니다.
 Gradle Wrapper 스크립트와 JAR가 포함되어 있습니다. 최초 빌드에는 배포본과 의존성을 받을 네트워크 연결이 필요합니다.
 
 ## 실행 전 준비
@@ -84,7 +85,7 @@ Readiness는 원본처럼 `readinessState`만 확인하며 DB 연결 상태를 �
 ```text
 com.seegene.local
 ├── Application.java
-└── config/
+└── global/config/
     ├── AppProperties.java
     ├── CorsConfig.java
     ├── DataSourceConfig.java
@@ -134,4 +135,3 @@ java -jar build/libs/spring-boot-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
 WAR 플러그인은 원본처럼 유지했습니다. 외부 컨테이너용 초기화 코드는 포함하지 않습니다.
 SonarQube 서버와 토큰은 별도로 설정해야 하며 CI 워크플로는 포함하지 않았습니다.
 Gradle 홈이 `C:\.gradle`로 잡히는 환경에서는 `--gradle-user-home C:\Users\user\.gradle`을 추가합니다.
-

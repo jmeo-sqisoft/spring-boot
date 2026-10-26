@@ -1,4 +1,4 @@
-package com.seegene.local.config;
+package com.seegene.local.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

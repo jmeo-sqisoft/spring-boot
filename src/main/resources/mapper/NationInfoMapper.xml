@@ -29,26 +29,24 @@
 -- file name: NationInfoMapper.xml
 -- query id: getNationInfo
 with cte_nation_and_sub_dvsn as materialized (
-select a.nat_info_no
-	,	a.nat_area_cd
-	,	a.nat_cd
-	,	a.nat_nm
-	,	a.nat_ko_nm
-	,	a.latud
-	,	a.lngtud
-	,	b.sub_dvsn_no
-	,	b.sub_dvsn_cd
-	,	b.sub_dvsn_nm
-	,	b.sub_dvsn_ko_nm
-from
-	nation_info as a
-	inner join
-	nation_sub_dvsn_info as b
-	on a.nat_info_no  = b.nat_info_no
-where
-	a.use_yn = 'Y'
-	and b.use_yn = 'Y'
-	and a.nat_area_cd is not null
+	select	a.nat_info_no
+		,	a.nat_area_cd
+		,	a.nat_cd
+		,	a.nat_nm
+		,	a.nat_ko_nm
+		,	a.latud
+		,	a.lngtud
+		,	b.sub_dvsn_no
+		,	b.sub_dvsn_cd
+		,	b.sub_dvsn_nm
+		,	b.sub_dvsn_ko_nm
+	from	nation_info as a
+			inner join
+			nation_sub_dvsn_info as b
+		on	a.nat_info_no = b.nat_info_no
+	where	a.use_yn = 'Y'
+		and b.use_yn = 'Y'
+		and a.nat_area_cd is not null
 )
 select	a.nat_info_no as nation_info_no
 	,	a.nat_cd as nation_code
@@ -70,14 +68,16 @@ select	a.nat_info_no as nation_info_no
 			when c.country_no is null then 0 else 1
 		end as is_participating
 from	cte_nation_and_sub_dvsn as a
-		inner join comm_cd as b
-	on  a.nat_area_cd = b.comm_cd
+		inner join
+		comm_cd as b
+	on	a.nat_area_cd = b.comm_cd
 	and b.comm_grp_cd = 'CM009'
 	and b.use_yn = 'Y'
-		left outer join (
+		left outer join
+		(
 			select	country_no
 			from	gmcs_test_monthly
-			where   target_system_code = 'GMCS'
+			where	target_system_code = 'GMCS'
 			group by country_no
 		) as c
 	on	c.country_no = a.nat_info_no

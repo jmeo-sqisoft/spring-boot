@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.seegene.local.server.mapper.AreaMapper">
+
+	<select id="getArea" resultType="com.seegene.local.server.dto.vo.AreaVO">
+<![CDATA[
+-- file name: AreaMapper.xml
+-- query id: getArea
+select	comm_cd as area_code
+	,	comm_cd_nm as area_name
+from	comm_cd
+where	use_yn = 'Y'
+	and comm_grp_cd = 'CM009'
+order by sort_val
+;
+]]>
+	</select>
+</mapper>

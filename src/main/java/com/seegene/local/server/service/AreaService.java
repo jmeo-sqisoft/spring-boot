@@ -1,6 +1,6 @@
 package com.seegene.local.server.service;
 
-import com.seegene.local.server.dto.vo.AreaVO;
+import com.seegene.local.server.dto.response.AreasResponse;
 import com.seegene.local.server.mapper.AreaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,9 @@ import java.util.List;
 public class AreaService {
 	private final AreaMapper areaMapper;
 
-	public List<AreaVO> getArea() {
-		return areaMapper.getArea();
+	public List<AreasResponse> getArea() {
+		return areaMapper.getArea().stream()
+			.map(area -> new AreasResponse(area.areaCode(), area.areaName()))
+			.toList();
 	}
 }

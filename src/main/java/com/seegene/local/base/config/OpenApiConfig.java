@@ -1,4 +1,4 @@
-package com.seegene.local.global.config;
+package com.seegene.local.base.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

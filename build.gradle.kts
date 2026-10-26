@@ -65,7 +65,7 @@ dependencies {
 	// p6spy SQL logging. The old gavlyukovskiy datasource-decorator-spring-boot-starter
 	// (which auto-wraps the DataSource) is not compatible with Spring Boot 4's
 	// autoconfiguration ordering, so the DataSource is wrapped manually in
-	// global/config/DataSourceConfig instead.
+	// base/config/DataSourceConfig instead.
 	implementation("p6spy:p6spy:$p6spyVersion")
 
 	// springdoc-openapi (Swagger UI)

@@ -1,7 +1,6 @@
 # spring-boot
 
-참조 프로젝트의 공통 설정을 바탕으로 만든 Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
-업무 Java, Entity, Repository, Mapper XML과 `report-core`는 포함하지 않습니다.
+Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 
 ## 구성
 
@@ -13,10 +12,6 @@
 - 한국어/영어 메시지와 CORS 공통 설정
 
 group: `com.seegene.local`, artifact: `spring-boot`
-
-버전과 의존성 override는 참조 프로젝트의 실제 빌드 파일을 기준으로 유지했습니다.
-Spring Data JPA, HikariCP, Actuator 버전은 Spring Boot 4.1.1의 의존성 관리로 결정되며, 현재 빌드 산출물에서 확인한 버전입니다.
-Gradle Wrapper 스크립트와 JAR가 포함되어 있습니다. 최초 빌드에는 배포본과 의존성을 받을 네트워크 연결이 필요합니다.
 
 ## 실행 전 준비
 
@@ -54,9 +49,6 @@ MyBatis와 JPA가 이 DataSource를 공유합니다.
 $env:BE_DB_CONNECTION_INIT_SQL = "SET timezone = 'UTC'; SET default_transaction_read_only = off"
 ```
 
-JPA의 `ddl-auto: none`, `generate-ddl: false`를 유지하므로 테이블은 자동 생성하지 않습니다.
-실제 실행에는 접근 가능한 PostgreSQL이 필요합니다.
-
 ## 프로파일
 
 공통 `application.yml` 위에 `application-{profile}.yml`이 적용됩니다.
@@ -68,8 +60,6 @@ JPA의 `ddl-auto: none`, `generate-ddl: false`를 유지하므로 테이블은 �
 | uat | 활성 | debug | 비활성 |
 | prd | 비활성 | warn | 비활성 |
 
-`stg`, `perf`와 Azure Key Vault, Managed Identity, JWE 관련 의존성 및 설정은 제외했습니다.
-
 ## 확인
 
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
@@ -77,31 +67,86 @@ JPA의 `ddl-auto: none`, `generate-ddl: false`를 유지하므로 테이블은 �
 - Actuator: `http://localhost:8080/actuator/health`
 - Liveness / Readiness: `/actuator/health/liveness`, `/actuator/health/readiness`
 
-업무 Controller가 없어 Swagger에 업무 API가 표시되지 않는 것이 정상입니다.
-Readiness는 원본처럼 `readinessState`만 확인하며 DB 연결 상태를 포함하지 않습니다.
+## REST API 목록
+
+기본 주소는 `http://localhost:8080`이며, 아래 경로는 Controller의 클래스·메서드 매핑을 합친 전체 경로입니다.
+
+| Method | Path | 설명 | 인증여부 |
+| --- | --- | --- | --- |
+| GET | `/apis/local/v1/masterdata/areas` | 지역 정보 전체 목록 조회 | 불필요 |
 
 ## 패키지 구조
 
-```text
-com.seegene.local
-├── Application.java
-└── global/config/
-    ├── AppProperties.java
-    ├── CorsConfig.java
-    ├── DataSourceConfig.java
-    ├── JpaAwareSqlLogFormatter.java
-    ├── LocaleConfig.java
-    └── OpenApiConfig.java
+현재 프로젝트의 주요 파일 구조입니다. `base`에는 공통 응답과 유틸리티,
+`base.config`에는 공통 설정, `server`에는 REST API 구현을 모았습니다.
+빈 패키지, IDE 설정과 빌드 캐시·산출물 디렉터리는 생략했습니다.
 
-src/main/resources/
-├── application.yml
-├── application-dev.yml
-├── application-uat.yml
-├── application-prd.yml
-└── messages/
-    ├── messages.properties
-    ├── messages_ko.properties
-    └── messages_en.properties
+```text
+spring-boot/
+├── config/
+│   └── checkstyle/                       # 코드 스타일 검사 규칙
+│       ├── checkstyle.xml
+│       └── suppressions.xml
+├── doc/
+│   └── 01-project-setup.md                # 초기 구성 기록과 학습 안내
+├── gradle/
+│   └── wrapper/                          # Gradle 실행 버전과 Wrapper
+│       ├── gradle-wrapper.jar
+│       └── gradle-wrapper.properties
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/seegene/local/
+│   │   │       ├── Application.java      # Spring Boot 진입점
+│   │   │       ├── base/                 # 공통 API 기반 코드
+│   │   │       │   ├── config/           # com.seegene.local.base.config
+│   │   │       │   │   ├── AppProperties.java            # app.* 설정 바인딩
+│   │   │       │   │   ├── CorsConfig.java               # CORS 허용 설정
+│   │   │       │   │   ├── DataSourceConfig.java         # DataSource와 SQL 로깅 설정
+│   │   │       │   │   ├── JpaAwareSqlLogFormatter.java  # JPA SQL 로그 포맷
+│   │   │       │   │   ├── LocaleConfig.java             # 다국어 메시지 설정
+│   │   │       │   │   └── OpenApiConfig.java            # Swagger 문서 정보
+│   │   │       │   ├── constants/
+│   │   │       │   │   ├── Example.java  # 공통 예시·기본값
+│   │   │       │   │   └── Messages.java # 메시지 키 상수
+│   │   │       │   ├── controller/
+│   │   │       │   │   └── AbstractApiController.java  # 공통 성공 응답 처리
+│   │   │       │   ├── dto/response/
+│   │   │       │   │   └── SspResponse.java            # code/message/data 응답
+│   │   │       │   ├── enums/
+│   │   │       │   │   └── ApiResponseCode.java        # API 응답 코드
+│   │   │       │   └── util/
+│   │   │       │       └── StringUtil.java             # 문자열 유틸리티
+│   │   │       └── server/               # REST API 구현
+│   │   │           ├── controller/
+│   │   │           │   └── AreaController.java  # 지역 목록 조회 API
+│   │   │           ├── dto/vo/
+│   │   │           │   └── AreaVO.java          # 지역 코드·지역명
+│   │   │           ├── mapper/
+│   │   │           │   └── AreaMapper.java      # MyBatis 조회 인터페이스
+│   │   │           └── service/
+│   │   │               └── AreaService.java     # 지역 조회 서비스
+│   │   └── resources/
+│   │       ├── mapper/
+│   │       │   └── AreaMapper.xml         # 지역 목록 조회 SQL
+│   │       ├── messages/                 # 기본·한국어·영어 메시지
+│   │       │   ├── messages.properties
+│   │       │   ├── messages_ko.properties
+│   │       │   └── messages_en.properties
+│   │       ├── application.yml           # 공통 설정
+│   │       ├── application-dev.yml       # 개발 환경
+│   │       ├── application-uat.yml       # 사용자 인수 테스트 환경
+│   │       └── application-prd.yml       # 운영 환경
+│   └── test/
+│       └── java/com/seegene/local/
+│           └── ApplicationConfigurationTest.java  # 프로파일별 설정 검증
+├── .gitignore                            # Git 추적 제외 설정
+├── build.gradle.kts                      # 의존성과 빌드·검증 설정
+├── gradle.properties                     # Gradle JVM·캐시 설정
+├── gradlew                               # Unix 계열 Gradle 실행 스크립트
+├── gradlew.bat                           # Windows Gradle 실행 스크립트
+├── README.md
+└── settings.gradle.kts                   # 프로젝트 이름과 모듈 구성
 ```
 
 새 Java 소스는 `com.seegene.local` 아래에 작성합니다. MyBatis는 `@Mapper` 인터페이스를 탐색하며

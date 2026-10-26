@@ -1,4 +1,4 @@
-package com.seegene.local.global.config;
+package com.seegene.local.base.config;
 
 import java.util.List;
 

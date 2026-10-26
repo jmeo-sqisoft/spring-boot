@@ -20,7 +20,6 @@ import java.util.List;
 @RequestMapping("/apis/local/v1")
 @RequiredArgsConstructor
 public class AreaController extends AbstractApiController {
-
 	private final MessageSource messageSource;
 	private final AreaService areaService;
 

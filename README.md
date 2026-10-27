@@ -5,7 +5,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 ## 구성
 
 - JDK 21 (LTS), Spring Boot 4.1.1, Gradle 9.6.1 (Kotlin DSL)
-- MyBatis 4.0.1, Spring Data JPA 4.1.1, PostgreSQL 42.7.13
+- MyBatis Spring Boot Starter 4.0.1, Spring Data JPA 4.1.1, PostgreSQL JDBC Driver 42.7.13
 - HikariCP 7.0.2, p6spy 3.9.1 (DataSource 수동 래핑, JPA SQL 포맷 유지)
 - Lombok 1.18.46, springdoc-openapi 3.0.3 (Swagger UI), Actuator 4.1.1
 - Checkstyle 13.5.0, JaCoCo, SonarQube Gradle Plugin 6.3.1.5724
@@ -13,41 +13,47 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 
 group: `com.seegene.local`, artifact: `spring-boot`
 
+Spring Data JPA, HikariCP, Actuator 버전은 Spring Boot의 의존성 관리에 따릅니다.
+Gradle Wrapper가 포함되어 있으므로 Gradle을 별도로 설치할 필요는 없습니다.
+
 ## 실행 전 준비
 
 JDK 21과 PostgreSQL을 준비하고 사용할 DB와 계정을 생성합니다.
-Key Vault 대신 환경 변수로 접속 정보를 전달합니다. PowerShell 예시:
+`application.yml`에 지정된 환경 변수로 접속 정보를 전달합니다.
+접속 DB는 `stastics`, 기본 조회 스키마는 `public,sta_sqi`입니다. PowerShell 예시:
 
 ```powershell
-$env:BE_DB_URL = 'jdbc:postgresql://localhost:5432/local'
-$env:BE_DB_USER = 'local'
-$env:BE_DB_PASSWORD = 'your-password'
+${env:DB-READ-HOST} = 'localhost:5432'
+${env:DB-USERNAME} = 'your-user'
+${env:DB-PASSWORD} = 'your-password'
 $env:SPRING_PROFILES_ACTIVE = 'dev'
 .\gradlew.bat bootRun
 ```
 
 | 환경 변수 | 기본값 / 용도 |
 | --- | --- |
-| `BE_DB_URL` | `jdbc:postgresql://localhost:5432/local` |
-| `BE_DB_USER` | `local` |
-| `BE_DB_PASSWORD` | 빈 문자열; 실행 환경에서 설정 |
-| `BE_DB_SCHEMA` | `public` |
+| `DB-READ-HOST` | 필수. PostgreSQL 호스트와 포트 (`localhost:5432` 등) |
+| `DB-USERNAME` | 필수. DB 계정 |
+| `DB-PASSWORD` | 필수. DB 비밀번호 |
 | `SERVER_PORT` | `8080` |
 | `BE_DB_MAX_POOL_SIZE` / `BE_DB_MIN_IDLE` | `10` / `2` |
 | `BE_DB_CONN_TIMEOUT` | `30000` ms |
 | `BE_DB_IDLE_TIMEOUT` / `BE_DB_MAX_LIFETIME` | `600000` / `1800000` ms |
 | `BE_DB_VALID_TIMEOUT` | `5000` ms |
-| `BE_DB_CONNECTION_INIT_SQL` | UTC 및 읽기 전용 트랜잭션 설정 |
+| `BE_HEALTH_DETAILS` | `when_authorized`. Actuator health 상세 정보 공개 기준 |
 
 풀 설정은 원본처럼 `BE_DB_READ_*` 변수가 `BE_DB_*`보다 우선합니다.
 `spring.datasource.local` 설정 키로 DataSource를 구성합니다.
 MyBatis와 JPA가 이 DataSource를 공유합니다.
 
-원본의 읽기 전용 연결 초기화 SQL을 유지했습니다. 쓰기 기능이 필요하면 다음과 같이 변경합니다.
+연결 초기화 SQL은 UTC와 읽기 전용 트랜잭션을 설정합니다. 쓰기 기능이 필요하면
+`application.yml`의 `spring.datasource.local.hikari.connection-init-sql`을 다음과 같이 변경합니다.
 
-```powershell
-$env:BE_DB_CONNECTION_INIT_SQL = "SET timezone = 'UTC'; SET default_transaction_read_only = off"
+```yaml
+connection-init-sql: "SET timezone = 'UTC'; SET default_transaction_read_only = off"
 ```
+
+JPA는 `open-in-view: false`, `generate-ddl: false`, `ddl-auto: none`을 사용하며 테이블을 자동 생성하지 않습니다.
 
 ## 프로파일
 
@@ -67,17 +73,28 @@ $env:BE_DB_CONNECTION_INIT_SQL = "SET timezone = 'UTC'; SET default_transaction_
 - Actuator: `http://localhost:8080/actuator/health`
 - Liveness / Readiness: `/actuator/health/liveness`, `/actuator/health/readiness`
 
+Swagger는 공통/dev에서 활성화되고 uat/prd에서는 비활성화됩니다.
+Readiness는 `readinessState`만 확인하며 DB 연결 상태는 포함하지 않습니다.
+
 ## REST API 목록
 
 기본 주소는 `http://localhost:8080`이며, 아래 경로는 Controller의 클래스·메서드 매핑을 합친 전체 경로입니다.
 
 | Method | Path | 설명 | 인증여부 |
 | --- | --- | --- | --- |
-| GET | `/apis/local/v1/masterdata/areas` | 지역 정보 전체 목록 조회 | 불필요 |
+| GET | `/apis/local/v1/areas` | 지역 정보 전체 목록 조회 | 불필요 |
+| GET | `/apis/gmcs/v1/nations` | 지역별 국가 목록과 국가 하위 지역 조회 | 불필요 |
+
+```powershell
+curl.exe http://localhost:8080/apis/local/v1/areas
+curl.exe -H "Accept-Language: ko" http://localhost:8080/apis/gmcs/v1/nations
+```
+
+성공 응답은 `SspResponse<T>` 형태의 `code`, `message`, `data`를 사용하며 성공 코드는 `S0000`입니다.
 
 ## 패키지 구조
 
-현재 프로젝트의 주요 파일 구조입니다. `base`에는 공통 응답과 유틸리티,
+현재 프로젝트의 주요 파일 구조입니다. `base`에는 공통 응답·예외·유틸리티,
 `base.config`에는 공통 설정, `server`에는 REST API 구현을 모았습니다.
 빈 패키지, IDE 설정과 빌드 캐시·산출물 디렉터리는 생략했습니다.
 
@@ -88,7 +105,8 @@ spring-boot/
 │       ├── checkstyle.xml
 │       └── suppressions.xml
 ├── doc/
-│   └── 01-project-setup.md                # 초기 구성 기록과 학습 안내
+│   ├── 01-project-setup.md                # 초기 구성 기록과 학습 안내
+│   └── guide_xml_format.md                # Mapper XML의 SQL 포맷 가이드
 ├── gradle/
 │   └── wrapper/                          # Gradle 실행 버전과 Wrapper
 │       ├── gradle-wrapper.jar
@@ -114,21 +132,44 @@ spring-boot/
 │   │   │       │   ├── dto/response/
 │   │   │       │   │   └── SspResponse.java            # code/message/data 응답
 │   │   │       │   ├── enums/
-│   │   │       │   │   └── ApiResponseCode.java        # API 응답 코드
+│   │   │       │   │   ├── ApiResponseCode.java        # API 응답 코드
+│   │   │       │   │   ├── InstitutionDataType.java    # 기관 데이터 유형 (LIS/HL7)
+│   │   │       │   │   └── InstitutionType.java        # 기관 표시 유형
+│   │   │       │   ├── exception/
+│   │   │       │   │   └── ApiException.java           # API 오류 예외
 │   │   │       │   └── util/
+│   │   │       │       ├── LocaleUtil.java             # 언어 코드 처리
 │   │   │       │       └── StringUtil.java             # 문자열 유틸리티
 │   │   │       └── server/               # REST API 구현
 │   │   │           ├── controller/
-│   │   │           │   └── AreaController.java  # 지역 목록 조회 API
-│   │   │           ├── dto/vo/
-│   │   │           │   └── AreaVO.java          # 지역 코드·지역명
-│   │   │           ├── mapper/
-│   │   │           │   └── AreaMapper.java      # MyBatis 조회 인터페이스
+│   │   │           │   ├── AreaController.java       # 지역 목록 조회 API
+│   │   │           │   ├── InstitutionController.java # 기관 정보 조회 API
+│   │   │           │   └── NationInfoController.java # 국가 목록 조회 API
+│   │   │           ├── dto/
+│   │   │           │   ├── mapper/
+│   │   │           │   │   └── InstitutionInfoResponseMapper.java # MapStruct VO → 응답 DTO 변환
+│   │   │           │   ├── response/
+│   │   │           │   │   ├── AreasResponse.java    # 지역 응답
+│   │   │           │   │   ├── InstitutionInfoResponse.java # 기관 정보 응답
+│   │   │           │   │   └── NationInfoResponse.java # 지역별 국가 응답
+│   │   │           │   └── vo/
+│   │   │           │       ├── AreaVO.java          # 지역 DB 조회 결과
+│   │   │           │       ├── InstitutionInfoVO.java # 기관 DB 조회 결과
+│   │   │           │       ├── NationInfoVO.java    # 국가 정보
+│   │   │           │       └── NationRegionVO.java  # 국가 하위 지역 정보
+│   │   │           ├── mapper/                       # MyBatis DB 조회 인터페이스
+│   │   │           │   ├── AreaMapper.java           # 지역 조회 인터페이스
+│   │   │           │   ├── InstitutionMapper.java    # 병원·검사실 조회 인터페이스
+│   │   │           │   └── NationInfoMapper.java     # 국가 조회 인터페이스
 │   │   │           └── service/
-│   │   │               └── AreaService.java     # 지역 조회 서비스
+│   │   │               ├── AreaService.java         # 지역 VO → 응답 DTO 매핑
+│   │   │               ├── InstitutionService.java  # 기관 조회 및 MapStruct 응답 변환
+│   │   │               └── NationInfoService.java   # 언어 처리 및 지역·국가 정렬
 │   │   └── resources/
 │   │       ├── mapper/
-│   │       │   └── AreaMapper.xml         # 지역 목록 조회 SQL
+│   │       │   ├── AreaMapper.xml         # 지역 목록 조회 SQL
+│   │       │   ├── InstitutionMapper.xml  # 병원·검사실 정보 조회 SQL
+│   │       │   └── NationInfoMapper.xml   # 국가·하위 지역 중첩 매핑 SQL
 │   │       ├── messages/                 # 기본·한국어·영어 메시지
 │   │       │   ├── messages.properties
 │   │       │   ├── messages_ko.properties
@@ -139,7 +180,12 @@ spring-boot/
 │   │       └── application-prd.yml       # 운영 환경
 │   └── test/
 │       └── java/com/seegene/local/
-│           └── ApplicationConfigurationTest.java  # 프로파일별 설정 검증
+│           ├── ApplicationConfigurationTest.java  # 프로파일별 설정 검증
+│           ├── base/config/
+│           │   └── JpaAwareSqlLogFormatterTest.java # 치환된 SQL 단일 출력 검증
+│           └── server/service/
+│               ├── InstitutionServiceTest.java     # 조회 분기·MapStruct 변환·XML 매핑 검증
+│               └── NationInfoServiceTest.java      # 정렬·언어·XML 매핑 검증
 ├── .gitignore                            # Git 추적 제외 설정
 ├── build.gradle.kts                      # 의존성과 빌드·검증 설정
 ├── gradle.properties                     # Gradle JVM·캐시 설정
@@ -149,13 +195,27 @@ spring-boot/
 └── settings.gradle.kts                   # 프로젝트 이름과 모듈 구성
 ```
 
-새 Java 소스는 `com.seegene.local` 아래에 작성합니다. MyBatis는 `@Mapper` 인터페이스를 탐색하며
+Java 소스는 `com.seegene.local` 아래에 작성합니다. MyBatis는 `org.apache.ibatis.annotations.Mapper`가 붙은 인터페이스를 탐색하며
 XML은 `src/main/resources/mapper/` 아래에 추가합니다. 별칭 패키지는 `com.seegene.local`입니다.
+`server.mapper`는 MyBatis DB 조회용, `server.dto.mapper`는 MapStruct 객체 변환용입니다.
+MapStruct Mapper는 `org.mapstruct.Mapper`를 사용하고 Spring 빈으로 주입합니다.
+생성 구현체는 빌드 시 `build/generated/sources/annotationProcessor/java/main/` 아래에 생성됩니다.
 JPA Entity와 Repository도 같은 루트 아래에서 자동 탐색합니다.
 
-메시지는 원본 그대로 유지했습니다. `MessageSource.getMessage(key, args, locale)`로 조회하며
+메시지는 `MessageSource.getMessage(key, args, locale)`로 조회하며
 기본 로케일은 한국어입니다. CORS 허용 Origin은 `app.cors.allowed-origin-patterns`로 설정하고,
 기본값은 localhost입니다. 원본 구현처럼 CORS 필터는 모든 프로파일에서 등록됩니다.
+
+## SQL 로깅과 XML 작성 규칙
+
+`app.sql-logging.enabled: true`이면 DataSource를 p6spy로 감싸고, 파라미터가 치환된 SQL만 출력합니다.
+JPA SQL에는 줄바꿈 포맷을 적용합니다. MyBatis는 `NoLoggingImpl`을 사용해 `Preparing`·`Parameters`
+로그를 끄고, Hibernate의 자체 SQL·바인딩 로그도 비활성화하여 중복을 막았습니다.
+prd에서는 SQL 로깅을 비활성화합니다.
+
+Mapper XML의 SQL은 [XML · SQL 포맷 가이드](doc/guide_xml_format.md)를 따릅니다.
+소문자 SQL, 탭 정렬, 선두 콤마, 테이블 별칭, JOIN 줄바꿈과 독립된 세미콜론 규칙을 사용하며
+문자열 리터럴과 MyBatis 바인딩 변수는 원본을 유지합니다.
 
 ## 빌드 및 검증
 
@@ -163,9 +223,15 @@ JPA Entity와 Repository도 같은 루트 아래에서 자동 탐색합니다.
 .\gradlew.bat build jacocoTestReport
 ```
 
-테스트는 dev/uat/prd 각각의 컨텍스트, DataSource 공유, SQL 로깅 전환, Swagger 설정,
-메시지 로딩을 확인합니다. 테스트에서만 JDBC 메타데이터 조회를 끄므로 DB 없이 실행할 수 있습니다.
-실제 PostgreSQL 쿼리는 별도 확인이 필요합니다.
+테스트에는 프로파일별 설정 검증, SQL 로그 포맷 검증, 국가 조회 정렬·언어 처리와 Mapper XML 로딩 검증이 있습니다.
+서비스 단위 테스트와 로그 포맷 테스트는 DB 없이 실행할 수 있습니다.
+
+```powershell
+.\gradlew.bat test --tests "*NationInfoServiceTest" --tests "*JpaAwareSqlLogFormatterTest"
+```
+
+현재 `ApplicationConfigurationTest`의 풀 이름·ApplicationName 기대값은 `local` 기준이지만
+YAML은 `gmcs-be-hikari-pool`·`gmcs`를 사용하므로 전체 테스트 실행 시 이 불일치로 실패합니다.
 
 - 실행 JAR: `build/libs/spring-boot-0.0.1-SNAPSHOT.jar`
 - 실행 WAR: `build/libs/spring-boot-0.0.1-SNAPSHOT.war`

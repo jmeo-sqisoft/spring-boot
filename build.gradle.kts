@@ -40,6 +40,8 @@ val mybatisVersion = "4.0.1"
 val springdocVersion = "3.0.3"
 val p6spyVersion = "3.9.1"
 val lombokVersion = "1.18.46"
+val mapstructVersion = "1.6.3"
+val lombokMapstructBindingVersion = "0.2.0"
 val postgresqlDriverVersion = "42.7.13"
 
 extra["netty.version"] = "4.2.17.Final"
@@ -78,11 +80,18 @@ dependencies {
 	compileOnly("org.projectlombok:lombok:$lombokVersion")
 	annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
+	// MapStruct: Lombok이 생성한 접근자를 인식하도록 binding processor를 함께 설정한다.
+	implementation("org.mapstruct:mapstruct:$mapstructVersion")
+	annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
+	annotationProcessor("org.projectlombok:lombok-mapstruct-binding:$lombokMapstructBindingVersion")
+
 	// Test
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testCompileOnly("org.projectlombok:lombok:$lombokVersion")
 	testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+	testAnnotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
+	testAnnotationProcessor("org.projectlombok:lombok-mapstruct-binding:$lombokMapstructBindingVersion")
 }
 
 tasks.named<Test>("test") {

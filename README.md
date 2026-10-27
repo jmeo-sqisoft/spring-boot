@@ -146,15 +146,18 @@ spring-boot/
 │   │   │           │   ├── InstitutionController.java # 기관 정보 조회 API
 │   │   │           │   └── NationInfoController.java # 국가 목록 조회 API
 │   │   │           ├── dto/
-│   │   │           │   ├── mapper/
-│   │   │           │   │   └── InstitutionInfoResponseMapper.java # MapStruct VO → 응답 DTO 변환
-│   │   │           │   ├── response/
+│   │   │           │   ├── mapper/                  # MapStruct VO → 응답 DTO 변환
+│   │   │           │   │   ├── AreasResponseMapper.java # MapStruct 지역 응답 변환
+│   │   │           │   │   ├── InstitutionInfoResponseMapper.java # MapStruct 기관 응답 변환
+│   │   │           │   │   └── NationInfoResponseMapper.java # MapStruct 지역별 국가 응답 변환
+│   │   │           │   ├── response/                # Controller에서 반환하는 응답 DTO
 │   │   │           │   │   ├── AreasResponse.java    # 지역 응답
 │   │   │           │   │   ├── InstitutionInfoResponse.java # 기관 정보 응답
 │   │   │           │   │   └── NationInfoResponse.java # 지역별 국가 응답
-│   │   │           │   └── vo/
+│   │   │           │   └── vo/                      # MyBatis DB 조회 결과
 │   │   │           │       ├── AreaVO.java          # 지역 DB 조회 결과
 │   │   │           │       ├── InstitutionInfoVO.java # 기관 DB 조회 결과
+│   │   │           │       ├── NationInfoGroupVO.java # 지역별 국가 목록 DB 조회 결과
 │   │   │           │       ├── NationInfoVO.java    # 국가 정보
 │   │   │           │       └── NationRegionVO.java  # 국가 하위 지역 정보
 │   │   │           ├── mapper/                       # MyBatis DB 조회 인터페이스
@@ -162,9 +165,9 @@ spring-boot/
 │   │   │           │   ├── InstitutionMapper.java    # 병원·검사실 조회 인터페이스
 │   │   │           │   └── NationInfoMapper.java     # 국가 조회 인터페이스
 │   │   │           └── service/
-│   │   │               ├── AreaService.java         # 지역 VO → 응답 DTO 매핑
+│   │   │               ├── AreaService.java         # 지역 조회 및 MapStruct 응답 변환
 │   │   │               ├── InstitutionService.java  # 기관 조회 및 MapStruct 응답 변환
-│   │   │               └── NationInfoService.java   # 언어 처리 및 지역·국가 정렬
+│   │   │               └── NationInfoService.java   # MapStruct 응답 변환·언어 처리·지역 및 국가 정렬
 │   │   └── resources/
 │   │       ├── mapper/
 │   │       │   ├── AreaMapper.xml         # 지역 목록 조회 SQL
@@ -184,6 +187,7 @@ spring-boot/
 │           ├── base/config/
 │           │   └── JpaAwareSqlLogFormatterTest.java # 치환된 SQL 단일 출력 검증
 │           └── server/service/
+│               ├── AreaServiceTest.java            # 지역 응답 변환·순서·빈 목록 검증
 │               ├── InstitutionServiceTest.java     # 조회 분기·MapStruct 변환·XML 매핑 검증
 │               └── NationInfoServiceTest.java      # 정렬·언어·XML 매핑 검증
 ├── .gitignore                            # Git 추적 제외 설정
@@ -198,6 +202,10 @@ spring-boot/
 Java 소스는 `com.seegene.local` 아래에 작성합니다. MyBatis는 `org.apache.ibatis.annotations.Mapper`가 붙은 인터페이스를 탐색하며
 XML은 `src/main/resources/mapper/` 아래에 추가합니다. 별칭 패키지는 `com.seegene.local`입니다.
 `server.mapper`는 MyBatis DB 조회용, `server.dto.mapper`는 MapStruct 객체 변환용입니다.
+지역·기관·국가 조회는 모두 `Controller → Service → MyBatis Mapper → XML SQL` 순서로 조회하고,
+서비스에서 조회 결과 VO를 MapStruct Mapper로 변환하여 응답 DTO를 반환합니다.
+국가 조회는 `NationInfoGroupVO`에 지역별 국가·하위 지역 목록을 담고,
+`NationInfoResponseMapper`로 변환한 뒤 서비스에서 지역명과 국가명 순으로 정렬합니다.
 MapStruct Mapper는 `org.mapstruct.Mapper`를 사용하고 Spring 빈으로 주입합니다.
 생성 구현체는 빌드 시 `build/generated/sources/annotationProcessor/java/main/` 아래에 생성됩니다.
 JPA Entity와 Repository도 같은 루트 아래에서 자동 탐색합니다.

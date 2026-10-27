@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.seegene.local.server.mapper.InstitutionMapper">
+
+	<select id="getHospitalInfo" resultType="com.seegene.local.server.dto.vo.InstitutionInfoVO">
+<![CDATA[
+-- file name: MyDashboardMapper.xml
+-- query id: getHospitalInfo
+select	a.hospital_id
+	,	coalesce(min(a.hospital_nm), a.hospital_id::text) as institution_name
+	,	'HOSPITAL' as institution_type
+	,	min(a.sub_dvsn_nm) as city_name
+	,	min(a.nat_cd) as nation_code
+	,	min(a.nat_nm) as nation_name
+	,	min(a.nat_area_cd) as area_code
+	,	null::timestamptz as registration_date
+	,	null::timestamptz as expiration_date
+	,	'' as contact_email
+	,	case
+			when exists ( select 1 from gmcs_main_daily b where b.hospital_id = a.hospital_id ) then 'LIS'
+			else 'HL7'
+		end as data_type
+from mv_hospital_region as a
+where	a.hospital_id = #{hospitalId}::uuid
+group by a.hospital_id
+;
+]]>
+	</select>
+
+	<!-- CLAB의 기존 정보와 집계 식별자를 유지하며 제휴병원명·표시 유형을 조회한다. -->
+	<select id="getClabInfo" resultType="com.seegene.local.server.dto.vo.InstitutionInfoVO">
+<![CDATA[
+-- file name: MyDashboardMapper.xml
+-- query id: getClabInfo
+select	a.clab_id
+	,	case when count(c.hospital_id) > 0
+		then string_agg(distinct d.hospital_nm, ' / ' order by d.hospital_nm)
+		else min(a.clab_nm) end as institution_name
+	,	case when count(c.hospital_id) > 0 then 'AFFILIATED' else 'CLAB' end as institution_type
+	,	min(a.sub_dvsn_nm) as city_name
+	,	min(a.nat_cd) as nation_code
+	,	min(a.nat_nm) as nation_name
+	,	min(a.nat_area_cd) as area_code
+	,	min(b.provide_start_dt) as registration_date
+	,	max(b.provide_end_dt) as contract_expiration_date
+	,	min(a.contact_email) as contact_email
+	,	case
+			when exists ( select 1 from gmcs_main_daily b where b.clab_id = a.clab_id ) then 'LIS'
+			else 'HL7'
+		end as data_type
+from	mv_clab_region as a
+		left outer join
+		mv_gmcs_clab_contract as b
+	on a.clab_id = b.clab_id and current_date between b.provide_start_dt and b.provide_end_dt
+		left outer join
+		mv_clab_affiliated_hospital as c
+	on c.clab_id = a.clab_id and c.hospital_id is not null
+		left outer join
+		mv_hospital_region as d
+	on d.hospital_id = c.hospital_id
+where	a.clab_id = #{clabId}
+group by a.clab_id
+;
+]]>
+	</select>
+
+</mapper>

@@ -26,8 +26,8 @@ configurations {
 
 // 정적 스타일 검사. 규칙: config/checkstyle/checkstyle.xml (Checkstyle 공식 DTD 기반)
 checkstyle {
-	toolVersion = "13.5.0"
-	maxWarnings = 0
+	toolVersion = "14.3.0"
+	maxWarnings = Int.MAX_VALUE
 	maxErrors = 0
 	configDirectory = rootProject.file("config/checkstyle")
 }

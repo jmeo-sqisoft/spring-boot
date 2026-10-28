@@ -8,7 +8,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 - MyBatis Spring Boot Starter 4.0.1, Spring Data JPA 4.1.1, PostgreSQL JDBC Driver 42.7.13
 - HikariCP 7.0.2, p6spy 3.9.1 (DataSource 수동 래핑, JPA SQL 포맷 유지)
 - Lombok 1.18.46, springdoc-openapi 3.0.3 (Swagger UI), Actuator 4.1.1
-- Checkstyle 13.5.0, JaCoCo, SonarQube Gradle Plugin 6.3.1.5724
+- Checkstyle 14.3.0, JaCoCo, SonarQube Gradle Plugin 6.3.1.5724
 - 한국어/영어 메시지와 CORS 공통 설정
 
 group: `com.stagora`, artifact: `spring-boot`
@@ -179,6 +179,15 @@ Mapper XML의 SQL은 [XML · SQL 포맷 가이드](doc/guide_xml_format.md)를 �
 ```powershell
 .\gradlew.bat build jacocoTestReport
 ```
+
+Checkstyle로 운영 Java 소스(`src/main/java`)를 검사합니다.
+
+```powershell
+# 운영 소스 검사
+.\gradlew.bat checkstyleMain
+```
+
+검사 결과는 콘솔과 `build/reports/checkstyle/main.html`에서 확인합니다.
 
 테스트에는 프로파일별 설정 검증, SQL 로그 포맷 검증, 국가 조회 정렬·언어 처리와 Mapper XML 로딩 검증이 있습니다.
 서비스 단위 테스트와 로그 포맷 테스트는 DB 없이 실행할 수 있습니다.

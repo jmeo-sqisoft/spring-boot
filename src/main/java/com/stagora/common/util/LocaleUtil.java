@@ -1,8 +1,8 @@
 package com.stagora.common.util;
 
-import com.stagora.common.constants.Language;
-
 import java.util.Locale;
+
+import com.stagora.common.constants.Language;
 
 public final class LocaleUtil {
 	private static final String[] LOCATION_LANGS = {

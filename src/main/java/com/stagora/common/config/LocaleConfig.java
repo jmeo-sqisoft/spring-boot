@@ -1,12 +1,12 @@
 package com.stagora.common.config;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 
 /**
  * 다국어(ko-KR, en-US) MessageSource 설정.

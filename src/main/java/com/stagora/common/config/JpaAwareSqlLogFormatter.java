@@ -1,10 +1,11 @@
 package com.stagora.common.config;
 
-import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
-import com.p6spy.engine.spy.appender.MultiLineFormat;
+import java.util.function.BooleanSupplier;
+
 import org.hibernate.engine.jdbc.internal.FormatStyle;
 
-import java.util.function.BooleanSupplier;
+import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
+import com.p6spy.engine.spy.appender.MultiLineFormat;
 
 /** 바인딩된 SQL만 출력하며 JPA 실행에서는 SQL에 줄바꿈을 적용한다. */
 public class JpaAwareSqlLogFormatter implements MessageFormattingStrategy {

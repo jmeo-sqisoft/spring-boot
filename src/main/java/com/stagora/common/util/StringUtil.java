@@ -34,8 +34,7 @@ public final class StringUtil {
 		for (char c : snake.toCharArray()) {
 			if (c == '_') {
 				capitalizeNext = true;
-			}
-			else {
+			} else {
 				result.append(capitalizeNext ? Character.toUpperCase(c) : Character.toLowerCase(c));
 				capitalizeNext = false;
 			}
@@ -63,8 +62,7 @@ public final class StringUtil {
 			.sorted((a, b) -> {
 				try {
 					return Double.compare(Double.parseDouble(a), Double.parseDouble(b));
-				}
-				catch (NumberFormatException e) {
+				} catch (NumberFormatException e) {
 					return a.compareTo(b);
 				}
 			})

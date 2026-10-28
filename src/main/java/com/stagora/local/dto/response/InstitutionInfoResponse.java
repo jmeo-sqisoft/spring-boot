@@ -1,13 +1,14 @@
 package com.stagora.local.dto.response;
 
+import java.sql.Timestamp;
+
 import com.stagora.common.enums.InstitutionType;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.sql.Timestamp;
 
 @Getter
 @Setter

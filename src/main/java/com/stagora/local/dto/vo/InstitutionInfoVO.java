@@ -1,9 +1,10 @@
 package com.stagora.local.dto.vo;
 
-import com.stagora.common.enums.InstitutionType;
-import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.sql.Timestamp;
+
+import com.stagora.common.enums.InstitutionType;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "기관정보 VO")
 public record InstitutionInfoVO(

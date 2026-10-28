@@ -1,11 +1,13 @@
 package com.stagora.local.service;
 
+import org.springframework.stereotype.Service;
+
 import com.stagora.local.dto.mapper.InstitutionInfoResponseMapper;
 import com.stagora.local.dto.response.InstitutionInfoResponse;
 import com.stagora.local.dto.vo.InstitutionInfoVO;
 import com.stagora.local.mapper.InstitutionMapper;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

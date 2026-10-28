@@ -1,11 +1,11 @@
 package com.stagora.local.dto.vo;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Getter
 @Setter

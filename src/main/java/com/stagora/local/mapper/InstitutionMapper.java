@@ -1,7 +1,8 @@
 package com.stagora.local.mapper;
 
-import com.stagora.local.dto.vo.InstitutionInfoVO;
 import org.apache.ibatis.annotations.Mapper;
+
+import com.stagora.local.dto.vo.InstitutionInfoVO;
 
 @Mapper
 public interface InstitutionMapper {

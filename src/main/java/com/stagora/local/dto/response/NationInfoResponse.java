@@ -1,16 +1,17 @@
 package com.stagora.local.dto.response;
 
+import java.util.List;
+
 import com.stagora.local.dto.vo.NationInfoVO;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
 public class NationInfoResponse {
-	String areaCode;
-	String areaName;
+	private String areaCode;
+	private String areaName;
 
-	List<NationInfoVO> nationInfoVOs;
+	private List<NationInfoVO> nationInfoVOs;
 }

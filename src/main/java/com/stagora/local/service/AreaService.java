@@ -1,13 +1,15 @@
 package com.stagora.local.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.stagora.local.dto.mapper.AreasResponseMapper;
 import com.stagora.local.dto.response.AreasResponse;
 import com.stagora.local.dto.vo.AreaVO;
 import com.stagora.local.mapper.AreaMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

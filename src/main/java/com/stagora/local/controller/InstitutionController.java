@@ -1,15 +1,5 @@
 package com.stagora.local.controller;
 
-import com.stagora.common.api.AbstractApiController;
-import com.stagora.common.api.SspResponse;
-import com.stagora.common.api.ApiResponseCode;
-import com.stagora.common.exception.ApiException;
-import com.stagora.local.dto.response.InstitutionInfoResponse;
-import com.stagora.local.service.InstitutionService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +7,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.stagora.common.api.AbstractApiController;
+import com.stagora.common.api.ApiResponseCode;
+import com.stagora.common.api.SspResponse;
+import com.stagora.common.exception.ApiException;
+import com.stagora.local.dto.response.InstitutionInfoResponse;
+import com.stagora.local.service.InstitutionService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Institution", description = "기관정보 api")
 @RestController

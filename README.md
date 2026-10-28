@@ -112,10 +112,12 @@ spring-boot/
 │   │   │   └── com/stagora/
 │   │   │       ├── Application.java      # Spring Boot 진입점
 │   │   │       ├── common/               # 공통 API 기반 코드
+│   │   │       │   ├── api/              # 공통 API 응답과 컨트롤러 지원
+│   │   │       │   │   ├── AbstractApiController.java
+│   │   │       │   │   ├── SspResponse.java
+│   │   │       │   │   └── ApiResponseCode.java
 │   │   │       │   ├── config/           # com.stagora.common.config
 │   │   │       │   ├── constants/
-│   │   │       │   ├── controller/
-│   │   │       │   ├── dto/response/
 │   │   │       │   ├── enums/
 │   │   │       │   ├── exception/
 │   │   │       │   └── util/
@@ -146,6 +148,8 @@ spring-boot/
 
 Java 소스는 `com.stagora` 아래에 작성합니다. MyBatis는 `org.apache.ibatis.annotations.Mapper`가 붙은 인터페이스를 탐색하며
 XML은 `src/main/resources/mapper/` 아래에 추가합니다. 별칭 패키지는 `com.stagora`입니다.
+`common.api`에는 공통 컨트롤러 지원(`AbstractApiController`), 응답 형식(`SspResponse`),
+응답 코드(`ApiResponseCode`)를 모았습니다. 기관 유형 등의 enum은 `common.enums`에 둡니다.
 `local.mapper`는 MyBatis DB 조회용, `local.dto.mapper`는 MapStruct 객체 변환용입니다.
 지역·기관·국가 조회는 모두 `Controller → Service → MyBatis Mapper → XML SQL` 순서로 조회하고,
 서비스에서 조회 결과 VO를 MapStruct Mapper로 변환하여 응답 DTO를 반환합니다.

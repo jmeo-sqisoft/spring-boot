@@ -1,4 +1,4 @@
-package com.stagora.common.enums;
+package com.stagora.common.api;
 
 import com.stagora.common.constants.Messages;
 import lombok.Getter;

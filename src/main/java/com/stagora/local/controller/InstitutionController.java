@@ -1,8 +1,8 @@
 package com.stagora.local.controller;
 
-import com.stagora.common.controller.AbstractApiController;
-import com.stagora.common.dto.response.SspResponse;
-import com.stagora.common.enums.ApiResponseCode;
+import com.stagora.common.api.AbstractApiController;
+import com.stagora.common.api.SspResponse;
+import com.stagora.common.api.ApiResponseCode;
 import com.stagora.common.exception.ApiException;
 import com.stagora.local.dto.response.InstitutionInfoResponse;
 import com.stagora.local.service.InstitutionService;

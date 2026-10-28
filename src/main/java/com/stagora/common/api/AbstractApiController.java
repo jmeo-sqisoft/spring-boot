@@ -1,8 +1,7 @@
-package com.stagora.common.controller;
+package com.stagora.common.api;
 
 import com.stagora.common.constants.Example;
 import com.stagora.common.constants.Messages;
-import com.stagora.common.dto.response.SspResponse;
 import com.stagora.common.util.StringUtil;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;

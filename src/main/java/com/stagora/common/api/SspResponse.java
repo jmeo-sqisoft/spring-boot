@@ -1,6 +1,5 @@
-package com.stagora.common.dto.response;
+package com.stagora.common.api;
 
-import com.stagora.common.enums.ApiResponseCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

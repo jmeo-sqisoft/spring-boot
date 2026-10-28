@@ -1,7 +1,7 @@
 package com.stagora.local.controller;
 
-import com.stagora.common.controller.AbstractApiController;
-import com.stagora.common.dto.response.SspResponse;
+import com.stagora.common.api.AbstractApiController;
+import com.stagora.common.api.SspResponse;
 import com.stagora.local.dto.response.NationInfoResponse;
 import com.stagora.local.service.NationInfoService;
 import io.swagger.v3.oas.annotations.Operation;

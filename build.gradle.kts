@@ -8,7 +8,7 @@ plugins {
 	id("org.sonarqube") version "6.3.1.5724"
 }
 
-group = "com.seegene.local"
+group = "com.stagora"
 version = "0.0.1-SNAPSHOT"
 description = "Local REST API"
 
@@ -67,7 +67,7 @@ dependencies {
 	// p6spy SQL logging. The old gavlyukovskiy datasource-decorator-spring-boot-starter
 	// (which auto-wraps the DataSource) is not compatible with Spring Boot 4's
 	// autoconfiguration ordering, so the DataSource is wrapped manually in
-	// base/config/DataSourceConfig instead.
+	// common/config/DataSourceConfig instead.
 	implementation("p6spy:p6spy:$p6spyVersion")
 
 	// springdoc-openapi (Swagger UI)

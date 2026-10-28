@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.seegene.local.server.mapper.AreaMapper">
+<mapper namespace="com.stagora.local.mapper.AreaMapper">
 
-	<select id="getArea" resultType="com.seegene.local.server.dto.vo.AreaVO">
+	<select id="getArea" resultType="com.stagora.local.dto.vo.AreaVO">
 <![CDATA[
 -- file name: AreaMapper.xml
 -- query id: getArea

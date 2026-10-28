@@ -11,7 +11,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 - Checkstyle 13.5.0, JaCoCo, SonarQube Gradle Plugin 6.3.1.5724
 - 한국어/영어 메시지와 CORS 공통 설정
 
-group: `com.seegene.local`, artifact: `spring-boot`
+group: `com.stagora`, artifact: `spring-boot`
 
 Spring Data JPA, HikariCP, Actuator 버전은 Spring Boot의 의존성 관리에 따릅니다.
 Gradle Wrapper가 포함되어 있으므로 Gradle을 별도로 설치할 필요는 없습니다.
@@ -94,102 +94,47 @@ curl.exe -H "Accept-Language: ko" http://localhost:8080/apis/gmcs/v1/nations
 
 ## 패키지 구조
 
-현재 프로젝트의 주요 파일 구조입니다. `base`에는 공통 응답·예외·유틸리티,
-`base.config`에는 공통 설정, `server`에는 REST API 구현을 모았습니다.
+현재 프로젝트의 주요 파일 구조입니다. `common`에는 공통 응답·예외·유틸리티,
+`common.config`에는 공통 설정, `local`에는 REST API 구현을 모았습니다.
 빈 패키지, IDE 설정과 빌드 캐시·산출물 디렉터리는 생략했습니다.
 
 ```text
 spring-boot/
 ├── config/
 │   └── checkstyle/                       # 코드 스타일 검사 규칙
-│       ├── checkstyle.xml
-│       └── suppressions.xml
 ├── doc/
-│   ├── 01-project-setup.md                # 초기 구성 기록과 학습 안내
 │   └── guide_xml_format.md                # Mapper XML의 SQL 포맷 가이드
 ├── gradle/
 │   └── wrapper/                          # Gradle 실행 버전과 Wrapper
-│       ├── gradle-wrapper.jar
-│       └── gradle-wrapper.properties
 ├── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   └── com/seegene/local/
+│   │   │   └── com/stagora/
 │   │   │       ├── Application.java      # Spring Boot 진입점
-│   │   │       ├── base/                 # 공통 API 기반 코드
-│   │   │       │   ├── config/           # com.seegene.local.base.config
-│   │   │       │   │   ├── AppProperties.java            # app.* 설정 바인딩
-│   │   │       │   │   ├── CorsConfig.java               # CORS 허용 설정
-│   │   │       │   │   ├── DataSourceConfig.java         # DataSource와 SQL 로깅 설정
-│   │   │       │   │   ├── JpaAwareSqlLogFormatter.java  # JPA SQL 로그 포맷
-│   │   │       │   │   ├── LocaleConfig.java             # 다국어 메시지 설정
-│   │   │       │   │   └── OpenApiConfig.java            # Swagger 문서 정보
+│   │   │       ├── common/               # 공통 API 기반 코드
+│   │   │       │   ├── config/           # com.stagora.common.config
 │   │   │       │   ├── constants/
-│   │   │       │   │   ├── Example.java  # 공통 예시·기본값
-│   │   │       │   │   └── Messages.java # 메시지 키 상수
 │   │   │       │   ├── controller/
-│   │   │       │   │   └── AbstractApiController.java  # 공통 성공 응답 처리
 │   │   │       │   ├── dto/response/
-│   │   │       │   │   └── SspResponse.java            # code/message/data 응답
 │   │   │       │   ├── enums/
-│   │   │       │   │   ├── ApiResponseCode.java        # API 응답 코드
-│   │   │       │   │   ├── InstitutionDataType.java    # 기관 데이터 유형 (LIS/HL7)
-│   │   │       │   │   └── InstitutionType.java        # 기관 표시 유형
 │   │   │       │   ├── exception/
-│   │   │       │   │   └── ApiException.java           # API 오류 예외
 │   │   │       │   └── util/
-│   │   │       │       ├── LocaleUtil.java             # 언어 코드 처리
-│   │   │       │       └── StringUtil.java             # 문자열 유틸리티
-│   │   │       └── server/               # REST API 구현
+│   │   │       └── local/                # REST API 구현
 │   │   │           ├── controller/
-│   │   │           │   ├── AreaController.java       # 지역 목록 조회 API
-│   │   │           │   ├── InstitutionController.java # 기관 정보 조회 API
-│   │   │           │   └── NationInfoController.java # 국가 목록 조회 API
 │   │   │           ├── dto/
 │   │   │           │   ├── mapper/                  # MapStruct VO → 응답 DTO 변환
-│   │   │           │   │   ├── AreasResponseMapper.java # MapStruct 지역 응답 변환
-│   │   │           │   │   ├── InstitutionInfoResponseMapper.java # MapStruct 기관 응답 변환
-│   │   │           │   │   └── NationInfoResponseMapper.java # MapStruct 지역별 국가 응답 변환
 │   │   │           │   ├── response/                # Controller에서 반환하는 응답 DTO
-│   │   │           │   │   ├── AreasResponse.java    # 지역 응답
-│   │   │           │   │   ├── InstitutionInfoResponse.java # 기관 정보 응답
-│   │   │           │   │   └── NationInfoResponse.java # 지역별 국가 응답
 │   │   │           │   └── vo/                      # MyBatis DB 조회 결과
-│   │   │           │       ├── AreaVO.java          # 지역 DB 조회 결과
-│   │   │           │       ├── InstitutionInfoVO.java # 기관 DB 조회 결과
-│   │   │           │       ├── NationInfoGroupVO.java # 지역별 국가 목록 DB 조회 결과
-│   │   │           │       ├── NationInfoVO.java    # 국가 정보
-│   │   │           │       └── NationRegionVO.java  # 국가 하위 지역 정보
 │   │   │           ├── mapper/                       # MyBatis DB 조회 인터페이스
-│   │   │           │   ├── AreaMapper.java           # 지역 조회 인터페이스
-│   │   │           │   ├── InstitutionMapper.java    # 병원·검사실 조회 인터페이스
-│   │   │           │   └── NationInfoMapper.java     # 국가 조회 인터페이스
 │   │   │           └── service/
-│   │   │               ├── AreaService.java         # 지역 조회 및 MapStruct 응답 변환
-│   │   │               ├── InstitutionService.java  # 기관 조회 및 MapStruct 응답 변환
-│   │   │               └── NationInfoService.java   # MapStruct 응답 변환·언어 처리·지역 및 국가 정렬
 │   │   └── resources/
 │   │       ├── mapper/
-│   │       │   ├── AreaMapper.xml         # 지역 목록 조회 SQL
-│   │       │   ├── InstitutionMapper.xml  # 병원·검사실 정보 조회 SQL
-│   │       │   └── NationInfoMapper.xml   # 국가·하위 지역 중첩 매핑 SQL
 │   │       ├── messages/                 # 기본·한국어·영어 메시지
-│   │       │   ├── messages.properties
-│   │       │   ├── messages_ko.properties
-│   │       │   └── messages_en.properties
 │   │       ├── application.yml           # 공통 설정
 │   │       ├── application-dev.yml       # 개발 환경
 │   │       ├── application-uat.yml       # 사용자 인수 테스트 환경
 │   │       └── application-prd.yml       # 운영 환경
 │   └── test/
-│       └── java/com/seegene/local/
-│           ├── ApplicationConfigurationTest.java  # 프로파일별 설정 검증
-│           ├── base/config/
-│           │   └── JpaAwareSqlLogFormatterTest.java # 치환된 SQL 단일 출력 검증
-│           └── server/service/
-│               ├── AreaServiceTest.java            # 지역 응답 변환·순서·빈 목록 검증
-│               ├── InstitutionServiceTest.java     # 조회 분기·MapStruct 변환·XML 매핑 검증
-│               └── NationInfoServiceTest.java      # 정렬·언어·XML 매핑 검증
 ├── .gitignore                            # Git 추적 제외 설정
 ├── build.gradle.kts                      # 의존성과 빌드·검증 설정
 ├── gradle.properties                     # Gradle JVM·캐시 설정
@@ -199,9 +144,9 @@ spring-boot/
 └── settings.gradle.kts                   # 프로젝트 이름과 모듈 구성
 ```
 
-Java 소스는 `com.seegene.local` 아래에 작성합니다. MyBatis는 `org.apache.ibatis.annotations.Mapper`가 붙은 인터페이스를 탐색하며
-XML은 `src/main/resources/mapper/` 아래에 추가합니다. 별칭 패키지는 `com.seegene.local`입니다.
-`server.mapper`는 MyBatis DB 조회용, `server.dto.mapper`는 MapStruct 객체 변환용입니다.
+Java 소스는 `com.stagora` 아래에 작성합니다. MyBatis는 `org.apache.ibatis.annotations.Mapper`가 붙은 인터페이스를 탐색하며
+XML은 `src/main/resources/mapper/` 아래에 추가합니다. 별칭 패키지는 `com.stagora`입니다.
+`local.mapper`는 MyBatis DB 조회용, `local.dto.mapper`는 MapStruct 객체 변환용입니다.
 지역·기관·국가 조회는 모두 `Controller → Service → MyBatis Mapper → XML SQL` 순서로 조회하고,
 서비스에서 조회 결과 VO를 MapStruct Mapper로 변환하여 응답 DTO를 반환합니다.
 국가 조회는 `NationInfoGroupVO`에 지역별 국가·하위 지역 목록을 담고,

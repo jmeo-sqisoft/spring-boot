@@ -33,7 +33,7 @@ spring:
 
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
-  type-aliases-package: com.seegene.local
+  type-aliases-package: com.stagora
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
@@ -44,7 +44,7 @@ app:
 
 logging:
   level:
-    com.seegene.local: debug
+    com.stagora: debug
     org.hibernate.SQL: "OFF"
     org.hibernate.orm.jdbc.bind: "OFF"
     p6spy: info

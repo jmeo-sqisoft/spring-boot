@@ -4,7 +4,12 @@
     "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <!--
-    ...
+    Java 소스의 포매팅, 이름 규칙, 기본 코딩 규칙을 검사하는 Checkstyle 설정.
+    탭 대신 공백 4칸을 사용하고, 한 줄은 최대 100자로 제한한다(일부 예외 적용).
+    이름 표기법, import 순서, 필드 접근 제한, 중괄호와 공백 사용 등을 검사한다.
+    위반 사항은 경고로 보고하며, 빌드 실패 기준은 build.gradle.kts에서 설정한다.
+    검사 실행: .\gradlew.bat checkstyleMain checkstyleTest
+    결과 보고서: build/reports/checkstyle/main.html, test.html
 -->
 
 <module name="Checker">

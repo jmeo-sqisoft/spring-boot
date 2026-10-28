@@ -90,33 +90,32 @@ spring-boot/
 ├── gradle/
 │   └── wrapper/                          # Gradle 실행 버전과 Wrapper
 ├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/stagora/
-│   │   │       ├── Application.java      # Spring Boot 진입점
-│   │   │       ├── common/               # 공통 API 기반 코드
-│   │   │       │   ├── api/              # 공통 API 응답과 컨트롤러 지원
-│   │   │       │   ├── config/           # com.stagora.common.config
-│   │   │       │   ├── constants/
-│   │   │       │   ├── enums/
-│   │   │       │   ├── exception/
-│   │   │       │   └── util/
-│   │   │       └── local/                # REST API 구현
-│   │   │           ├── controller/
-│   │   │           ├── dto/
-│   │   │           │   ├── mapper/                  # MapStruct VO → 응답 DTO 변환
-│   │   │           │   ├── response/                # Controller에서 반환하는 응답 DTO
-│   │   │           │   └── vo/                      # MyBatis DB 조회 결과
-│   │   │           ├── mapper/                       # MyBatis DB 조회 인터페이스
-│   │   │           └── service/
-│   │   └── resources/
-│   │       ├── mapper/
-│   │       ├── messages/                 # 기본·한국어·영어 메시지
-│   │       ├── application.yml           # 공통 설정
-│   │       ├── application-dev.yml       # 개발 환경
-│   │       ├── application-uat.yml       # 사용자 인수 테스트 환경
-│   │       └── application-prd.yml       # 운영 환경
-│   └── test/
+│   └── main/
+│       ├── java/
+│       │   └── com/stagora/
+│       │       ├── Application.java      # Spring Boot 진입점
+│       │       ├── common/               # 공통 API 기반 코드
+│       │       │   ├── api/              # 공통 API 응답과 컨트롤러 지원
+│       │       │   ├── config/           # com.stagora.common.config
+│       │       │   ├── constants/        # 예시 값·언어 코드(Language)·메시지 키
+│       │       │   ├── enums/            # 기관 유형·데이터 유형
+│       │       │   ├── exception/        # 공통 API 예외
+│       │       │   └── util/             # 언어·문자열 처리
+│       │       └── local/                # REST API 구현
+│       │           ├── controller/
+│       │           ├── dto/
+│       │           │   ├── mapper/                  # MapStruct VO → 응답 DTO 변환
+│       │           │   ├── response/                # Controller에서 반환하는 응답 DTO
+│       │           │   └── vo/                      # MyBatis DB 조회 결과
+│       │           ├── mapper/                       # MyBatis DB 조회 인터페이스
+│       │           └── service/
+│       └── resources/
+│           ├── mapper/
+│           ├── messages/                 # 기본·한국어·영어 메시지
+│           ├── application.yml           # 공통 설정
+│           ├── application-dev.yml       # 개발 환경
+│           ├── application-uat.yml       # 사용자 인수 테스트 환경
+│           └── application-prd.yml       # 운영 환경
 ├── .gitignore                            # Git 추적 제외 설정
 ├── build.gradle.kts                      # 의존성과 빌드·검증 설정
 ├── gradle.properties                     # Gradle JVM·캐시 설정
@@ -134,9 +133,13 @@ Mapper XML의 SQL은 [XML · SQL 포맷 가이드](doc/guide_xml_format.md)를 �
 
 ## 빌드 및 검증
 
+프로젝트 빌드와 테스트 커버리지 보고서 생성을 함께 실행합니다.
+
 ```powershell
 .\gradlew.bat build jacocoTestReport
 ```
+
+결과는 `build/reports/jacoco/test/html/index.html`에서 확인합니다.
 
 Checkstyle로 Java 소스(`src/main/java`)를 검사합니다.
 

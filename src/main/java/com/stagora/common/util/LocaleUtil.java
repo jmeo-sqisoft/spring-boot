@@ -1,31 +1,31 @@
 package com.stagora.common.util;
 
-import com.stagora.common.constants.Example;
+import com.stagora.common.constants.Language;
 
 import java.util.Locale;
 
 public final class LocaleUtil {
 	private static final String[] LOCATION_LANGS = {
-		Example.LANG_KO, Example.LANG
+		Language.KOREAN, Language.ENGLISH
 	};
 
 	private LocaleUtil() {
 	}
 
 	public static String getLocationLang(String lang) {
-		String s = lang == null ? Example.LANG : lang.trim().toLowerCase();
+		String s = lang == null ? Language.DEFAULT : lang.trim().toLowerCase();
 		for (var item : LOCATION_LANGS) {
 			if (item.equals(s)) {
 				return s;
 			}
 		}
-		return Example.LANG;
+		return Language.DEFAULT;
 	}
 
 	public static String getLanguage(Locale locale) {
 		String lang = locale == null ? "" : locale.getLanguage();
 		if (StringUtil.isBlank(lang)) {
-			lang = Example.LANG;
+			lang = Language.DEFAULT;
 		}
 		return lang;
 	}

@@ -21,8 +21,6 @@ public final class Example {
 	public static final String SINGLE_YN = "N";
 	public static final String CONFIG_TYPE = "LANDING";
 	public static final String CONFIG_NAME = "MIN_EXPT_CNT";
-	public static final String LANG = "en";
-	public static final String LANG_KO = "ko";
 	public static final String EXPT_YM = "202601";
 	public static final String EXPT_DT = "2026-04-08";
 	public static final String TARGETS = "T,C,R";

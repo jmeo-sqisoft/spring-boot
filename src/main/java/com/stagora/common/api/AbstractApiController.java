@@ -1,6 +1,6 @@
 package com.stagora.common.api;
 
-import com.stagora.common.constants.Example;
+import com.stagora.common.constants.Language;
 import com.stagora.common.constants.Messages;
 import com.stagora.common.util.StringUtil;
 import org.springframework.context.MessageSource;
@@ -11,24 +11,17 @@ import org.springframework.http.ResponseEntity;
 import java.util.Locale;
 
 /**
- * 모든 API Controller의 공통 부모. 응답 래핑 등 공통 로직 제공.
- * <p>설계 기준: doc/public/spec/architecture/03-package-structure.md §3.1</p>
- * <p>다국어: doc/public/spec/architecture/04-i18n-and-exception.md §4, success 메시지는 MessageSource로 해석.</p>
- * <p>MessageSource는 하위 클래스에서 생성자 주입 후 {@link #getMessageSource()}로 제공한다.</p>
+ * API 컨트롤러에서 사용하는 공통 성공 응답과 언어 코드 처리.
  */
 public abstract class AbstractApiController {
 
 	/**
-	 * 하위 Controller는 {@code private final MessageSource} 를 생성자 주입하고 이 메서드를 오버라이드한다.
+	 * 하위 컨트롤러에 주입된 MessageSource를 제공한다.
 	 */
 	protected abstract MessageSource getMessageSource();
 
 	/**
-	 * SSP 형식으로 성공 응답 반환.
-	 * <p>메시지는 Accept-Language에 따라 MessageSource로 다국어 해석.</p>
-	 *
-	 * @param data 응답 데이터
-	 * @return ResponseEntity with SspResponse (code S0000)
+	 * 요청 로케일에 맞는 메시지와 데이터를 SSP 형식으로 감싸 HTTP 200으로 반환한다.
 	 */
 	protected <T> ResponseEntity<SspResponse<T>> success(T data) {
 		Locale locale = LocaleContextHolder.getLocale();
@@ -38,10 +31,13 @@ public abstract class AbstractApiController {
 			.body(SspResponse.success(message, data));
 	}
 
+	/**
+	 * 로케일의 언어 코드가 없으면 기본 언어 코드를 사용한다.
+	 */
 	protected String getLanguage(Locale locale) {
 		String lang = locale == null ? "" : locale.getLanguage();
 		if (StringUtil.isBlank(lang)) {
-			lang = Example.LANG;
+			lang = Language.DEFAULT;
 		}
 		return lang;
 	}

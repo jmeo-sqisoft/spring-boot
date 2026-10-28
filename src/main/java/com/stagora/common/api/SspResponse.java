@@ -4,8 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 /**
- * SSP 기본 응답 구조 (code, message, data).
- * <p>설계 기준: doc/public/spec/contracts/endpoints-v1.md §2.1</p>
+ * 결과 코드, 메시지, 데이터를 담는 공통 API 응답.
  */
 @Builder
 @Schema(description = "SSP 기본 응답 (code, message, data)")

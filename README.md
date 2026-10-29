@@ -73,7 +73,7 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 | GET | `/apis/local/v1/areas` | 지역 정보 전체 목록 조회 | 불필요 |
 | GET | `/apis/gmcs/v1/nations` | 지역별 국가 목록과 국가 하위 지역 조회 | 불필요 |
 
-성공 응답은 `SspResponse<T>` 형태의 `code`, `message`, `data`를 사용하며 성공 코드는 `S0000`입니다.
+성공 응답은 `StaResponse<T>` 형태의 `code`, `message`, `data`를 사용하며 성공 코드는 `S0000`입니다.
 
 ## 패키지 구조
 

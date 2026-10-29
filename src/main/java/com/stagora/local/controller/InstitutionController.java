@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.stagora.common.api.AbstractApiController;
 import com.stagora.common.api.ApiResponseCode;
-import com.stagora.common.api.SspResponse;
+import com.stagora.common.api.StaResponse;
 import com.stagora.common.exception.ApiException;
 import com.stagora.local.dto.response.InstitutionInfoResponse;
 import com.stagora.local.service.InstitutionService;
@@ -30,7 +30,7 @@ public class InstitutionController extends AbstractApiController {
 
 	@Operation(summary = "기관정보 조회", description = "clabId 또는 hospitalId 중 하나 이상 필요하며, hospitalId가 있으면 병원을 조회합니다.")
 	@GetMapping("/institutioninfo")
-	public ResponseEntity<SspResponse<InstitutionInfoResponse>> institutionInfo(
+	public ResponseEntity<StaResponse<InstitutionInfoResponse>> institutionInfo(
 		@Schema(description = "검사실 ID", example = "CL0001") @RequestParam(required = false) String clabId,
 		@Schema(description = "병원 ID", example = "019bf94a-1e58-773c-9d46-ae8318e6bcba") @RequestParam(required = false) String hospitalId) {
 		if (StringUtils.trimToNull(clabId) == null && StringUtils.trimToNull(hospitalId) == null) {

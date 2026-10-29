@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stagora.local.mapper.SampleMapper">
+
+	<select id="getArea" resultType="com.stagora.local.dto.vo.AreaVO">
+<![CDATA[
+-- file name: AreaMapper.xml
+-- query id: getArea
+select	comm_cd as area_code
+	,	comm_cd_nm as area_name
+from	comm_cd
+where	use_yn = 'Y'
+	and comm_grp_cd = 'CM009'
+order by sort_val
+;
+]]>
+	</select>
+
+
+	<select id="getHospitalInfo" resultType="com.stagora.local.dto.vo.InstitutionInfoVO">
+<![CDATA[
+-- file name: MyDashboardMapper.xml
+-- query id: getHospitalInfo
+select	a.hospital_id
+	,	coalesce(min(a.hospital_nm), a.hospital_id::text) as institution_name
+	,	'HOSPITAL' as institution_type
+	,	min(a.sub_dvsn_nm) as city_name
+	,	min(a.nat_cd) as nation_code
+	,	min(a.nat_nm) as nation_name
+	,	min(a.nat_area_cd) as area_code
+	,	null::timestamptz as registration_date
+	,	null::timestamptz as expiration_date
+	,	'' as contact_email
+	,	case
+			when exists ( select 1 from gmcs_main_daily b where b.hospital_id = a.hospital_id ) then 'LIS'
+			else 'HL7'
+		end as data_type
+from mv_hospital_region as a
+where	a.hospital_id = #{hospitalId}::uuid
+group by a.hospital_id
+;
+]]>
+	</select>
+
+	<!-- CLAB의 기존 정보와 집계 식별자를 유지하며 제휴병원명·표시 유형을 조회한다. -->
+	<select id="getClabInfo" resultType="com.stagora.local.dto.vo.InstitutionInfoVO">
+<![CDATA[
+-- file name: MyDashboardMapper.xml
+-- query id: getClabInfo
+select	a.clab_id
+	,	case when count(c.hospital_id) > 0
+		then string_agg(distinct d.hospital_nm, ' / ' order by d.hospital_nm)
+		else min(a.clab_nm) end as institution_name
+	,	case when count(c.hospital_id) > 0 then 'AFFILIATED' else 'CLAB' end as institution_type
+	,	min(a.sub_dvsn_nm) as city_name
+	,	min(a.nat_cd) as nation_code
+	,	min(a.nat_nm) as nation_name
+	,	min(a.nat_area_cd) as area_code
+	,	min(b.provide_start_dt) as registration_date
+	,	max(b.provide_end_dt) as contract_expiration_date
+	,	min(a.contact_email) as contact_email
+	,	case
+			when exists ( select 1 from gmcs_main_daily b where b.clab_id = a.clab_id ) then 'LIS'
+			else 'HL7'
+		end as data_type
+from	mv_clab_region as a
+		left outer join
+		mv_gmcs_clab_contract as b
+	on a.clab_id = b.clab_id and current_date between b.provide_start_dt and b.provide_end_dt
+		left outer join
+		mv_clab_affiliated_hospital as c
+	on c.clab_id = a.clab_id and c.hospital_id is not null
+		left outer join
+		mv_hospital_region as d
+	on d.hospital_id = c.hospital_id
+where	a.clab_id = #{clabId}
+group by a.clab_id
+;
+]]>
+	</select>
+
+
+	<resultMap id="nationInfoMap" type="com.stagora.local.dto.vo.NationInfoGroupVO">
+		<id property="areaCode" column="area_code"/>
+		<result property="areaName" column="area_name"/>
+		<collection property="nationInfoVOs" ofType="com.stagora.local.dto.vo.NationInfoVO">
+			<id property="nationInfoNo" column="nation_info_no"/>
+			<result property="nationCode" column="nation_code"/>
+			<result property="nationName" column="nation_name"/>
+			<result property="latitude" column="latitude"/>
+			<result property="longitude" column="longitude"/>
+			<result property="isParticipating" column="is_participating" javaType="boolean"/>
+			<collection property="nationRegions" ofType="com.stagora.local.dto.vo.NationRegionVO">
+				<constructor>
+					<arg column="nation_region_no" javaType="java.lang.Integer"/>
+					<arg column="nation_region_code" javaType="java.lang.String"/>
+					<arg column="nation_region_name" javaType="java.lang.String"/>
+				</constructor>
+			</collection>
+		</collection>
+	</resultMap>
+
+	<select id="getNationInfo" resultMap="nationInfoMap">
+<![CDATA[
+-- file name: NationInfoMapper.xml
+-- query id: getNationInfo
+with cte_nation_and_sub_dvsn as materialized (
+	select	a.nat_info_no
+		,	a.nat_area_cd
+		,	a.nat_cd
+		,	a.nat_nm
+		,	a.nat_ko_nm
+		,	a.latud
+		,	a.lngtud
+		,	b.sub_dvsn_no
+		,	b.sub_dvsn_cd
+		,	b.sub_dvsn_nm
+		,	b.sub_dvsn_ko_nm
+	from	nation_info as a
+			inner join
+			nation_sub_dvsn_info as b
+		on	a.nat_info_no = b.nat_info_no
+	where	a.use_yn = 'Y'
+		and b.use_yn = 'Y'
+		and a.nat_area_cd is not null
+)
+select	a.nat_info_no as nation_info_no
+	,	a.nat_cd as nation_code
+	,	case when coalesce(#{lang},'en') = 'ko'
+			then a.nat_ko_nm else a.nat_nm
+		end as nation_name
+	,	a.latud as latitude
+	,	a.lngtud as longitude
+	,	b.comm_cd as area_code
+	,	case when coalesce(#{lang},'en') = 'ko'
+			then cond_1_val else comm_cd_nm
+		end as area_name
+	,	a.sub_dvsn_no as nation_region_no
+	,	a.sub_dvsn_cd as nation_region_code
+	,	case when coalesce(#{lang},'en') = 'ko'
+			then a.sub_dvsn_ko_nm else sub_dvsn_nm
+		end as nation_region_name
+	,	case
+			when c.country_no is null then 0 else 1
+		end as is_participating
+from	cte_nation_and_sub_dvsn as a
+		inner join
+		comm_cd as b
+	on	a.nat_area_cd = b.comm_cd
+	and b.comm_grp_cd = 'CM009'
+	and b.use_yn = 'Y'
+		left outer join
+		(
+			select	country_no
+			from	gmcs_test_monthly
+			where	target_system_code = 'GMCS'
+			group by country_no
+		) as c
+	on	c.country_no = a.nat_info_no
+where	1 = 1
+;
+]]>
+	</select>
+</mapper>

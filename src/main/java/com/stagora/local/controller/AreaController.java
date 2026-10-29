@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.stagora.common.api.AbstractApiController;
-import com.stagora.common.api.SspResponse;
+import com.stagora.common.api.StaResponse;
 import com.stagora.local.dto.response.AreasResponse;
 import com.stagora.local.service.AreaService;
 
@@ -27,7 +27,7 @@ public class AreaController extends AbstractApiController {
 
 	@Operation(summary = "지역 정보 전체 목록", description = "지역 정보 전체를 전달한다.")
 	@GetMapping("/areas")
-	public ResponseEntity<SspResponse<List<AreasResponse>>> getAreas() {
+	public ResponseEntity<StaResponse<List<AreasResponse>>> getAreas() {
 		List<AreasResponse> response = areaService.getArea();
 		return super.success(response);
 	}

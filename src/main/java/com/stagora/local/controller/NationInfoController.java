@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.stagora.common.api.AbstractApiController;
-import com.stagora.common.api.SspResponse;
+import com.stagora.common.api.StaResponse;
 import com.stagora.local.dto.response.NationInfoResponse;
 import com.stagora.local.service.NationInfoService;
 
@@ -28,7 +28,7 @@ public class NationInfoController extends AbstractApiController {
 
 	@Operation(summary = "국가 정보 전체 목록", description = "국가 정보 전체를 전달한다. areaCd로 지역별 필터링이 가능하다.")
 	@GetMapping("/nations")
-	public ResponseEntity<SspResponse<List<NationInfoResponse>>> getNations(Locale locale) {
+	public ResponseEntity<StaResponse<List<NationInfoResponse>>> getNations(Locale locale) {
 		List<NationInfoResponse> response = nationInfoService.getNationInfo(locale);
 		return super.success(response);
 	}

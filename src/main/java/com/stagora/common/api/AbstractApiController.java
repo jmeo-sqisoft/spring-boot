@@ -22,14 +22,14 @@ public abstract class AbstractApiController {
 	protected abstract MessageSource getMessageSource();
 
 	/**
-	 * 요청 로케일에 맞는 메시지와 데이터를 SSP 형식으로 감싸 HTTP 200으로 반환한다.
+	 * 요청 로케일에 맞는 메시지와 데이터를 STA 형식으로 감싸 HTTP 200으로 반환한다.
 	 */
-	protected <T> ResponseEntity<SspResponse<T>> success(T data) {
+	protected <T> ResponseEntity<StaResponse<T>> success(T data) {
 		Locale locale = LocaleContextHolder.getLocale();
 		String message = getMessageSource().getMessage(Messages.KEY_SUCCESS_DEFAULT, null, Messages.KEY_SUCCESS_DEFAULT, locale);
 		return ResponseEntity
 			.status(HttpStatus.OK)
-			.body(SspResponse.success(message, data));
+			.body(StaResponse.success(message, data));
 	}
 
 	/**

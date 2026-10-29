@@ -104,7 +104,7 @@ spring-boot/
 │       │       └── local/                # REST API 구현
 │       │           ├── controller/
 │       │           ├── dto/
-│       │           │   ├── mapper/                  # MapStruct VO → 응답 DTO 변환
+│       │           │   ├── converter/               # MapStruct VO → 응답 DTO 변환
 │       │           │   ├── response/                # Controller에서 반환하는 응답 DTO
 │       │           │   └── vo/                      # MyBatis DB 조회 결과
 │       │           ├── mapper/                       # MyBatis DB 조회 인터페이스

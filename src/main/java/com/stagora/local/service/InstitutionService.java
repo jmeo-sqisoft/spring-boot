@@ -2,7 +2,7 @@ package com.stagora.local.service;
 
 import org.springframework.stereotype.Service;
 
-import com.stagora.local.dto.mapper.InstitutionInfoResponseMapper;
+import com.stagora.local.dto.converter.InstitutionInfoConverter;
 import com.stagora.local.dto.response.InstitutionInfoResponse;
 import com.stagora.local.dto.vo.InstitutionInfoVO;
 import com.stagora.local.mapper.InstitutionMapper;
@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InstitutionService {
 	private final InstitutionMapper institutionMapper;
-	private final InstitutionInfoResponseMapper institutionInfoResponseMapper;
+	private final InstitutionInfoConverter institutionInfoConverter;
 
 	public InstitutionInfoResponse getInstitutionInfo(String clabId, String hospitalId) {
 		InstitutionInfoVO info;
@@ -23,6 +23,6 @@ public class InstitutionService {
 		} else {
 			info = institutionMapper.getClabInfo(clabId);
 		}
-		return institutionInfoResponseMapper.toResponse(info);
+		return institutionInfoConverter.toResponse(info);
 	}
 }

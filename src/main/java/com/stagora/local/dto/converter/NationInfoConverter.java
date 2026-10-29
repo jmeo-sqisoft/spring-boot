@@ -1,4 +1,4 @@
-package com.stagora.local.dto.mapper;
+package com.stagora.local.dto.converter;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import com.stagora.local.dto.response.NationInfoResponse;
 import com.stagora.local.dto.vo.NationInfoGroupVO;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
-public interface NationInfoResponseMapper {
+public interface NationInfoConverter {
 
 	NationInfoResponse toResponse(NationInfoGroupVO group);
 

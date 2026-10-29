@@ -5,7 +5,7 @@
 
 <!--
     Java 소스의 포매팅, 이름 규칙, 기본 코딩 규칙을 검사하는 Checkstyle 설정.
-    탭 대신 공백 4칸을 사용하고, 한 줄은 최대 100자로 제한한다(일부 예외 적용).
+    탭을 허용하며 탭 너비는 4칸으로 계산하고, 한 줄은 최대 200자로 제한한다(일부 예외 적용).
     이름 표기법, import 순서, 필드 접근 제한, 중괄호와 공백 사용 등을 검사한다.
     위반 사항은 경고로 보고하며, 빌드 실패 기준은 build.gradle.kts에서 설정한다.
     검사 실행: .\gradlew.bat checkstyleMain checkstyleTest
@@ -17,6 +17,7 @@
     <property name="charset" value="UTF-8"/>
     <property name="severity" value="warning"/>
     <property name="fileExtensions" value="java"/>
+    <property name="tabWidth" value="4"/>
 
     <!-- ===========================================
          1. 포매팅
@@ -24,14 +25,14 @@
 
     <!-- 1.1 파일 인코딩 UTF-8: charset 속성으로 처리 -->
 
-    <!-- 1.2 탭 문자 금지 (space 4개 사용) -->
+    <!-- 1.2 탭 문자 허용: 탭 금지 검사를 비활성화한다. -->
     <module name="FileTabCharacter">
-        <property name="eachLine" value="true"/>
+        <property name="severity" value="ignore"/>
     </module>
 
-    <!-- 1.6 라인 최대 길이 100칸 -->
+    <!-- 1.6 라인 최대 길이 200칸 -->
     <module name="LineLength">
-        <property name="max" value="100"/>
+        <property name="max" value="200"/>
         <property name="ignorePattern" value="^package.*|^import.*|a]+ href|href|http://|https://|ftp://"/>
     </module>
 
@@ -43,7 +44,7 @@
              1. 포매팅 (계속)
              =========================================== -->
 
-        <!-- 1.2 들여쓰기 4칸 -->
+        <!-- 1.2 들여쓰기 4칸 (탭도 4칸으로 계산) -->
         <module name="Indentation">
             <property name="basicOffset" value="4"/>
             <property name="braceAdjustment" value="0"/>

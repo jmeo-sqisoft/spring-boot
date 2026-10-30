@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
-import com.stagora.report.dto.response.InstitutionInfoResponse;
-import com.stagora.report.dto.vo.InstitutionInfoVO;
+import com.stagora.report.sample.dto.InstitutionInfoResponse;
+import com.stagora.report.sample.model.InstitutionInfoVO;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface InstitutionInfoConverter {

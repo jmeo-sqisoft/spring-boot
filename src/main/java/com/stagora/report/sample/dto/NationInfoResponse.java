@@ -1,8 +1,8 @@
-package com.stagora.report.dto.response;
+package com.stagora.report.sample.dto;
 
 import java.util.List;
 
-import com.stagora.report.dto.vo.NationInfoVO;
+import com.stagora.report.sample.model.NationInfoVO;
 
 import lombok.Getter;
 import lombok.Setter;

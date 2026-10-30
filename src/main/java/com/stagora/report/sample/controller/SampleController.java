@@ -1,13 +1,13 @@
-package com.stagora.report.controller;
+package com.stagora.report.sample.controller;
 
 import com.stagora.global.api.AbstractApiController;
 import com.stagora.global.api.ApiResponseCode;
 import com.stagora.global.api.StaResponse;
 import com.stagora.global.exception.ApiException;
-import com.stagora.report.dto.response.AreasResponse;
-import com.stagora.report.dto.response.InstitutionInfoResponse;
-import com.stagora.report.dto.response.NationInfoResponse;
-import com.stagora.report.service.SampleService;
+import com.stagora.report.sample.dto.AreasResponse;
+import com.stagora.report.sample.dto.InstitutionInfoResponse;
+import com.stagora.report.sample.dto.NationInfoResponse;
+import com.stagora.report.sample.service.SampleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,7 +25,7 @@ import java.util.Locale;
 
 @Tag(name = "Sample", description = "Sample API")
 @RestController
-@RequestMapping("/apis/local/v1")
+@RequestMapping("/apis/report/v1")
 @RequiredArgsConstructor
 public class SampleController extends AbstractApiController {
 	private final MessageSource messageSource;

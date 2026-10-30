@@ -1,4 +1,4 @@
-package com.stagora.report.dto.response;
+package com.stagora.report.sample.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

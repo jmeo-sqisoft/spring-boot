@@ -1,4 +1,4 @@
-package com.stagora.report.dto.vo;
+package com.stagora.report.sample.model;
 
 import java.math.BigDecimal;
 import java.util.List;

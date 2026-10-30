@@ -6,8 +6,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
-import com.stagora.report.dto.response.AreasResponse;
-import com.stagora.report.dto.vo.AreaVO;
+import com.stagora.report.sample.dto.AreasResponse;
+import com.stagora.report.sample.model.AreaVO;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface AreasConverter {

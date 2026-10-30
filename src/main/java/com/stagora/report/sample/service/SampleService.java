@@ -1,16 +1,16 @@
-package com.stagora.report.service;
+package com.stagora.report.sample.service;
 
 import com.stagora.global.util.LocaleUtil;
 import com.stagora.report.dto.converter.AreasConverter;
 import com.stagora.report.dto.converter.InstitutionInfoConverter;
 import com.stagora.report.dto.converter.NationInfoConverter;
-import com.stagora.report.dto.response.AreasResponse;
-import com.stagora.report.dto.response.InstitutionInfoResponse;
-import com.stagora.report.dto.response.NationInfoResponse;
-import com.stagora.report.dto.vo.AreaVO;
-import com.stagora.report.dto.vo.InstitutionInfoVO;
-import com.stagora.report.dto.vo.NationInfoVO;
-import com.stagora.report.mapper.SampleMapper;
+import com.stagora.report.sample.dto.AreasResponse;
+import com.stagora.report.sample.dto.InstitutionInfoResponse;
+import com.stagora.report.sample.dto.NationInfoResponse;
+import com.stagora.report.sample.model.AreaVO;
+import com.stagora.report.sample.model.InstitutionInfoVO;
+import com.stagora.report.sample.model.NationInfoVO;
+import com.stagora.report.sample.mapper.SampleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

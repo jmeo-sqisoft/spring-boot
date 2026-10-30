@@ -1,8 +1,8 @@
-package com.stagora.report.mapper;
+package com.stagora.report.sample.mapper;
 
-import com.stagora.report.dto.vo.AreaVO;
-import com.stagora.report.dto.vo.InstitutionInfoVO;
-import com.stagora.report.dto.vo.NationInfoGroupVO;
+import com.stagora.report.sample.model.AreaVO;
+import com.stagora.report.sample.model.InstitutionInfoVO;
+import com.stagora.report.sample.model.NationInfoGroupVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

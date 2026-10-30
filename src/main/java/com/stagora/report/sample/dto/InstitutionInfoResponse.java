@@ -1,4 +1,4 @@
-package com.stagora.report.dto.response;
+package com.stagora.report.sample.dto;
 
 import java.sql.Timestamp;
 

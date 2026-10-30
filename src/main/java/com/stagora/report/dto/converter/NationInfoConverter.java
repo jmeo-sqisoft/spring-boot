@@ -6,8 +6,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
-import com.stagora.report.dto.response.NationInfoResponse;
-import com.stagora.report.dto.vo.NationInfoGroupVO;
+import com.stagora.report.sample.dto.NationInfoResponse;
+import com.stagora.report.sample.model.NationInfoGroupVO;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface NationInfoConverter {

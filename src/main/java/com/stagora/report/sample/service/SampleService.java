@@ -10,6 +10,7 @@ import com.stagora.global.util.LocaleUtil;
 import com.stagora.report.sample.dto.AreasConverter;
 import com.stagora.report.sample.dto.AreasResponse;
 import com.stagora.report.sample.dto.InstitutionInfoConverter;
+import com.stagora.report.sample.dto.InstitutionInfoRequest;
 import com.stagora.report.sample.dto.InstitutionInfoResponse;
 import com.stagora.report.sample.dto.NationInfoConverter;
 import com.stagora.report.sample.dto.NationInfoResponse;
@@ -33,7 +34,9 @@ public class SampleService {
         return areasConverter.toResponses(areaInfo);
     }
 
-    public InstitutionInfoResponse getInstitutionInfo(String clabId, String hospitalId) {
+    public InstitutionInfoResponse getInstitutionInfo(InstitutionInfoRequest request) {
+        String clabId = request.getClabId();
+        String hospitalId = request.getHospitalId();
         InstitutionInfo info;
 
         if (hospitalId != null && !hospitalId.isEmpty()) {

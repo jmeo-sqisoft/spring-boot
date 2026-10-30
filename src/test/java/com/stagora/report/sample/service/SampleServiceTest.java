@@ -18,6 +18,7 @@ import com.stagora.global.enums.InstitutionType;
 import com.stagora.report.sample.dto.AreasConverter;
 import com.stagora.report.sample.dto.AreasResponse;
 import com.stagora.report.sample.dto.InstitutionInfoConverter;
+import com.stagora.report.sample.dto.InstitutionInfoRequest;
 import com.stagora.report.sample.dto.InstitutionInfoResponse;
 import com.stagora.report.sample.dto.NationInfoConverter;
 import com.stagora.report.sample.dto.NationInfoResponse;
@@ -60,7 +61,8 @@ class SampleServiceTest {
             "Republic of Korea", "AS", registrationDate, expirationDate,
             "contact@example.com", "LIS"));
 
-        InstitutionInfoResponse response = service.getInstitutionInfo("clab-id", "hospital-id");
+        InstitutionInfoResponse response = service.getInstitutionInfo(
+            request("clab-id", "hospital-id"));
 
         assertThat(response).usingRecursiveComparison().isEqualTo(new InstitutionInfoResponse(
             "hospital-id", "Hospital", InstitutionType.HOSPITAL, "Seoul", "KR",
@@ -77,7 +79,7 @@ class SampleServiceTest {
             "clab-id", "Lab", InstitutionType.AFFILIATED,
             null, null, null, null, null, null, null, "HL7"));
 
-        InstitutionInfoResponse response = service.getInstitutionInfo("clab-id", hospitalId);
+        InstitutionInfoResponse response = service.getInstitutionInfo(request("clab-id", hospitalId));
 
         assertThat(response.getInstitutionId()).isEqualTo("clab-id");
         assertThat(response.getInstitutionType()).isEqualTo(InstitutionType.AFFILIATED);
@@ -88,8 +90,8 @@ class SampleServiceTest {
 
     @Test
     void returnsNullWhenInstitutionDoesNotExist() {
-        assertThat(service.getInstitutionInfo("missing-clab", null)).isNull();
-        assertThat(service.getInstitutionInfo(null, "missing-hospital")).isNull();
+        assertThat(service.getInstitutionInfo(request("missing-clab", null))).isNull();
+        assertThat(service.getInstitutionInfo(request(null, "missing-hospital"))).isNull();
     }
 
     @Test
@@ -127,6 +129,13 @@ class SampleServiceTest {
 
         assertThat(service.getNationInfo(Locale.FRENCH)).isEmpty();
         verify(mapper).getNationInfo("en");
+    }
+
+    private static InstitutionInfoRequest request(String clabId, String hospitalId) {
+        var request = new InstitutionInfoRequest();
+        request.setClabId(clabId);
+        request.setHospitalId(hospitalId);
+        return request;
     }
 
     private static NationInfo country(String name) {

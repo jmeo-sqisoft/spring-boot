@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "기관정보 조회 DTO")
+@Schema(description = "기관정보 조회 Response")
 public class InstitutionInfoResponse {
     @Schema(description = "기관 아이디", example = "CL0001")
     private String institutionId;

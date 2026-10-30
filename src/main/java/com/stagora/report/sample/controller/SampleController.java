@@ -16,6 +16,7 @@ import com.stagora.global.api.ApiResponseCode;
 import com.stagora.global.api.StaResponse;
 import com.stagora.global.exception.ApiException;
 import com.stagora.report.sample.dto.AreasResponse;
+import com.stagora.report.sample.dto.InstitutionInfoRequest;
 import com.stagora.report.sample.dto.InstitutionInfoResponse;
 import com.stagora.report.sample.dto.NationInfoResponse;
 import com.stagora.report.sample.service.SampleService;
@@ -51,7 +52,10 @@ public class SampleController extends AbstractApiController {
         if (StringUtils.trimToNull(clabId) == null && StringUtils.trimToNull(hospitalId) == null) {
             throw new ApiException(ApiResponseCode.E00400);
         }
-        InstitutionInfoResponse response = sampleService.getInstitutionInfo(clabId, hospitalId);
+        InstitutionInfoRequest request = new InstitutionInfoRequest();
+        request.setClabId(clabId);
+        request.setHospitalId(hospitalId);
+        InstitutionInfoResponse response = sampleService.getInstitutionInfo(request);
         return success(response);
     }
 

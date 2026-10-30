@@ -9,19 +9,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.stagora.global.api.ApiResponseCode;
 import com.stagora.global.exception.ApiException;
 import com.stagora.report.sample.dto.AreasResponse;
+import com.stagora.report.sample.dto.InstitutionInfoRequest;
 import com.stagora.report.sample.dto.InstitutionInfoResponse;
 import com.stagora.report.sample.dto.NationInfoResponse;
 import com.stagora.report.sample.service.SampleService;
@@ -68,14 +74,29 @@ class SampleControllerTest {
     @MethodSource("validIdentifiers")
     void forwardsValidIdentifiers(String clabId, String hospitalId) {
         var institution = new InstitutionInfoResponse();
-        when(service.getInstitutionInfo(clabId, hospitalId)).thenReturn(institution);
+        when(service.getInstitutionInfo(any(InstitutionInfoRequest.class))).thenReturn(institution);
 
         var response = controller.institutionInfo(clabId, hospitalId);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().data()).isSameAs(institution);
-        verify(service).getInstitutionInfo(clabId, hospitalId);
+        assertServiceRequest(clabId, hospitalId);
+    }
+
+    @Test
+    void passesQueryParametersToServiceAsRequestDto() throws Exception {
+        var institution = new InstitutionInfoResponse();
+        institution.setInstitutionId("hospital-id");
+        when(service.getInstitutionInfo(any(InstitutionInfoRequest.class))).thenReturn(institution);
+
+        var result = MockMvcBuilders.standaloneSetup(controller).build()
+            .perform(get("/apis/report/v1/sample/institutioninfo")
+                .param("clabId", "clab-id").param("hospitalId", "hospital-id"))
+            .andExpect(status().isOk()).andReturn();
+
+        assertThat(result.getResponse().getContentAsString()).contains("hospital-id", "S0000");
+        assertServiceRequest("clab-id", "hospital-id");
     }
 
     @Test
@@ -90,6 +111,13 @@ class SampleControllerTest {
         assertThat(response.getBody().code()).isEqualTo("S0000");
         assertThat(response.getBody().data()).isSameAs(nations);
         verify(service).getNationInfo(Locale.KOREAN);
+    }
+
+    private void assertServiceRequest(String clabId, String hospitalId) {
+        var captor = ArgumentCaptor.forClass(InstitutionInfoRequest.class);
+        verify(service).getInstitutionInfo(captor.capture());
+        assertThat(captor.getValue().getClabId()).isEqualTo(clabId);
+        assertThat(captor.getValue().getHospitalId()).isEqualTo(hospitalId);
     }
 
     private static Stream<Arguments> missingIdentifiers() {

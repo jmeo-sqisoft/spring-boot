@@ -37,7 +37,7 @@ select	a.hospital_id
 			when exists ( select 1 from gmcs_main_daily b where b.hospital_id = a.hospital_id ) then 'LIS'
 			else 'HL7'
 		end as data_type
-from mv_hospital_region as a
+from	mv_hospital_region as a
 where	a.hospital_id = #{hospitalId}::uuid
 group by a.hospital_id
 ;

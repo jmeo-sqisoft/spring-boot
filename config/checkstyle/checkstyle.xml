@@ -4,11 +4,12 @@
     "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <!--
-    Java 소스의 포매팅, 이름 규칙, 기본 코딩 규칙을 검사하는 Checkstyle 설정.
-    탭을 허용하지 않으며, 한 줄은 최대 100자로 제한한다(일부 예외 적용).
+    Java 소스와 MyBatis Mapper XML의 작성 규칙을 검사하는 Checkstyle 설정.
+    Java는 탭을 허용하지 않으며, 한 줄은 최대 100자로 제한한다(일부 예외 적용).
     이름 표기법, import 순서, 필드 접근 제한, 중괄호와 공백 사용 등을 검사한다.
     위반 사항은 경고로 보고하며, 빌드 실패 기준은 build.gradle.kts에서 설정한다.
-    검사 대상: 운영 Java 소스. 테스트 소스는 Gradle의 checkstyleTest 작업을 비활성화해 제외한다.
+    검사 대상: 운영 Java 소스와 src/main/resources/mapper 아래 XML.
+    테스트 소스는 Gradle의 checkstyleTest 작업을 비활성화해 제외한다.
     검사 실행: .\gradlew.bat checkstyleMain
     결과 보고서: build/reports/checkstyle/main.html
 -->
@@ -17,7 +18,7 @@
     <!-- 기본 설정 -->
     <property name="charset" value="UTF-8"/>
     <property name="severity" value="warning"/>
-    <property name="fileExtensions" value="java"/>
+    <property name="fileExtensions" value="java,xml"/>
     <property name="tabWidth" value="4"/>
 
     <!-- ===========================================
@@ -28,19 +29,64 @@
 
     <!-- 1.2 탭 문자 금지 (space 4개 사용) -->
     <module name="FileTabCharacter">
+        <property name="fileExtensions" value="java"/>
         <property name="eachLine" value="true"/>
     </module>
 
     <!-- 1.6 라인 최대 길이 100칸 -->
     <module name="LineLength">
+        <property name="fileExtensions" value="java"/>
         <property name="max" value="100"/>
         <property name="ignorePattern" value="^package.*|^import.*|a]+ href|href|http://|https://|ftp://"/>
     </module>
 
     <!-- 파일 끝 개행 -->
-    <module name="NewlineAtEndOfFile"/>
+    <module name="NewlineAtEndOfFile">
+        <property name="fileExtensions" value="java"/>
+    </module>
+
+    <!-- ===========================================
+         MyBatis XML · SQL의 단순 행 포맷 검사
+         guide_xml_format.md 중 정규식으로 확인 가능한 일부 규칙만 적용한다.
+         문자열·인용 식별자·주석·XML 태그가 있는 행은 보수적으로 제외한다.
+         여러 줄 문자열·블록 주석의 내부 문맥은 해석하지 못한다.
+         SQL 키워드 소문자, 별칭, 콤마 위치, JOIN 의미 등의 검사는 별도 검토가 필요하다.
+         =========================================== -->
+
+    <!-- select/from/where 뒤의 정렬 공백은 스페이스 대신 탭을 사용한다. -->
+    <module name="RegexpSingleline">
+        <property name="id" value="sqlClauseTab"/>
+        <property name="fileExtensions" value="xml"/>
+        <property name="format" value="^(?!.*(?:'|&quot;|--|/\*|\*/|&lt;|&gt;))[\t ]*(?:select|from|where) +\S"/>
+        <property name="message" value="SQL의 select/from/where 뒤에는 공백 대신 탭을 사용하세요."/>
+    </module>
+
+    <!-- select/from/where의 첫 대상은 키워드와 같은 줄에 작성한다. -->
+    <module name="RegexpSingleline">
+        <property name="id" value="sqlClauseTarget"/>
+        <property name="fileExtensions" value="xml"/>
+        <property name="format" value="^[\t ]*(?:select|from|where)[\t ]*$"/>
+        <property name="message" value="SQL의 select/from/where 뒤 첫 대상은 같은 줄에 작성하세요."/>
+    </module>
+
+    <!-- 행 시작의 JOIN/APPLY 뒤에서 줄을 바꾸고 다음 줄에 대상을 작성한다. -->
+    <module name="RegexpSingleline">
+        <property name="id" value="sqlJoinLineBreak"/>
+        <property name="fileExtensions" value="xml"/>
+        <property name="format" value="^(?!.*(?:'|&quot;|--|/\*|\*/|&lt;|&gt;))[\t ]*(?:(?:(?:inner|cross|(?:left|right|full)(?:[\t ]+outer)?)[\t ]+)?join|(?:(?:cross|outer)[\t ]+)?apply)[\t ]+\S"/>
+        <property name="message" value="SQL의 JOIN/APPLY 뒤에서 줄을 바꾸고 대상을 다음 줄에 작성하세요."/>
+    </module>
+
+    <!-- 문자열·주석·XML 엔티티가 없는 행의 끝 세미콜론은 독립된 줄에 둔다. -->
+    <module name="RegexpSingleline">
+        <property name="id" value="sqlSemicolonLine"/>
+        <property name="fileExtensions" value="xml"/>
+        <property name="format" value="^(?!.*(?:'|&quot;|--|/\*|\*/|&lt;|&gt;|&amp;))[\t ]*[^\t ;][^;]*;[\t ]*$"/>
+        <property name="message" value="SQL 문장을 끝내는 세미콜론은 다음 줄에 단독으로 작성하세요."/>
+    </module>
 
     <module name="TreeWalker">
+        <property name="fileExtensions" value="java"/>
         <!-- ===========================================
              1. 포매팅 (계속)
              =========================================== -->

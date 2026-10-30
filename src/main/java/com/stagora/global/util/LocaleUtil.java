@@ -5,7 +5,7 @@ import java.util.Locale;
 import com.stagora.global.constants.Language;
 
 /**
- * 로케일에서 언어 코드를 추출하고 국가 조회에서 지원하는 언어로 정규화한다.
+ * 로케일의 언어 코드를 추출하고 애플리케이션에서 지원하는 언어로 정규화한다.
  */
 public final class LocaleUtil {
     private static final String[] LOCATION_LANGS = {
@@ -31,7 +31,7 @@ public final class LocaleUtil {
 
     /**
      * 로케일의 언어 코드를 반환한다. 로케일이나 언어 코드가 없으면 en을 사용한다.
-     * 지원 언어 여부는 검사하지 않으므로 조회 전에 getLocationLang으로 정규화한다.
+     * 지원 언어로 제한해야 하는 경우 getLocationLang으로 정규화한다.
      */
     public static String getLanguage(Locale locale) {
         String lang = locale == null ? "" : locale.getLanguage();

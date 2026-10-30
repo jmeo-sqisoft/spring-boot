@@ -12,7 +12,7 @@ spring:
         jdbc:
           time_zone: UTC
   datasource:
-    # Keep the reference project's datasource namespace; both JPA and MyBatis use it.
+    # MyBatis와 JPA가 공유하는 DataSource의 접속 정보와 풀 옵션을 설정한다.
     local:
       driver-class-name: org.postgresql.Driver
       url: jdbc:postgresql://${DB-READ-HOST}/stastics

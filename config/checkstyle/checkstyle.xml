@@ -75,7 +75,7 @@
             <property name="tokens" value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_IF, LITERAL_WHILE"/>
         </module>
 
-        <!-- 1.4.1, 1.4.2 메소드/배열 뒤 공백 금지 -->
+        <!-- 1.4.1, 1.4.2 메서드·생성자 이름과 여는 괄호 사이 공백·줄바꿈 금지 -->
         <module name="MethodParamPad">
             <property name="allowLineBreaks" value="false"/>
             <property name="option" value="nospace"/>
@@ -162,7 +162,7 @@
              3. 코딩
              =========================================== -->
 
-        <!-- 3.4 상수 제외 필드는 private -->
+        <!-- 3.4 일반 필드는 private. public 상수와 허용된 public final 필드 등은 예외 -->
         <module name="VisibilityModifier">
             <property name="allowPublicFinalFields" value="true"/>
             <property name="protectedAllowed" value="false"/>

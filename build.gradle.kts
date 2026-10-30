@@ -51,7 +51,7 @@ val postgresqlDriverVersion = "42.7.13"
 
 extra["netty.version"] = "4.2.17.Final"
 ext["tomcat.version"] = "11.0.25"
-// Keep the dependency version overrides from the reference project.
+// Jackson 2와 Jackson 3 계열의 BOM 버전을 각각 지정한다.
 extra["jackson-2-bom.version"] = "2.21.7"
 extra["jackson-bom.version"] = "3.1.7"
 
@@ -63,22 +63,19 @@ dependencies {
 	// Actuator
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 
-	// MyBatis (brings spring-boot-starter-jdbc + HikariCP transitively)
+	// MyBatis 의존성을 통해 JDBC starter와 HikariCP를 함께 사용한다.
 	implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:$mybatisVersion")
 
-	// JPA shares the primary localDataSource with MyBatis.
+	// JPA와 MyBatis가 기본 localDataSource를 공유한다.
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
-	// p6spy SQL logging. The old gavlyukovskiy datasource-decorator-spring-boot-starter
-	// (which auto-wraps the DataSource) is not compatible with Spring Boot 4's
-	// autoconfiguration ordering, so the DataSource is wrapped manually in
-	// global/config/DataSourceConfig instead.
+	// DataSourceConfig에서 DataSource를 P6DataSource로 감싸 SQL 로깅을 구성한다.
 	implementation("p6spy:p6spy:$p6spyVersion")
 
 	// springdoc-openapi (Swagger UI)
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
-	// PostgreSQL driver
+	// PostgreSQL JDBC 드라이버
 	runtimeOnly("org.postgresql:postgresql:$postgresqlDriverVersion")
 
 	// Lombok
@@ -90,7 +87,7 @@ dependencies {
 	annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
 	annotationProcessor("org.projectlombok:lombok-mapstruct-binding:$lombokMapstructBindingVersion")
 
-	// Test
+	// 자동 테스트와 테스트 코드의 애너테이션 처리
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testCompileOnly("org.projectlombok:lombok:$lombokVersion")
@@ -120,7 +117,7 @@ tasks.jacocoTestReport {
 	}
 }
 
-// host.url/token은 실행 환경에서 -D 플래그로 주입
+// sonar.host.url과 sonar.token은 실행 환경에서 -D 옵션 등으로 전달한다.
 sonar {
 	properties {
 		property("sonar.projectKey", "spring-boot")

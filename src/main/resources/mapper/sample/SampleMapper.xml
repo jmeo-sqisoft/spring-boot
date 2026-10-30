@@ -6,7 +6,7 @@
 
 	<select id="getArea" resultType="com.stagora.report.sample.model.Area">
 <![CDATA[
--- file name: AreaMapper.xml
+-- file name: SampleMapper.xml
 -- query id: getArea
 select	comm_cd as area_code
 	,	comm_cd_nm as area_name
@@ -21,7 +21,7 @@ order by sort_val
 
 	<select id="getHospitalInfo" resultType="com.stagora.report.sample.model.InstitutionInfo">
 <![CDATA[
--- file name: MyDashboardMapper.xml
+-- file name: SampleMapper.xml
 -- query id: getHospitalInfo
 select	a.hospital_id
 	,	coalesce(min(a.hospital_nm), a.hospital_id::text) as institution_name
@@ -44,10 +44,10 @@ group by a.hospital_id
 ]]>
 	</select>
 
-	<!-- CLAB의 기존 정보와 집계 식별자를 유지하며 제휴병원명·표시 유형을 조회한다. -->
+	<!-- 검사실 ID로 조회하며, 제휴 병원이 있으면 병원명 목록과 AFFILIATED 유형을 반환한다. -->
 	<select id="getClabInfo" resultType="com.stagora.report.sample.model.InstitutionInfo">
 <![CDATA[
--- file name: MyDashboardMapper.xml
+-- file name: SampleMapper.xml
 -- query id: getClabInfo
 select	a.clab_id
 	,	case when count(c.hospital_id) > 0
@@ -104,7 +104,7 @@ group by a.clab_id
 
 	<select id="getNationInfo" resultMap="nationInfoMap">
 <![CDATA[
--- file name: NationInfoMapper.xml
+-- file name: SampleMapper.xml
 -- query id: getNationInfo
 with cte_nation_and_sub_dvsn as materialized (
 	select	a.nat_info_no

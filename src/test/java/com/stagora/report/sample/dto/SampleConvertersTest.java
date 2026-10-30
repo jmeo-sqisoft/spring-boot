@@ -1,12 +1,11 @@
 package com.stagora.report.sample.dto;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.stagora.report.sample.model.NationInfo;
 import com.stagora.report.sample.model.NationInfoGroup;

@@ -1,13 +1,12 @@
 package com.stagora.global.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class LocaleUtilTest {
 

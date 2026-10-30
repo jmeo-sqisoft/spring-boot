@@ -8,10 +8,11 @@ import org.mapstruct.ReportingPolicy;
 
 import com.stagora.report.sample.model.Area;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
+    unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface AreasConverter {
 
-	AreasResponse toResponse(Area area);
+    AreasResponse toResponse(Area area);
 
-	List<AreasResponse> toResponses(List<Area> areas);
+    List<AreasResponse> toResponses(List<Area> areas);
 }

@@ -10,8 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NationInfoResponse {
-	private String areaCode;
-	private String areaName;
+    private String areaCode;
+    private String areaName;
 
-	private List<NationInfo> nationInfoVOs;
+    private List<NationInfo> nationInfoVOs;
 }

@@ -14,12 +14,13 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 @Configuration
 public class LocaleConfig {
 
-	@Bean
-	public MessageSource messageSource() {
-		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-		messageSource.setBasenames("classpath:messages/messages");
-		messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
-		messageSource.setDefaultLocale(Locale.KOREA);
-		return messageSource;
-	}
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource =
+            new ReloadableResourceBundleMessageSource();
+        messageSource.setBasenames("classpath:messages/messages");
+        messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+        messageSource.setDefaultLocale(Locale.KOREA);
+        return messageSource;
+    }
 }

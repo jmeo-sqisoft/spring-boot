@@ -5,9 +5,9 @@ package com.stagora.global.constants;
  */
 public final class Language {
 
-	public static final String ENGLISH = "en";
-	public static final String KOREAN = "ko";
-	public static final String DEFAULT = ENGLISH;
+    public static final String ENGLISH = "en";
+    public static final String KOREAN = "ko";
+    public static final String DEFAULT = ENGLISH;
 
-	private Language() {}
+    private Language() {}
 }

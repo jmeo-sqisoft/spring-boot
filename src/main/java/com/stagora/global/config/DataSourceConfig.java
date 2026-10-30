@@ -20,33 +20,34 @@ import com.zaxxer.hikari.HikariDataSource;
 @Configuration
 public class DataSourceConfig {
 
-	@Bean
-	@ConfigurationProperties("spring.datasource.local")
-	public DataSourceProperties localDataSourceProperties() {
-		return new DataSourceProperties();
-	}
+    @Bean
+    @ConfigurationProperties("spring.datasource.local")
+    public DataSourceProperties localDataSourceProperties() {
+        return new DataSourceProperties();
+    }
 
-	@Bean
-	@Primary
-	public DataSource localDataSource(
-			DataSourceProperties localDataSourceProperties,
-			Environment environment,
-			@Value("${app.sql-logging.enabled:false}") boolean sqlLoggingEnabled) {
-		HikariDataSource hikariDataSource = localDataSourceProperties.initializeDataSourceBuilder()
-			.type(HikariDataSource.class)
-			.build();
+    @Bean
+    @Primary
+    public DataSource localDataSource(
+            DataSourceProperties localDataSourceProperties,
+            Environment environment,
+            @Value("${app.sql-logging.enabled:false}") boolean sqlLoggingEnabled) {
+        HikariDataSource hikariDataSource = localDataSourceProperties.initializeDataSourceBuilder()
+            .type(HikariDataSource.class)
+            .build();
 
-		Binder.get(environment)
-			.bind("spring.datasource.local.hikari", Bindable.ofInstance(hikariDataSource));
+        Binder.get(environment)
+            .bind("spring.datasource.local.hikari", Bindable.ofInstance(hikariDataSource));
 
-		if (!sqlLoggingEnabled) {
-			return hikariDataSource;
-		}
+        if (!sqlLoggingEnabled) {
+            return hikariDataSource;
+        }
 
-		System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.Slf4JLogger");
-		System.setProperty("p6spy.config.logMessageFormat", JpaAwareSqlLogFormatter.class.getName());
-		P6ModuleManager.getInstance().reload();
+        System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.Slf4JLogger");
+        System.setProperty("p6spy.config.logMessageFormat",
+            JpaAwareSqlLogFormatter.class.getName());
+        P6ModuleManager.getInstance().reload();
 
-		return new P6DataSource(hikariDataSource);
-	}
+        return new P6DataSource(hikariDataSource);
+    }
 }

@@ -16,16 +16,16 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class CorsConfig {
 
-	@Bean
-	public CorsFilter corsFilter(AppProperties appProperties) {
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowCredentials(true);
-		config.setAllowedOriginPatterns(appProperties.getCors().getAllowedOriginPatterns());
-		config.setAllowedHeaders(List.of("*"));
-		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-		config.setExposedHeaders(List.of("Authorization"));
-		source.registerCorsConfiguration("/**", config);
-		return new CorsFilter(source);
-	}
+    @Bean
+    public CorsFilter corsFilter(AppProperties appProperties) {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOriginPatterns(appProperties.getCors().getAllowedOriginPatterns());
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setExposedHeaders(List.of("Authorization"));
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
 }

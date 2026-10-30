@@ -1,7 +1,5 @@
 package com.stagora.report.sample.mapper;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.InputStream;
 import java.util.Map;
 
@@ -11,6 +9,7 @@ import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.stagora.report.sample.model.Area;
 import com.stagora.report.sample.model.InstitutionInfo;

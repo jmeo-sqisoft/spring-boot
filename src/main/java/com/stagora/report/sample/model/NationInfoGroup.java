@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class NationInfoGroup {
 
-	private String areaCode;
-	private String areaName;
-	private List<NationInfo> nationInfoVOs;
+    private String areaCode;
+    private String areaName;
+    private List<NationInfo> nationInfoVOs;
 }

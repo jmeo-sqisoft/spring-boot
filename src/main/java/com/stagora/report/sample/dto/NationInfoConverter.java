@@ -8,10 +8,11 @@ import org.mapstruct.ReportingPolicy;
 
 import com.stagora.report.sample.model.NationInfoGroup;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
+    unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface NationInfoConverter {
 
-	NationInfoResponse toResponse(NationInfoGroup group);
+    NationInfoResponse toResponse(NationInfoGroup group);
 
-	List<NationInfoResponse> toResponses(List<NationInfoGroup> groups);
+    List<NationInfoResponse> toResponses(List<NationInfoGroup> groups);
 }

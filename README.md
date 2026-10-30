@@ -42,11 +42,11 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 | `DB-USERNAME` | 필수. DB 계정 |
 | `DB-PASSWORD` | 필수. DB 비밀번호 |
 | `SERVER_PORT` | `8080` |
-| `BE_DB_MAX_POOL_SIZE` / `BE_DB_MIN_IDLE` | `10` / `2` |
-| `BE_DB_CONN_TIMEOUT` | `30000` ms |
-| `BE_DB_IDLE_TIMEOUT` / `BE_DB_MAX_LIFETIME` | `600000` / `1800000` ms |
-| `BE_DB_VALID_TIMEOUT` | `5000` ms |
-| `BE_HEALTH_DETAILS` | `when_authorized`. Actuator health 상세 정보 공개 기준 |
+| `DB_READ_MAX_POOL_SIZE` / `DB_READ_MIN_IDLE` | `10` / `2` |
+| `DB_READ_CONN_TIMEOUT` | `30000` ms |
+| `DB_READ_IDLE_TIMEOUT` / `DB_READ_MAX_LIFETIME` | `600000` / `1800000` ms |
+| `DB_READ_VALID_TIMEOUT` | `5000` ms |
+| `HEALTH_DETAILS` | `when_authorized`. Actuator health 상세 정보 공개 기준 |
 
 ## 프로파일
 
@@ -68,18 +68,18 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 
 ## REST API 목록
 
-| Method | Path | 설명 | 인증여부 |
+| Method | Path | 설명 | 쿼리 파라미터 |
 | --- | --- | --- | --- |
-| GET | `/apis/local/v1/areas` | 지역 정보 전체 목록 조회 | 불필요 |
-| GET | `/apis/gmcs/v1/nations` | 지역별 국가 목록과 국가 하위 지역 조회 | 불필요 |
+| GET | `/apis/report/v1/sample/areas` | 지역 정보 전체 목록 조회 | 없음 |
+| GET | `/apis/report/v1/sample/institutioninfo` | 기관 정보 조회 | `clabId`, `hospitalId` 중 하나 이상 필요 |
+| GET | `/apis/report/v1/sample/nations` | 지역별 국가 목록과 국가 하위 지역 조회 | 없음 |
 
 성공 응답은 `StaResponse<T>` 형태의 `code`, `message`, `data`를 사용하며 성공 코드는 `S0000`입니다.
 
 ## 패키지 구조
 
-현재 프로젝트의 주요 파일 구조입니다. `common`에는 공통 응답·예외·유틸리티,
-`common.config`에는 공통 설정, `local`에는 REST API 구현을 모았습니다.
-빈 패키지, IDE 설정과 빌드 캐시·산출물 디렉터리는 생략했습니다.
+현재 프로젝트의 주요 파일 구조입니다. `global`에는 공통 응답·설정·예외·유틸리티,
+`report.sample`에는 샘플 REST API 구현을 모았습니다.
 
 ```text
 spring-boot/
@@ -90,32 +90,40 @@ spring-boot/
 ├── gradle/
 │   └── wrapper/                          # Gradle 실행 버전과 Wrapper
 ├── src/
-│   └── main/
-│       ├── java/
-│       │   └── com/stagora/
-│       │       ├── Application.java      # Spring Boot 진입점
-│       │       ├── global/               # 공통 API 기반 코드
-│       │       │   ├── api/              # 공통 API 응답과 컨트롤러 지원
-│       │       │   ├── config/           # com.stagora.global.config
-│       │       │   ├── constants/        # 예시 값·언어 코드(Language)·메시지 키
-│       │       │   ├── enums/            # 기관 유형·데이터 유형
-│       │       │   ├── exception/        # 공통 API 예외
-│       │       │   └── util/             # 언어·문자열 처리
-│       │       └── report/               # REST API 구현
-│       │           ├── controller/
-│       │           ├── dto/
-│       │           │   ├── converter/               # MapStruct VO → 응답 DTO 변환
-│       │           │   ├── response/                # Controller에서 반환하는 응답 DTO
-│       │           │   └── vo/                      # MyBatis DB 조회 결과
-│       │           ├── mapper/                       # MyBatis DB 조회 인터페이스
-│       │           └── service/
-│       └── resources/
-│           ├── mapper/
-│           ├── messages/                 # 기본·한국어·영어 메시지
-│           ├── application.yml           # 공통 설정
-│           ├── application-dev.yml       # 개발 환경
-│           ├── application-uat.yml       # 사용자 인수 테스트 환경
-│           └── application-prd.yml       # 운영 환경
+│   ├── main/
+│   │   ├── java/com/stagora/
+│   │   │   ├── Application.java          # Spring Boot 진입점
+│   │   │   ├── global/                   # 공통 API 기반 코드
+│   │   │   │   ├── api/                  # 공통 API 응답과 컨트롤러 지원
+│   │   │   │   ├── config/               # DataSource·다국어·CORS·OpenAPI 설정
+│   │   │   │   ├── constants/            # 예시 값·언어 코드·메시지 키
+│   │   │   │   ├── enums/                # 기관 유형·데이터 유형
+│   │   │   │   ├── exception/            # 공통 API 예외
+│   │   │   │   └── util/                 # 언어·문자열 처리
+│   │   │   └── report/sample/
+│   │   │       ├── controller/           # SampleController
+│   │   │       ├── dto/                  # 응답 DTO와 MapStruct Converter
+│   │   │       ├── mapper/               # SampleMapper 인터페이스
+│   │   │       ├── model/                # MyBatis 조회 결과 모델
+│   │   │       └── service/              # SampleService
+│   │   └── resources/
+│   │       ├── mapper/sample/
+│   │       │   └── SampleMapper.xml      # 지역·기관·국가 조회 SQL
+│   │       ├── messages/                 # 기본·한국어·영어 메시지
+│   │       ├── application.yml           # 공통 설정
+│   │       ├── application-dev.yml       # 개발 환경
+│   │       ├── application-uat.yml       # 사용자 인수 테스트 환경
+│   │       └── application-prd.yml       # 운영 환경
+│   └── test/java/com/stagora/
+│       ├── ApplicationConfigurationTest.java
+│       ├── global/
+│       │   ├── config/JpaAwareSqlLogFormatterTest.java
+│       │   └── util/LocaleUtilTest.java
+│       └── report/sample/
+│           ├── controller/SampleControllerTest.java
+│           ├── dto/SampleConvertersTest.java
+│           ├── mapper/SampleMapperTest.java
+│           └── service/SampleServiceTest.java
 ├── .gitignore                            # Git 추적 제외 설정
 ├── build.gradle.kts                      # 의존성과 빌드·검증 설정
 ├── gradle.properties                     # Gradle JVM·캐시 설정
@@ -141,17 +149,17 @@ Mapper XML의 SQL은 [XML · SQL 포맷 가이드](doc/guide_xml_format.md)를 �
 
 결과는 `build/reports/jacoco/test/html/index.html`에서 확인합니다.
 
+테스트만 실행하려면 다음 명령을 사용합니다. 외부 DB 연결 없이 실행할 수 있습니다.
+
+```powershell
+.\gradlew.bat test
+```
+
 Checkstyle로 Java 소스(`src/main/java`)를 검사합니다.
 
 ```powershell
-# 소스 검사
 .\gradlew.bat checkstyleMain
 ```
-
-검사 결과는 콘솔과 `build/reports/checkstyle/main.html`에서 확인합니다.
-
-`ApplicationConfigurationTest`는 dev·uat·prd 프로파일의 DataSource 구성, SQL 로깅,
-Swagger 활성화 여부와 메시지·상태 확인 API를 외부 DB 연결 없이 검증합니다.
 
 - 실행 JAR: `build/libs/spring-boot-0.0.1-SNAPSHOT.jar`
 - 실행 WAR: `build/libs/spring-boot-0.0.1-SNAPSHOT.war`

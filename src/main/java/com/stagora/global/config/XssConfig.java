@@ -13,11 +13,10 @@ import jakarta.servlet.DispatcherType;
 
 /**
  * 문자 인코딩 필터 이후에 모든 경로의 쿼리·폼 파라미터에 Lucy XSS 처리를 적용한다.
- * app.xss.enabled가 false이면 필터를 등록하지 않는다. 기본값은 활성화이다.
+ * app.xss.enabled가 true일 때만 필터를 등록한다. 기본값은 비활성화이다.
  */
 @Configuration
-@ConditionalOnProperty(prefix = "app.xss", name = "enabled", havingValue = "true",
-    matchIfMissing = true)
+@ConditionalOnProperty(prefix = "app.xss", name = "enabled", havingValue = "true")
 public class XssConfig {
     @Bean
     public FilterRegistrationBean<LucyXssFilter> lucyXssFilter() {

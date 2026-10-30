@@ -40,7 +40,7 @@ mybatis:
 
 app:
   xss:
-    enabled: ${XSS_ENABLED:true}
+    enabled: ${XSS_ENABLED:false}
   sql-logging:
     enabled: true
 

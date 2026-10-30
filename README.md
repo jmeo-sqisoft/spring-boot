@@ -48,7 +48,7 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 | `DB_READ_IDLE_TIMEOUT` / `DB_READ_MAX_LIFETIME` | `600000` / `1800000` ms |
 | `DB_READ_VALID_TIMEOUT` | `5000` ms |
 | `HEALTH_DETAILS` | `when_authorized`. Actuator health 상세 정보 공개 기준 |
-| `XSS_ENABLED` | `true`. Lucy 요청 파라미터 필터 활성화 여부 |
+| `XSS_ENABLED` | `false`. Lucy 요청 파라미터 필터 활성화 여부 |
 
 ## 프로파일
 
@@ -80,8 +80,8 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 
 ## 요청 파라미터 XSS 처리
 
-모든 경로의 쿼리·폼 파라미터에 Lucy의 HTML 특수 문자 이스케이프를 적용합니다.
-기본값은 활성화이며, `app.xss.enabled=false` 또는 환경 변수 `XSS_ENABLED=false`로 끌 수 있습니다.
+활성화하면 모든 경로의 쿼리·폼 파라미터에 Lucy의 HTML 특수 문자 이스케이프를 적용합니다.
+기본값은 비활성화이며, `app.xss.enabled=true` 또는 환경 변수 `XSS_ENABLED=true`로 켤 수 있습니다.
 설정을 변경하면 애플리케이션을 재시작합니다.
 규칙은 `src/main/resources/lucy-xss-servlet-filter-rule.xml`에서 관리합니다.
 

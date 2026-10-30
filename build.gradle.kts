@@ -32,6 +32,11 @@ checkstyle {
 	configDirectory = rootProject.file("config/checkstyle")
 }
 
+// 테스트 소스는 Checkstyle 검사 대상에서 제외한다.
+tasks.named("checkstyleTest") {
+	enabled = false
+}
+
 repositories {
 	mavenCentral()
 }

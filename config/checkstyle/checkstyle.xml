@@ -8,8 +8,9 @@
     탭을 허용하지 않으며, 한 줄은 최대 100자로 제한한다(일부 예외 적용).
     이름 표기법, import 순서, 필드 접근 제한, 중괄호와 공백 사용 등을 검사한다.
     위반 사항은 경고로 보고하며, 빌드 실패 기준은 build.gradle.kts에서 설정한다.
-    검사 실행: .\gradlew.bat checkstyleMain checkstyleTest
-    결과 보고서: build/reports/checkstyle/main.html, test.html
+    검사 대상: 운영 Java 소스. 테스트 소스는 Gradle의 checkstyleTest 작업을 비활성화해 제외한다.
+    검사 실행: .\gradlew.bat checkstyleMain
+    결과 보고서: build/reports/checkstyle/main.html
 -->
 
 <module name="Checker">

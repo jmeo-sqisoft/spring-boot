@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.stagora.local.mapper.InstitutionMapper">
+<mapper namespace="com.stagora.report.mapper.InstitutionMapper">
 
-	<select id="getHospitalInfo" resultType="com.stagora.local.dto.vo.InstitutionInfoVO">
+	<select id="getHospitalInfo" resultType="com.stagora.report.dto.vo.InstitutionInfoVO">
 <![CDATA[
 -- file name: MyDashboardMapper.xml
 -- query id: getHospitalInfo
@@ -30,7 +30,7 @@ group by a.hospital_id
 	</select>
 
 	<!-- CLAB의 기존 정보와 집계 식별자를 유지하며 제휴병원명·표시 유형을 조회한다. -->
-	<select id="getClabInfo" resultType="com.stagora.local.dto.vo.InstitutionInfoVO">
+	<select id="getClabInfo" resultType="com.stagora.report.dto.vo.InstitutionInfoVO">
 <![CDATA[
 -- file name: MyDashboardMapper.xml
 -- query id: getClabInfo

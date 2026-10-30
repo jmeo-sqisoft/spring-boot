@@ -2,19 +2,19 @@
 <!DOCTYPE mapper
 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.stagora.local.mapper.NationInfoMapper">
+<mapper namespace="com.stagora.report.mapper.NationInfoMapper">
 
-	<resultMap id="nationInfoMap" type="com.stagora.local.dto.vo.NationInfoGroupVO">
+	<resultMap id="nationInfoMap" type="com.stagora.report.dto.vo.NationInfoGroupVO">
 		<id property="areaCode" column="area_code"/>
 		<result property="areaName" column="area_name"/>
-		<collection property="nationInfoVOs" ofType="com.stagora.local.dto.vo.NationInfoVO">
+		<collection property="nationInfoVOs" ofType="com.stagora.report.dto.vo.NationInfoVO">
 			<id property="nationInfoNo" column="nation_info_no"/>
 			<result property="nationCode" column="nation_code"/>
 			<result property="nationName" column="nation_name"/>
 			<result property="latitude" column="latitude"/>
 			<result property="longitude" column="longitude"/>
 			<result property="isParticipating" column="is_participating" javaType="boolean"/>
-			<collection property="nationRegions" ofType="com.stagora.local.dto.vo.NationRegionVO">
+			<collection property="nationRegions" ofType="com.stagora.report.dto.vo.NationRegionVO">
 				<constructor>
 					<arg column="nation_region_no" javaType="java.lang.Integer"/>
 					<arg column="nation_region_code" javaType="java.lang.String"/>

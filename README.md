@@ -11,7 +11,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 - Lombok 1.18.46
 - MapStruct 1.6.3 (`lombok-mapstruct-binding` 0.2.0으로 Lombok 연동)
 - PostgreSQL JDBC Driver (`postgresql` 42.7.13)
-- p6spy (SQL 로깅, 3.9.1 — `common/config/DataSourceConfig`에서 DataSource를 수동으로 래핑)
+- p6spy (SQL 로깅, 3.9.1 — `global/config/DataSourceConfig`에서 DataSource를 수동으로 래핑)
 - springdoc-openapi (Swagger UI, 3.0.3)
 - Actuator (`spring-boot-starter-actuator`)
 - HikariCP (JDBC 의존성을 통해 기본 포함)
@@ -94,14 +94,14 @@ spring-boot/
 │       ├── java/
 │       │   └── com/stagora/
 │       │       ├── Application.java      # Spring Boot 진입점
-│       │       ├── common/               # 공통 API 기반 코드
+│       │       ├── global/               # 공통 API 기반 코드
 │       │       │   ├── api/              # 공통 API 응답과 컨트롤러 지원
-│       │       │   ├── config/           # com.stagora.common.config
+│       │       │   ├── config/           # com.stagora.global.config
 │       │       │   ├── constants/        # 예시 값·언어 코드(Language)·메시지 키
 │       │       │   ├── enums/            # 기관 유형·데이터 유형
 │       │       │   ├── exception/        # 공통 API 예외
 │       │       │   └── util/             # 언어·문자열 처리
-│       │       └── local/                # REST API 구현
+│       │       └── report/               # REST API 구현
 │       │           ├── controller/
 │       │           ├── dto/
 │       │           │   ├── converter/               # MapStruct VO → 응답 DTO 변환

@@ -69,7 +69,6 @@ List<NationInfo> sorted = nations.stream()
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
     unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface AreasConverter {
-
     AreasResponse toResponse(Area area);
 }
 ```
@@ -87,6 +86,10 @@ URL이 있는 주석도 해당 줄 전체가 길이 검사에서 제외됩니다
 ## 중괄호와 공백
 
 ### 중괄호 배치
+
+클래스·인터페이스·enum·record 선언의 여는 중괄호 바로 다음에는 빈 줄을 넣지 않습니다.
+첫 필드·메서드·주석을 다음 줄부터 작성하며, 중첩 타입과 테스트 코드에도 동일하게 적용합니다.
+이 규칙은 프로젝트 작성 기준이며 현재 Checkstyle에서 별도로 강제하지는 않습니다.
 
 클래스, 메서드, 생성자, 제어문, 람다, record 등의 여는 중괄호는 같은 줄에 둡니다.
 `if`, `else`, `for`, `while`, `do`의 본문은 한 문장이더라도 중괄호로 감쌉니다.
@@ -249,7 +252,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SampleService {
-
     private final SampleMapper sampleMapper;
     private final AreasConverter areasConverter;
 

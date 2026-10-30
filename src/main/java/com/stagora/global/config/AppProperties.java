@@ -12,13 +12,11 @@ import lombok.Setter;
 @Setter
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
-
     private Cors cors = new Cors();
 
     @Getter
     @Setter
     public static class Cors {
-
         private List<String> allowedOriginPatterns = List.of(
             "http://localhost",
             "http://localhost:*",

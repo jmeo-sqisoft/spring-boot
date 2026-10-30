@@ -33,7 +33,6 @@ import com.stagora.report.sample.dto.NationInfoResponse;
 import com.stagora.report.sample.service.SampleService;
 
 class SampleControllerTest {
-
     private final SampleService service = mock(SampleService.class);
     private final StaticMessageSource messages = new StaticMessageSource();
     private final SampleController controller = new SampleController(messages, service);

@@ -28,7 +28,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 
 class ApplicationConfigurationTest {
-
     @ParameterizedTest
     @ValueSource(strings = {"dev", "uat", "prd"})
     void profilesStartWithoutExternalServices(String profile) throws Exception {

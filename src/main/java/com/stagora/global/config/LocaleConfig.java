@@ -13,7 +13,6 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
  */
 @Configuration
 public class LocaleConfig {
-
     @Bean
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource =

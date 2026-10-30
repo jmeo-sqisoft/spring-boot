@@ -26,7 +26,6 @@ import com.stagora.report.sample.model.NationInfoGroup;
 import com.stagora.report.sample.model.NationRegion;
 
 class SampleMapperTest {
-
     private Configuration configuration;
 
     @BeforeEach

@@ -15,7 +15,6 @@ import org.springframework.web.filter.CorsFilter;
  */
 @Configuration
 public class CorsConfig {
-
     @Bean
     public CorsFilter corsFilter(AppProperties appProperties) {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

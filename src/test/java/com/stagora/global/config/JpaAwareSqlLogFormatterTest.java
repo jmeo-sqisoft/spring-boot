@@ -5,7 +5,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JpaAwareSqlLogFormatterTest {
-
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void logsOnlyBoundSqlForMyBatisAndJpa(boolean jpa) {

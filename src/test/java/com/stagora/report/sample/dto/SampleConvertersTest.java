@@ -12,7 +12,6 @@ import com.stagora.report.sample.model.NationInfoGroup;
 import com.stagora.report.sample.model.NationRegion;
 
 class SampleConvertersTest {
-
     @Test
     void preservesAllNestedNationFieldsAfterModelRename() {
         NationInfo nation = new NationInfo();

@@ -29,7 +29,6 @@ import com.stagora.report.sample.model.NationInfo;
 import com.stagora.report.sample.model.NationInfoGroup;
 
 class SampleServiceTest {
-
     private final SampleMapper mapper = mock(SampleMapper.class);
     private final SampleService service = new SampleService(mapper,
         Mappers.getMapper(AreasConverter.class),

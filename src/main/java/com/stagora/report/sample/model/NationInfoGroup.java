@@ -8,7 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NationInfoGroup {
-
     private String areaCode;
     private String areaName;
     private List<NationInfo> nationInfoVOs;

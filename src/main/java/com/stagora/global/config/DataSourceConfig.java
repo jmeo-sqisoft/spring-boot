@@ -19,7 +19,6 @@ import com.zaxxer.hikari.HikariDataSource;
 /** Shares the primary HikariCP DataSource between MyBatis and JPA. */
 @Configuration
 public class DataSourceConfig {
-
     @Bean
     @ConfigurationProperties("spring.datasource.local")
     public DataSourceProperties localDataSourceProperties() {

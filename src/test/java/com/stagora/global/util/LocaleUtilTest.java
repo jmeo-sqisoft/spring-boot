@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LocaleUtilTest {
-
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" ", "fr", "ja"})

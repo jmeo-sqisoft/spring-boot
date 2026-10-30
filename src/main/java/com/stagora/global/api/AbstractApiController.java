@@ -15,7 +15,6 @@ import com.stagora.global.util.StringUtil;
  * API 컨트롤러에서 사용하는 공통 성공 응답과 언어 코드 처리.
  */
 public abstract class AbstractApiController {
-
     /**
      * 하위 컨트롤러에 주입된 MessageSource를 제공한다.
      */

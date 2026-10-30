@@ -9,7 +9,6 @@ import com.p6spy.engine.spy.appender.MultiLineFormat;
 
 /** 바인딩된 SQL만 출력하며 JPA 실행에서는 SQL에 줄바꿈을 적용한다. */
 public class JpaAwareSqlLogFormatter implements MessageFormattingStrategy {
-
     private static final StackWalker STACK_WALKER = StackWalker.getInstance();
     private final MultiLineFormat delegate = new MultiLineFormat();
     private final BooleanSupplier jpaExecution;

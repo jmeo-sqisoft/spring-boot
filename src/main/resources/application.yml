@@ -20,12 +20,12 @@ spring:
       password: ${DB-PASSWORD}
       hikari:
         pool-name: gmcs-be-hikari-pool
-        maximum-pool-size: ${BE_DB_READ_MAX_POOL_SIZE:${BE_DB_MAX_POOL_SIZE:10}}
-        minimum-idle: ${BE_DB_READ_MIN_IDLE:${BE_DB_MIN_IDLE:2}}
-        connection-timeout: ${BE_DB_READ_CONN_TIMEOUT:${BE_DB_CONN_TIMEOUT:30000}}
-        idle-timeout: ${BE_DB_READ_IDLE_TIMEOUT:${BE_DB_IDLE_TIMEOUT:600000}}
-        max-lifetime: ${BE_DB_READ_MAX_LIFETIME:${BE_DB_MAX_LIFETIME:1800000}}
-        validation-timeout: ${BE_DB_READ_VALID_TIMEOUT:${BE_DB_VALID_TIMEOUT:5000}}
+        maximum-pool-size: ${DB_READ_MAX_POOL_SIZE:${DB_MAX_POOL_SIZE:10}}
+        minimum-idle: ${DB_READ_MIN_IDLE:${DB_MIN_IDLE:2}}
+        connection-timeout: ${DB_READ_CONN_TIMEOUT:${DB_CONN_TIMEOUT:30000}}
+        idle-timeout: ${DB_READ_IDLE_TIMEOUT:${DB_IDLE_TIMEOUT:600000}}
+        max-lifetime: ${DB_READ_MAX_LIFETIME:${DB_MAX_LIFETIME:1800000}}
+        validation-timeout: ${DB_READ_VALID_TIMEOUT:${DB_VALID_TIMEOUT:5000}}
         connection-init-sql: "SET timezone = 'UTC'; SET default_transaction_read_only = on"
         data-source-properties:
           '[ApplicationName]': gmcs
@@ -44,9 +44,11 @@ app:
 
 logging:
   level:
+    # com.zaxxer.hikari: debug
     com.stagora: debug
     org.hibernate.SQL: "OFF"
     org.hibernate.orm.jdbc.bind: "OFF"
+    org.hibernate.orm.connections.pooling: warn
     p6spy: info
 
 management:
@@ -57,7 +59,7 @@ management:
         include: health,info
   endpoint:
     health:
-      show-details: ${BE_HEALTH_DETAILS:when_authorized}
+      show-details: ${HEALTH_DETAILS:when_authorized}
       probes:
         enabled: true
       group:

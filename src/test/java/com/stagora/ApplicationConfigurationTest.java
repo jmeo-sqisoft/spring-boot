@@ -112,6 +112,21 @@ class ApplicationConfigurationTest {
                     assertThat(docs.body()).contains("Local API", "openapi");
                     assertThat(docs.body()).contains("/apis/report/v1/sample/areas",
                         "/apis/report/v1/sample/institutioninfo", "/apis/report/v1/sample/nations");
+                    HttpResponse<String> ui = client.send(
+                        HttpRequest.newBuilder(URI.create(baseUrl + "/swagger-ui/index.html"))
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+                    assertThat(ui.statusCode()).isEqualTo(200);
+                    assertThat(ui.body()).contains("swagger-ui", "swagger-ui-bundle.js");
+                    HttpResponse<String> config = client.send(
+                        HttpRequest.newBuilder(URI.create(baseUrl + "/local-api-docs/swagger-config"))
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+                    assertThat(config.statusCode()).isEqualTo(200);
+                    assertThat(config.body()).contains("/local-api-docs");
+                    HttpResponse<String> script = client.send(
+                        HttpRequest.newBuilder(URI.create(baseUrl + "/swagger-ui/swagger-ui-bundle.js"))
+                            .method("HEAD", HttpRequest.BodyPublishers.noBody()).build(),
+                        HttpResponse.BodyHandlers.ofString());
+                    assertThat(script.statusCode()).isEqualTo(200);
                 }
                 HttpResponse<String> health = client.send(
                     HttpRequest.newBuilder(URI.create(baseUrl + "/actuator/health/liveness"))

@@ -84,7 +84,7 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 ```text
 spring-boot/
 ├── config/
-│   └── checkstyle/                       # 코드 스타일 검사 규칙
+│   └── checkstyle/                       # Java·Mapper XML 스타일 검사 규칙
 ├── doc/
 ├── gradle/
 │   └── wrapper/                          # Gradle 실행 버전과 Wrapper
@@ -95,18 +95,18 @@ spring-boot/
 │       │   ├── global/                   # 공통 API 기반 코드
 │       │   │   ├── api/                  # 공통 API 응답과 컨트롤러 지원
 │       │   │   ├── config/               # DataSource·다국어·CORS·OpenAPI 설정
-│       │   │   ├── constants/            # 예시 값·언어 코드·메시지 키
+│       │   │   ├── constants/            # 공통 언어 코드·메시지 키
 │       │   │   ├── enums/                # 기관 유형·데이터 유형
 │       │   │   ├── exception/            # 공통 API 예외
 │       │   │   └── util/                 # 언어·문자열 처리
 │       │   └── report/sample/
 │       │       ├── controller/           # SampleController
-│       │       ├── dto/                  # 응답 DTO와 MapStruct Converter
+│       │       ├── dto/                  # 요청·응답 객체와 MapStruct 변환기
 │       │       ├── mapper/               # SampleMapper 인터페이스
 │       │       ├── model/                # MyBatis 조회 결과 모델
 │       │       └── service/              # SampleService
 │       └── resources/
-│           ├── mapper/sample/
+│           ├── mapper/sample/            # SampleMapper의 SQL·결과 매핑
 │           ├── messages/                 # 기본·한국어·영어 메시지
 │           ├── application.yml           # 공통 설정
 │           ├── application-dev.yml       # 개발 환경
@@ -149,7 +149,7 @@ Mapper XML의 SQL은 [XML · SQL 포맷 가이드](doc/guide_xml_format.md)를 �
 
 ### 코드 스타일 검사
 
-Checkstyle로 Java 소스(`src/main/java`)를 검사합니다.
+Checkstyle로 운영 Java 소스(`src/main/java`)와 Mapper XML(`src/main/resources/mapper`)을 검사합니다.
 
 ```powershell
 .\gradlew.bat checkstyleMain

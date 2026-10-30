@@ -11,53 +11,67 @@ import lombok.Getter;
 
 /**
  * API 응답 코드와 HTTP 상태, 기본 다국어 메시지 키를 관리한다.
+ * 오류 코드는 E + HTTP 상태 3자리 + 해당 상태의 순번 2자리로 구성한다.
+ * 순번은 HTTP 상태별로 01부터 시작하며, 성공 코드는 S0000을 사용한다.
  */
 @Getter
 public enum ApiResponseCode {
-    // 정상 처리
+    // 2xx: 정상 처리
     S0000(HttpStatus.OK, "S0000", "success.default"),
 
+    // 400: 잘못된 요청과 입력 검증 실패
     // 잘못된 요청
-    E00400(HttpStatus.BAD_REQUEST, "E00400", Messages.KEY_VALIDATION_FAILED),
-    // 인증 실패
-    E00401(HttpStatus.UNAUTHORIZED, "E00401", "error.auth.unauthorized"),
-    // 접근 권한 없음
-    E00403(HttpStatus.FORBIDDEN, "E00403", "error.auth.forbidden"),
-    // 요청한 리소스 없음
-    E00404(HttpStatus.NOT_FOUND, "E00404", "error.notFound"),
-    // 요청 횟수 제한 초과
-    E00429(HttpStatus.TOO_MANY_REQUESTS, "E00429", "error.rate_limit.exceeded"),
-    // 내부 시스템 오류
-    E00500(HttpStatus.INTERNAL_SERVER_ERROR, "E00500", "error.internal"),
+    E40001(HttpStatus.BAD_REQUEST, "E40001", Messages.KEY_VALIDATION_FAILED),
 
-    // 이미 존재하는 데이터
-    E00409(HttpStatus.CONFLICT, "E00409", "error.conflict.already_exists"),
+    // 401: 인증 정보가 없거나 유효하지 않음
+    // 인증 실패
+    E40101(HttpStatus.UNAUTHORIZED, "E40101", "error.auth.unauthorized"),
     // 로그인 실패
-    E00410(HttpStatus.UNAUTHORIZED, "E00410", "error.auth.login_failed"),
-    // 허용되지 않은 IP
-    E00411(HttpStatus.FORBIDDEN, "E00411", "error.auth.ip_not_allowed"),
+    E40102(HttpStatus.UNAUTHORIZED, "E40102", "error.auth.login_failed"),
     // Secure Code 서명 불일치 또는 만료
-    E00412(HttpStatus.UNAUTHORIZED, "E00412", "error.auth.secure_code_invalid"),
-    // IP 등록 한도 초과
-    E00413(HttpStatus.UNAUTHORIZED, "E00413", "error.auth.ip_limit_exceeded"),
-    // 지원하지 않는 접속 환경
-    E00414(HttpStatus.UNAUTHORIZED, "E00414", "error.auth.unsupported_environment"),
-    // 병원을 찾을 수 없음
-    E00417(HttpStatus.BAD_REQUEST, "E00417", "error.business.hospital.not_found"),
-    // 인증 번호 요청 내역 없음
-    E00420(HttpStatus.BAD_REQUEST, "E00420", "error.auth.verification_request_not_found"),
+    E40103(HttpStatus.UNAUTHORIZED, "E40103", "error.auth.secure_code_invalid"),
     // 인증 번호 만료
-    E00421(HttpStatus.BAD_REQUEST, "E00421", "error.auth.verification_expired"),
+    E40104(HttpStatus.UNAUTHORIZED, "E40104", "error.auth.verification_expired"),
     // 인증 번호 불일치
-    E00422(HttpStatus.BAD_REQUEST, "E00422", "error.auth.verification_mismatch"),
+    E40105(HttpStatus.UNAUTHORIZED, "E40105", "error.auth.verification_mismatch"),
+
+    // 403: 접근 권한 또는 접속 정책에 따른 거부
+    // 접근 권한 없음
+    E40301(HttpStatus.FORBIDDEN, "E40301", "error.auth.forbidden"),
+    // 허용되지 않은 IP
+    E40302(HttpStatus.FORBIDDEN, "E40302", "error.auth.ip_not_allowed"),
+    // IP 등록 한도 초과
+    E40303(HttpStatus.FORBIDDEN, "E40303", "error.auth.ip_limit_exceeded"),
+    // 지원하지 않는 접속 환경
+    E40304(HttpStatus.FORBIDDEN, "E40304", "error.auth.unsupported_environment"),
+
+    // 404: 요청한 조회 대상이 없음
+    // 요청한 리소스 없음
+    E40401(HttpStatus.NOT_FOUND, "E40401", "error.notFound"),
+    // 병원을 찾을 수 없음
+    E40402(HttpStatus.NOT_FOUND, "E40402", "error.business.hospital.not_found"),
+    // 인증 번호 요청 내역 없음
+    E40403(HttpStatus.NOT_FOUND, "E40403", "error.auth.verification_request_not_found"),
     // 등록된 이메일 없음
-    E00423(HttpStatus.BAD_REQUEST, "E00423", "error.auth.email_not_registered"),
+    E40404(HttpStatus.NOT_FOUND, "E40404", "error.auth.email_not_registered"),
+
+    // 409: 현재 데이터 상태와 충돌
+    // 이미 존재하는 데이터
+    E40901(HttpStatus.CONFLICT, "E40901", "error.conflict.already_exists"),
+
+    // 429: 요청 횟수 제한
+    // 요청 횟수 제한 초과
+    E42901(HttpStatus.TOO_MANY_REQUESTS, "E42901", "error.rate_limit.exceeded"),
+
+    // 500: 서버 내부 처리 실패
+    // 내부 시스템 오류
+    E50001(HttpStatus.INTERNAL_SERVER_ERROR, "E50001", "error.internal"),
     // 이메일 템플릿 없음
-    E00501(HttpStatus.INTERNAL_SERVER_ERROR, "E00501", "error.internal.email_template_not_found"),
+    E50002(HttpStatus.INTERNAL_SERVER_ERROR, "E50002", "error.internal.email_template_not_found"),
     // 이메일 발송 실패
-    E00502(HttpStatus.INTERNAL_SERVER_ERROR, "E00502", "error.internal.email_send_failed"),
+    E50003(HttpStatus.INTERNAL_SERVER_ERROR, "E50003", "error.internal.email_send_failed"),
     // 토큰 생성 실패
-    E00503(HttpStatus.INTERNAL_SERVER_ERROR, "E00503", "error.internal.token_creation_failed");
+    E50004(HttpStatus.INTERNAL_SERVER_ERROR, "E50004", "error.internal.token_creation_failed");
 
     // 응답에 사용할 HTTP 상태
     private final HttpStatus httpStatus;

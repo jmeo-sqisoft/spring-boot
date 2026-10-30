@@ -49,7 +49,7 @@ public class SampleController extends AbstractApiController {
 
     /**
      * 기관 식별자를 검증하고 요청 객체로 묶어 서비스에 전달한다.
-     * 두 식별자가 모두 없거나 공백뿐이면 E00400 예외를 발생시킨다.
+     * 두 식별자가 모두 없거나 공백뿐이면 E40001 예외를 발생시킨다.
      */
     @Operation(summary = "기관 정보 조회",
         description = "clabId 또는 hospitalId 중 하나 이상 필요하며, hospitalId가 있으면 병원을 조회합니다.")
@@ -60,7 +60,7 @@ public class SampleController extends AbstractApiController {
         @Schema(description = "병원 ID", example = "019bf94a-1e58-773c-9d46-ae8318e6bcba")
         @RequestParam(required = false) String hospitalId) {
         if (StringUtils.trimToNull(clabId) == null && StringUtils.trimToNull(hospitalId) == null) {
-            throw new ApiException(ApiResponseCode.E00400);
+            throw new ApiException(ApiResponseCode.E40001);
         }
         InstitutionInfoRequest request = new InstitutionInfoRequest();
         request.setClabId(clabId);

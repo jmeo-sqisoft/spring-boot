@@ -64,7 +64,7 @@ class SampleControllerTest {
         assertThatThrownBy(() -> controller.institutionInfo(clabId, hospitalId))
             .isInstanceOfSatisfying(ApiException.class, exception -> {
                 assertThat(exception.getStatusCode()).isEqualTo(400);
-                assertThat(exception.getErrorCode()).isEqualTo(ApiResponseCode.E00400.getCode());
+                assertThat(exception.getErrorCode()).isEqualTo(ApiResponseCode.E40001.getCode());
             });
         verifyNoInteractions(service);
     }

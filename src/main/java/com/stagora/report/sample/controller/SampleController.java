@@ -26,6 +26,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 샘플 API를 제공한다.
+ */
 @Tag(name = "Sample", description = "Sample API")
 @RestController
 @RequestMapping("/apis/report/v1")
@@ -34,14 +37,21 @@ public class SampleController extends AbstractApiController {
     private final MessageSource messageSource;
     private final SampleService sampleService;
 
-    @Operation(summary = "지역 정보 전체 목록", description = "지역 정보 전체를 전달한다.")
+    /**
+     * 지역 목록을 조회해 공통 성공 응답으로 반환한다.
+     */
+    @Operation(summary = "지역 목록 조회", description = "사용 중인 지역 코드와 이름을 조회합니다.")
     @GetMapping("/sample/areas")
     public ResponseEntity<StaResponse<List<AreasResponse>>> getAreas() {
         List<AreasResponse> response = sampleService.getArea();
         return super.success(response);
     }
 
-    @Operation(summary = "기관정보 조회",
+    /**
+     * 기관 식별자를 검증하고 요청 객체로 묶어 서비스에 전달한다.
+     * 두 식별자가 모두 없거나 공백뿐이면 E00400 예외를 발생시킨다.
+     */
+    @Operation(summary = "기관 정보 조회",
         description = "clabId 또는 hospitalId 중 하나 이상 필요하며, hospitalId가 있으면 병원을 조회합니다.")
     @GetMapping("/sample/institutioninfo")
     public ResponseEntity<StaResponse<InstitutionInfoResponse>> institutionInfo(
@@ -59,7 +69,11 @@ public class SampleController extends AbstractApiController {
         return success(response);
     }
 
-    @Operation(summary = "국가 정보 전체 목록", description = "국가 정보 전체를 전달한다. areaCd로 지역별 필터링이 가능하다.")
+    /**
+     * 요청 로케일에 따른 지역별 국가 목록을 공통 성공 응답으로 반환한다.
+     */
+    @Operation(summary = "지역별 국가 목록 조회",
+        description = "요청 언어에 따라 지역·국가·하위 지역을 조회하고 지역명과 국가명으로 정렬합니다.")
     @GetMapping("/sample/nations")
     public ResponseEntity<StaResponse<List<NationInfoResponse>>> getNations(Locale locale) {
         List<NationInfoResponse> response = sampleService.getNationInfo(locale);

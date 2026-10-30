@@ -7,9 +7,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 국가별 기본 정보, 좌표, 참여 여부와 하위 지역 조회 결과를 담는다.
+ */
 @Getter
 @Setter
-@Schema(description = "국가 정보 응답 DTO")
+@Schema(description = "국가 정보 조회 모델")
 public class NationInfo {
     @Schema(description = "국가 정보 번호", example = "12332")
     private Long nationInfoNo;

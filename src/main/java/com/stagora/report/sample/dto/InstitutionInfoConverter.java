@@ -1,14 +1,13 @@
-package com.stagora.report.dto.converter;
+package com.stagora.report.sample.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
-import com.stagora.report.sample.dto.InstitutionInfoResponse;
-import com.stagora.report.sample.model.InstitutionInfoVO;
+import com.stagora.report.sample.model.InstitutionInfo;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface InstitutionInfoConverter {
 
-	InstitutionInfoResponse toResponse(InstitutionInfoVO info);
+	InstitutionInfoResponse toResponse(InstitutionInfo info);
 }

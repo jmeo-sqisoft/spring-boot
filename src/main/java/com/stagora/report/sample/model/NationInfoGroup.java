@@ -7,9 +7,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NationInfoGroupVO {
+public class NationInfoGroup {
 
 	private String areaCode;
 	private String areaName;
-	private List<NationInfoVO> nationInfoVOs;
+	private List<NationInfo> nationInfoVOs;
 }

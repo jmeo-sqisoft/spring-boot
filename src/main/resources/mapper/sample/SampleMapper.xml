@@ -4,7 +4,7 @@
 	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.stagora.report.sample.mapper.SampleMapper">
 
-	<select id="getArea" resultType="com.stagora.report.sample.model.AreaVO">
+	<select id="getArea" resultType="com.stagora.report.sample.model.Area">
 <![CDATA[
 -- file name: AreaMapper.xml
 -- query id: getArea
@@ -19,7 +19,7 @@ order by sort_val
 	</select>
 
 
-	<select id="getHospitalInfo" resultType="com.stagora.report.sample.model.InstitutionInfoVO">
+	<select id="getHospitalInfo" resultType="com.stagora.report.sample.model.InstitutionInfo">
 <![CDATA[
 -- file name: MyDashboardMapper.xml
 -- query id: getHospitalInfo
@@ -45,7 +45,7 @@ group by a.hospital_id
 	</select>
 
 	<!-- CLAB의 기존 정보와 집계 식별자를 유지하며 제휴병원명·표시 유형을 조회한다. -->
-	<select id="getClabInfo" resultType="com.stagora.report.sample.model.InstitutionInfoVO">
+	<select id="getClabInfo" resultType="com.stagora.report.sample.model.InstitutionInfo">
 <![CDATA[
 -- file name: MyDashboardMapper.xml
 -- query id: getClabInfo
@@ -82,17 +82,17 @@ group by a.clab_id
 	</select>
 
 
-	<resultMap id="nationInfoMap" type="com.stagora.report.sample.model.NationInfoGroupVO">
+	<resultMap id="nationInfoMap" type="com.stagora.report.sample.model.NationInfoGroup">
 		<id property="areaCode" column="area_code"/>
 		<result property="areaName" column="area_name"/>
-		<collection property="nationInfoVOs" ofType="com.stagora.report.sample.model.NationInfoVO">
+		<collection property="nationInfoVOs" ofType="com.stagora.report.sample.model.NationInfo">
 			<id property="nationInfoNo" column="nation_info_no"/>
 			<result property="nationCode" column="nation_code"/>
 			<result property="nationName" column="nation_name"/>
 			<result property="latitude" column="latitude"/>
 			<result property="longitude" column="longitude"/>
 			<result property="isParticipating" column="is_participating" javaType="boolean"/>
-			<collection property="nationRegions" ofType="com.stagora.report.sample.model.NationRegionVO">
+			<collection property="nationRegions" ofType="com.stagora.report.sample.model.NationRegion">
 				<constructor>
 					<arg column="nation_region_no" javaType="java.lang.Integer"/>
 					<arg column="nation_region_code" javaType="java.lang.String"/>

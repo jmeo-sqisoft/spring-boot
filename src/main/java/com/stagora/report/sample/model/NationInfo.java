@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Schema(description = "국가 정보 응답 DTO")
-public class NationInfoVO {
+public class NationInfo {
 	@Schema(description = "국가 정보 번호", example = "12332")
 		private Long nationInfoNo;
 	@Schema(description = "국가 코드", example = "KR")
@@ -24,5 +24,5 @@ public class NationInfoVO {
 	@Schema(description = "참여 여부", example = "true")
 	private Boolean isParticipating;
 	@Schema(description = "국가 하위 지역 목록")
-	private List<NationRegionVO> nationRegions;
+	private List<NationRegion> nationRegions;
 }

@@ -7,7 +7,7 @@ import com.stagora.global.enums.InstitutionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "기관정보 VO")
-public record InstitutionInfoVO(
+public record InstitutionInfo(
 	@Schema(description = "기관 아이디", example = "01a00661-5b8c-70b7-801e-155c610ecd5f") String institutionId,
 	@Schema(description = "기관명", example = "씨젠의료재단") String institutionName,
 	@Schema(description = "기관 표시 유형. 제휴병원도 검사 집계는 CLAB 기준", example = "AFFILIATED") InstitutionType institutionType,

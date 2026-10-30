@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.navercorp.com/lucy-xss-servlet">
+    <defenders>
+        <!-- 쿼리·폼 파라미터의 HTML 특수 문자를 이스케이프한다. -->
+        <defender>
+            <name>xssPreventerDefender</name>
+            <class>com.navercorp.lucy.security.xss.servletfilter.defender.XssPreventerDefender</class>
+        </defender>
+    </defenders>
+    <default>
+        <defender>xssPreventerDefender</defender>
+    </default>
+</config>

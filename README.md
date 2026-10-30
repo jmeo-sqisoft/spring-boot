@@ -13,6 +13,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 - PostgreSQL JDBC Driver (`postgresql` 42.7.13)
 - p6spy (SQL 로깅, 3.9.1 — `global/config/DataSourceConfig`에서 DataSource를 수동으로 래핑)
 - springdoc-openapi (Swagger UI, 3.0.3)
+- Lucy XSS Servlet 2.0.1 (규칙 엔진을 Jakarta Servlet용 필터에 연결)
 - Actuator (`spring-boot-starter-actuator`)
 - HikariCP (JDBC 의존성을 통해 기본 포함)
 - Checkstyle 14.3.0 (규칙: `config/checkstyle/checkstyle.xml`)
@@ -76,6 +77,11 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 
 성공 응답은 `StaResponse<T>` 형태의 `code`, `message`, `data`를 사용하며 성공 코드는 `S0000`입니다.
 
+## 요청 파라미터 XSS 처리
+
+모든 경로의 쿼리·폼 파라미터에 Lucy의 HTML 특수 문자 이스케이프를 적용합니다.
+규칙은 `src/main/resources/lucy-xss-servlet-filter-rule.xml`에서 관리합니다.
+
 ## 패키지 구조
 
 현재 프로젝트의 주요 파일 구조입니다. `global`에는 공통 응답·설정·예외·유틸리티,
@@ -94,10 +100,11 @@ spring-boot/
 │       │   ├── Application.java          # Spring Boot 진입점
 │       │   ├── global/                   # 공통 API 기반 코드
 │       │   │   ├── api/                  # 공통 API 응답과 컨트롤러 지원
-│       │   │   ├── config/               # DataSource·다국어·CORS·OpenAPI 설정
+│       │   │   ├── config/               # DataSource·다국어·CORS·OpenAPI·XSS 설정
 │       │   │   ├── constants/            # 공통 언어 코드·메시지 키
 │       │   │   ├── enums/                # 기관 유형·데이터 유형
 │       │   │   ├── exception/            # 공통 API 예외
+│       │   │   ├── filter/               # Jakarta 호환 Lucy XSS 필터와 요청 래퍼
 │       │   │   └── util/                 # 언어·문자열 처리
 │       │   └── report/sample/
 │       │       ├── controller/           # SampleController
@@ -111,7 +118,8 @@ spring-boot/
 │           ├── application.yml           # 공통 설정
 │           ├── application-dev.yml       # 개발 환경
 │           ├── application-uat.yml       # 사용자 인수 테스트 환경
-│           └── application-prd.yml       # 운영 환경
+│           ├── application-prd.yml       # 운영 환경
+│           └── lucy-xss-servlet-filter-rule.xml  # 요청 파라미터 XSS 규칙
 ├── .gitignore                            # Git 추적 제외 설정
 ├── build.gradle.kts                      # 의존성과 빌드·검증 설정
 ├── gradle.properties                     # Gradle JVM·캐시 설정

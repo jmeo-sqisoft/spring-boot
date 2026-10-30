@@ -1,9 +1,11 @@
 package com.stagora;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import javax.sql.DataSource;
@@ -13,10 +15,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.Ordered;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.p6spy.engine.spy.P6DataSource;
+import com.stagora.global.filter.LucyXssFilter;
 import com.stagora.report.sample.controller.SampleController;
 import com.stagora.report.sample.dto.AreasConverter;
 import com.stagora.report.sample.dto.InstitutionInfoConverter;
@@ -40,6 +50,11 @@ class ApplicationConfigurationTest {
                 "--spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access=false",
                 "--spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect")) {
             DataSource dataSource = context.getBean(DataSource.class);
+            FilterRegistrationBean<?> xssRegistration =
+                context.getBean("lucyXssFilter", FilterRegistrationBean.class);
+            assertThat(xssRegistration.getFilter()).isInstanceOf(LucyXssFilter.class);
+            assertThat(xssRegistration.getUrlPatterns()).containsExactly("/*");
+            assertThat(xssRegistration.getOrder()).isEqualTo(Ordered.HIGHEST_PRECEDENCE + 10);
             assertThat(context.getBean(SampleController.class)).isNotNull();
             assertThat(context.getBean(SampleService.class)).isNotNull();
             assertThat(context.getBean(SampleMapper.class)).isNotNull();
@@ -68,7 +83,23 @@ class ApplicationConfigurationTest {
                 .containsProperty("spring.cloud.azure.keyvault.secret.property-source-enabled"))
                 .isFalse();
             String baseUrl = "http://localhost:" + context.getEnvironment().getProperty("local.server.port");
+            registerXssProbe(context);
             try (HttpClient client = HttpClient.newHttpClient()) {
+                String input = "<script>alert(1)</script>한글";
+                String encoded = URLEncoder.encode(input, StandardCharsets.UTF_8);
+                String expected = "&lt;script&gt;alert(1)&lt;/script&gt;한글";
+                HttpResponse<String> query = client.send(
+                    HttpRequest.newBuilder(URI.create(baseUrl + "/_test/xss?value=" + encoded))
+                        .GET().build(), HttpResponse.BodyHandlers.ofString());
+                assertThat(query.statusCode()).isEqualTo(200);
+                assertThat(query.body()).isEqualTo(expected);
+                HttpResponse<String> form = client.send(
+                    HttpRequest.newBuilder(URI.create(baseUrl + "/_test/xss"))
+                        .header("Content-Type", "application/x-www-form-urlencoded")
+                        .POST(HttpRequest.BodyPublishers.ofString("value=" + encoded)).build(),
+                    HttpResponse.BodyHandlers.ofString());
+                assertThat(form.statusCode()).isEqualTo(200);
+                assertThat(form.body()).isEqualTo(expected);
                 HttpResponse<String> docs = client.send(
                     HttpRequest.newBuilder(URI.create(baseUrl + "/local-api-docs")).GET().build(),
                     HttpResponse.BodyHandlers.ofString());
@@ -85,6 +116,24 @@ class ApplicationConfigurationTest {
                 assertThat(health.statusCode()).isEqualTo(200);
                 assertThat(health.body()).contains("UP");
             }
+        }
+    }
+
+    private void registerXssProbe(ConfigurableApplicationContext context) throws Exception {
+        var mapping = context.getBean("requestMappingHandlerMapping",
+            RequestMappingHandlerMapping.class);
+        var info = RequestMappingInfo.paths("/_test/xss")
+            .methods(RequestMethod.GET, RequestMethod.POST)
+            .produces("text/plain;charset=UTF-8")
+            .options(mapping.getBuilderConfiguration()).build();
+        mapping.registerMapping(info, new XssProbe(),
+            XssProbe.class.getMethod("echo", String.class));
+    }
+
+    public static class XssProbe {
+        @ResponseBody
+        public String echo(@RequestParam("value") String value) {
+            return value;
         }
     }
 }

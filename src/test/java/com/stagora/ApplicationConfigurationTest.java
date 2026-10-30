@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -39,22 +39,26 @@ import jakarta.persistence.EntityManagerFactory;
 
 class ApplicationConfigurationTest {
     @ParameterizedTest
-    @ValueSource(strings = {"dev", "uat", "prd"})
-    void profilesStartWithoutExternalServices(String profile) throws Exception {
+    @CsvSource({"dev,true", "dev,false", "uat,true", "uat,false", "prd,true", "prd,false"})
+    void profilesStartWithoutExternalServices(String profile, boolean xssEnabled) throws Exception {
         SpringApplication application = new SpringApplication(Application.class);
         application.setWebApplicationType(WebApplicationType.SERVLET);
         try (ConfigurableApplicationContext context = application.run(
                 "--spring.profiles.active=" + profile,
                 "--server.port=0",
+                "--app.xss.enabled=" + xssEnabled,
                 "--spring.datasource.local.url=jdbc:postgresql://localhost:1/config_test",
                 "--spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access=false",
                 "--spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect")) {
             DataSource dataSource = context.getBean(DataSource.class);
-            FilterRegistrationBean<?> xssRegistration =
-                context.getBean("lucyXssFilter", FilterRegistrationBean.class);
-            assertThat(xssRegistration.getFilter()).isInstanceOf(LucyXssFilter.class);
-            assertThat(xssRegistration.getUrlPatterns()).containsExactly("/*");
-            assertThat(xssRegistration.getOrder()).isEqualTo(Ordered.HIGHEST_PRECEDENCE + 10);
+            assertThat(context.containsBean("lucyXssFilter")).isEqualTo(xssEnabled);
+            if (xssEnabled) {
+                FilterRegistrationBean<?> xssRegistration =
+                    context.getBean("lucyXssFilter", FilterRegistrationBean.class);
+                assertThat(xssRegistration.getFilter()).isInstanceOf(LucyXssFilter.class);
+                assertThat(xssRegistration.getUrlPatterns()).containsExactly("/*");
+                assertThat(xssRegistration.getOrder()).isEqualTo(Ordered.HIGHEST_PRECEDENCE + 10);
+            }
             assertThat(context.getBean(SampleController.class)).isNotNull();
             assertThat(context.getBean(SampleService.class)).isNotNull();
             assertThat(context.getBean(SampleMapper.class)).isNotNull();
@@ -87,7 +91,7 @@ class ApplicationConfigurationTest {
             try (HttpClient client = HttpClient.newHttpClient()) {
                 String input = "<script>alert(1)</script>한글";
                 String encoded = URLEncoder.encode(input, StandardCharsets.UTF_8);
-                String expected = "&lt;script&gt;alert(1)&lt;/script&gt;한글";
+                String expected = xssEnabled ? "&lt;script&gt;alert(1)&lt;/script&gt;한글" : input;
                 HttpResponse<String> query = client.send(
                     HttpRequest.newBuilder(URI.create(baseUrl + "/_test/xss?value=" + encoded))
                         .GET().build(), HttpResponse.BodyHandlers.ofString());

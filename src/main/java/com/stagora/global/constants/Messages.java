@@ -1,27 +1,23 @@
 package com.stagora.global.constants;
 
+/**
+ * 다국어 메시지 키와 입력 검증에서 참조하는 메시지 표현식을 정의한다.
+ */
 public final class Messages {
+    // 집계 기간의 기본 단위
     public static final String DEFAULT_GRANULARITY = "week";
-    /**
-     * MessageSource 키. 성공 응답 기본 메시지. doc/public/spec/architecture/04-i18n-and-exception.md
-     */
+    // 성공 응답의 기본 메시지 키
     public static final String KEY_SUCCESS_DEFAULT = "success.default";
-    /**
-     * MessageSource 키. Bean Validation @NotBlank 등에서 {key} 참조
-     */
+    // 필수 입력 검증 키와 검증 애너테이션에서 참조하는 {키} 형태의 표현식
     public static final String KEY_VALIDATION_PARAM_REQUIRED = "error.validation.param.required";
     public static final String ERROR_VALIDATION_PARAM_REQUIRED =
         "{" + KEY_VALIDATION_PARAM_REQUIRED + "}";
-    /**
-     * validation 실패 시 메시지 키. ApiException messageKey, MessageSource
-     */
+    // 입력 검증 실패 시 사용하는 기본 메시지 키
     public static final String KEY_VALIDATION_FAILED = "error.validation.failed";
     public static final String ERROR_VALIDATION_UUID_INVALID = "{error.validation.uuid.invalid}";
     public static final String ERROR_VALIDATION_DISEASE_GRP_ID_INVALID =
         "{error.validation.diseaseGrpId.invalid}";
-    /**
-     * period 형식 오류 메시지 키. ApiException messageKey, Bean Validation
-     */
+    // 기간 형식 검증 키와 메시지 표현식
     public static final String KEY_VALIDATION_PERIOD_INVALID = "error.validation.period.invalid";
     public static final String ERROR_VALIDATION_PERIOD_INVALID =
         "{" + KEY_VALIDATION_PERIOD_INVALID + "}";

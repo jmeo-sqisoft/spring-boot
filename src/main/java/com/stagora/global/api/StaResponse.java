@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 /**
- * 결과 코드, 메시지, 데이터를 담는 공통 API 응답.
+ * 결과 코드, 메시지, 데이터를 담는 공통 API 응답이다.
  */
 @Builder
 @Schema(description = "STA 기본 응답 (code, message, data)")
@@ -18,6 +18,9 @@ public record StaResponse<T>(
 ) {
     public static final String CODE_SUCCESS = ApiResponseCode.S0000.getCode();
 
+    /**
+     * 성공 코드 S0000과 전달받은 메시지·데이터로 응답 본문을 생성한다.
+     */
     @SuppressWarnings("unchecked")
     public static <T> StaResponse<T> success(String message, Object data) {
         return (StaResponse<T>) StaResponse.builder()

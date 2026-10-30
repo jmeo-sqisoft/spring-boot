@@ -9,12 +9,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 /**
- * CORS 필터. app.cors.allowed-origin-patterns 설정 사용.
- * <p>로컬 개발 시 프론트엔드(localhost 등)에서 API 호출 허용.</p>
- * <p>허용 Origin 패턴은 app.cors.allowed-origin-patterns로 설정 가능.</p>
+ * app.cors.allowed-origin-patterns에 지정한 출처의 교차 출처 요청을 허용한다.
+ * 기본 허용 출처는 AppProperties의 로컬 개발 환경 설정을 사용한다.
  */
 @Configuration
 public class CorsConfig {
+    /**
+     * 모든 경로에 자격 증명을 허용하는 CORS 필터를 등록한다.
+     * 요청 헤더는 모두 허용하고, 응답의 Authorization 헤더를 클라이언트에 노출한다.
+     */
     @Bean
     public CorsFilter corsFilter(AppProperties appProperties) {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

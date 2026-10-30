@@ -73,7 +73,8 @@ public enum ApiResponseCode {
     }
 
     /**
-     * 대소문자 구분 없이 응답 코드를 찾고, 일치하는 코드가 없으면 null을 반환한다.
+     * 대소문자 구분 없이 응답 코드를 찾는다. 입력이 비어 있거나 일치하는 코드가 없으면
+     * null을 반환하며, 코드 앞뒤의 공백을 제거하지는 않는다.
      */
     public static ApiResponseCode fromErrorCode(String errorCode) {
         if (!StringUtils.hasText(errorCode)) {
@@ -86,6 +87,9 @@ public enum ApiResponseCode {
             .orElse(null);
     }
 
+    /**
+     * 응답 코드에 대응하는 HTTP 상태의 숫자 값을 반환한다.
+     */
     public int getStatusCode() {
         return httpStatus.value();
     }

@@ -5,8 +5,8 @@ import com.stagora.global.api.ApiResponseCode;
 import lombok.Getter;
 
 /**
- * API 오류 시 사용하는 예외.
- * <p>설계 기준: doc/public/spec/architecture/04-i18n-and-exception.md §3</p>
+ * API 오류의 HTTP 상태, 응답 코드, 다국어 메시지 키와 부가 데이터를 전달한다.
+ * 메시지 키를 예외 메시지로 보관하며, 실제 메시지 조회와 HTTP 응답 생성은 수행하지 않는다.
  */
 @Getter
 public class ApiException extends RuntimeException {
@@ -16,10 +16,16 @@ public class ApiException extends RuntimeException {
     @SuppressWarnings("SerializableClass")
     private final transient Object data;
 
+    /**
+     * HTTP 상태, 응답 코드와 메시지 키를 직접 지정한다.
+     */
     public ApiException(int statusCode, String errorCode, String messageKey) {
         this(statusCode, errorCode, messageKey, null);
     }
 
+    /**
+     * 오류 정보와 함께 전달할 부가 데이터를 지정한다.
+     */
     public ApiException(int statusCode, String errorCode, String messageKey, Object data) {
         super(messageKey);
         this.statusCode = statusCode;
@@ -28,10 +34,16 @@ public class ApiException extends RuntimeException {
         this.data = data;
     }
 
+    /**
+     * 오류 정보와 원인 예외를 지정한다.
+     */
     public ApiException(int statusCode, String errorCode, String messageKey, Throwable cause) {
         this(statusCode, errorCode, messageKey, null, cause);
     }
 
+    /**
+     * 오류 정보, 부가 데이터와 원인 예외를 지정한다.
+     */
     public ApiException(int statusCode, String errorCode, String messageKey,
         Object data, Throwable cause) {
         super(messageKey, cause);
@@ -42,21 +54,21 @@ public class ApiException extends RuntimeException {
     }
 
     /**
-     * ApiResponseCode enum 사용. messageKey는 enum의 defaultMessageKey 사용
+     * 응답 코드에 정의된 HTTP 상태와 기본 메시지 키를 사용한다.
      */
     public ApiException(ApiResponseCode responseCode) {
         this(responseCode, (String) null);
     }
 
     /**
-     * ApiResponseCode enum 사용. messageKey 오버라이드 가능
+     * 응답 코드의 메시지 키를 재지정한다. null이면 기본 메시지 키를 사용한다.
      */
     public ApiException(ApiResponseCode responseCode, String messageKeyOverride) {
         this(responseCode, messageKeyOverride, null);
     }
 
     /**
-     * ApiResponseCode enum 사용. messageKey 오버라이드, data 포함
+     * 응답 코드, 선택적인 메시지 키와 부가 데이터를 지정한다.
      */
     public ApiException(ApiResponseCode responseCode, String messageKeyOverride, Object data) {
         super(messageKeyOverride != null
@@ -69,14 +81,14 @@ public class ApiException extends RuntimeException {
     }
 
     /**
-     * ApiResponseCode enum 사용. cause 포함
+     * 응답 코드의 기본 오류 정보와 원인 예외를 지정한다.
      */
     public ApiException(ApiResponseCode responseCode, Throwable cause) {
         this(responseCode, null, null, cause);
     }
 
     /**
-     * ApiResponseCode enum 사용. messageKey 오버라이드, data, cause 포함
+     * 응답 코드, 선택적인 메시지 키, 부가 데이터와 원인 예외를 지정한다.
      */
     public ApiException(ApiResponseCode responseCode, String messageKeyOverride,
         Object data, Throwable cause) {

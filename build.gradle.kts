@@ -51,7 +51,7 @@ repositories {
 val mybatisVersion = "4.0.1"
 val springdocVersion = "3.2.0"
 val p6spyVersion = "3.9.1"
-val lombokVersion = "1.18.46"
+val lombokVersion = "1.18.48"
 val mapstructVersion = "1.6.3"
 val lombokMapstructBindingVersion = "0.2.0"
 val postgresqlDriverVersion = "42.7.13"

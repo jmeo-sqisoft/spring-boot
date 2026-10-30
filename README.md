@@ -8,7 +8,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 - Spring Boot 4.1.1
 - MyBatis (`mybatis-spring-boot-starter` 4.0.1)
 - Spring Data JPA (`spring-boot-starter-data-jpa`, MyBatis와 DataSource 공유)
-- Lombok 1.18.46
+- Lombok 1.18.48
 - MapStruct 1.6.3 (`lombok-mapstruct-binding` 0.2.0으로 Lombok 연동)
 - PostgreSQL JDBC Driver (`postgresql` 42.7.13)
 - p6spy (SQL 로깅, 3.9.1 — `global/config/DataSourceConfig`에서 DataSource를 수동으로 래핑)

@@ -35,14 +35,13 @@ public class SampleService {
     }
 
     public InstitutionInfoResponse getInstitutionInfo(InstitutionInfoRequest request) {
-        String clabId = request.getClabId();
         String hospitalId = request.getHospitalId();
         InstitutionInfo info;
 
         if (hospitalId != null && !hospitalId.isEmpty()) {
-            info = sampleMapper.getHospitalInfo(hospitalId);
+            info = sampleMapper.getHospitalInfo(request);
         } else {
-            info = sampleMapper.getClabInfo(clabId);
+            info = sampleMapper.getClabInfo(request);
         }
         return institutionInfoConverter.toResponse(info);
     }

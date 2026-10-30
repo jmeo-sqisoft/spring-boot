@@ -56,35 +56,36 @@ class SampleServiceTest {
     void prioritizesHospitalAndMapsAllResponseFields() {
         Timestamp registrationDate = Timestamp.valueOf("2026-08-03 15:54:03");
         Timestamp expirationDate = Timestamp.valueOf("2026-12-03 00:54:03");
-        when(mapper.getHospitalInfo("hospital-id")).thenReturn(new InstitutionInfo(
+        var request = request("clab-id", "hospital-id");
+        when(mapper.getHospitalInfo(request)).thenReturn(new InstitutionInfo(
             "hospital-id", "Hospital", InstitutionType.HOSPITAL, "Seoul", "KR",
             "Republic of Korea", "AS", registrationDate, expirationDate,
             "contact@example.com", "LIS"));
 
-        InstitutionInfoResponse response = service.getInstitutionInfo(
-            request("clab-id", "hospital-id"));
+        InstitutionInfoResponse response = service.getInstitutionInfo(request);
 
         assertThat(response).usingRecursiveComparison().isEqualTo(new InstitutionInfoResponse(
             "hospital-id", "Hospital", InstitutionType.HOSPITAL, "Seoul", "KR",
             "Republic of Korea", "AS", registrationDate, expirationDate,
             "contact@example.com", "LIS"));
-        verify(mapper).getHospitalInfo("hospital-id");
+        verify(mapper).getHospitalInfo(request);
         verifyNoMoreInteractions(mapper);
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     void queriesClabWhenHospitalIdIsMissing(String hospitalId) {
-        when(mapper.getClabInfo("clab-id")).thenReturn(new InstitutionInfo(
+        var request = request("clab-id", hospitalId);
+        when(mapper.getClabInfo(request)).thenReturn(new InstitutionInfo(
             "clab-id", "Lab", InstitutionType.AFFILIATED,
             null, null, null, null, null, null, null, "HL7"));
 
-        InstitutionInfoResponse response = service.getInstitutionInfo(request("clab-id", hospitalId));
+        InstitutionInfoResponse response = service.getInstitutionInfo(request);
 
         assertThat(response.getInstitutionId()).isEqualTo("clab-id");
         assertThat(response.getInstitutionType()).isEqualTo(InstitutionType.AFFILIATED);
         assertThat(response.getRegistrationDate()).isNull();
-        verify(mapper).getClabInfo("clab-id");
+        verify(mapper).getClabInfo(request);
         verifyNoMoreInteractions(mapper);
     }
 

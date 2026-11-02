@@ -12,7 +12,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Lucy 규칙 엔진을 Jakarta Servlet 요청 파라미터에 적용한다.
+ * Spring의 OncePerRequestFilter를 확장해 Lucy 규칙을 Jakarta 요청 파라미터에 적용한다.
+ * XssConfig의 FilterRegistrationBean으로 등록하며, Lucy 기본 Servlet 필터는 사용하지 않는다.
  * JSON 본문, 요청 헤더와 업로드 파일 내용은 변경하지 않는다.
  */
 public class LucyXssFilter extends OncePerRequestFilter {

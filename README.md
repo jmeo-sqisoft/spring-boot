@@ -5,12 +5,12 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 ## 구성
 
 - JDK 21 (LTS)
-- Spring Boot 4.1.1
-- MyBatis (`mybatis-spring-boot-starter` 4.0.1)
+- Spring Boot 4.1.2
+- MyBatis (`mybatis-spring-boot-starter` 4.1.0)
 - Spring Data JPA (`spring-boot-starter-data-jpa`, MyBatis와 DataSource 공유)
 - Lombok 1.18.48
 - MapStruct 1.6.3 (`lombok-mapstruct-binding` 0.2.0으로 Lombok 연동)
-- PostgreSQL JDBC Driver (`postgresql` 42.7.13)
+- PostgreSQL JDBC Driver (`postgresql` 42.7.14)
 - p6spy (SQL 로깅, 3.9.1 — `global/config/DataSourceConfig`에서 DataSource를 수동으로 래핑)
 - springdoc-openapi 3.2.0 (Swagger UI 5.34.0)
 - Lucy XSS Servlet 2.0.1 (규칙 엔진을 Jakarta Servlet용 필터에 연결)
@@ -19,7 +19,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 - Checkstyle 14.3.0 (규칙: `config/checkstyle/checkstyle.xml`)
 - JaCoCo (테스트 커버리지 보고서)
 - SonarQube Gradle Plugin 6.3.1.5724 (서버와 토큰 별도 설정)
-- Gradle 9.6.1 (Kotlin DSL)
+- Gradle 9.8.2 (Kotlin DSL)
 
 group: `com.stagora`, artifact: `spring-boot`
 

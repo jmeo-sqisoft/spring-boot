@@ -3,7 +3,7 @@ plugins {
 	jacoco
 	checkstyle
 	war
-	id("org.springframework.boot") version "4.1.1"
+	id("org.springframework.boot") version "4.1.2"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.sonarqube") version "6.3.1.5724"
 }
@@ -48,13 +48,13 @@ repositories {
 	mavenCentral()
 }
 
-val mybatisVersion = "4.0.1"
+val mybatisVersion = "4.1.0"
 val springdocVersion = "3.2.0"
 val p6spyVersion = "3.9.1"
 val lombokVersion = "1.18.48"
 val mapstructVersion = "1.6.3"
 val lombokMapstructBindingVersion = "0.2.0"
-val postgresqlDriverVersion = "42.7.13"
+val postgresqlDriverVersion = "42.7.14"
 val lucyXssServletVersion = "2.0.1"
 
 extra["netty.version"] = "4.2.17.Final"

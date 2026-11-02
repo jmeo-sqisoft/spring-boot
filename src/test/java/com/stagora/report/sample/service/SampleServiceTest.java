@@ -7,6 +7,7 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mapstruct.factory.Mappers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -73,6 +74,7 @@ class SampleServiceTest {
 
     @ParameterizedTest
     @NullAndEmptySource
+    @ValueSource(strings = {" ", "\t"})
     void queriesClabWhenHospitalIdIsMissing(String hospitalId) {
         var request = request("clab-id", hospitalId);
         when(mapper.getClabInfo(request)).thenReturn(new InstitutionInfo(

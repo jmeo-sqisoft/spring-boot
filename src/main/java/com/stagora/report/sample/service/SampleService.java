@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.stagora.global.util.LocaleUtil;
@@ -41,14 +42,14 @@ public class SampleService {
     }
 
     /**
-     * 병원 ID가 null이나 빈 문자열이 아니면 병원, 그 외에는 검사실을 조회한다.
+     * 병원 ID가 공백이 아니면 병원, 그 외에는 검사실을 조회한다.
      * 요청 객체를 Mapper에 그대로 전달하며, 조회 결과가 없으면 null을 반환한다.
      */
     public InstitutionInfoResponse getInstitutionInfo(InstitutionInfoRequest request) {
         String hospitalId = request.getHospitalId();
         InstitutionInfo info;
 
-        if (hospitalId != null && !hospitalId.isEmpty()) {
+        if (StringUtils.isNotBlank(hospitalId)) {
             info = sampleMapper.getHospitalInfo(request);
         } else {
             info = sampleMapper.getClabInfo(request);

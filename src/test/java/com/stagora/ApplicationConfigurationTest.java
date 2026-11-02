@@ -91,6 +91,13 @@ class ApplicationConfigurationTest {
             String baseUrl = "http://localhost:" + context.getEnvironment().getProperty("local.server.port");
             registerXssProbe(context);
             try (HttpClient client = HttpClient.newHttpClient()) {
+                HttpResponse<String> invalidInstitution = client.send(
+                    HttpRequest.newBuilder(URI.create(baseUrl
+                        + "/apis/report/v1/sample/institutioninfo"))
+                        .header("Accept-Language", "en").GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+                assertThat(invalidInstitution.statusCode()).isEqualTo(400);
+                assertThat(invalidInstitution.body()).contains("E40001", "Validation failed.");
                 String input = "<script>alert(1)</script>한글";
                 String encoded = URLEncoder.encode(input, StandardCharsets.UTF_8);
                 String expected = xssEnabled ? "&lt;script&gt;alert(1)&lt;/script&gt;한글" : input;

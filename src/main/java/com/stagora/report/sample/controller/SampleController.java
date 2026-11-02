@@ -59,12 +59,14 @@ public class SampleController extends AbstractApiController {
         @RequestParam(required = false) String clabId,
         @Schema(description = "병원 ID", example = "019bf94a-1e58-773c-9d46-ae8318e6bcba")
         @RequestParam(required = false) String hospitalId) {
-        if (StringUtils.trimToNull(clabId) == null && StringUtils.trimToNull(hospitalId) == null) {
+        String paramClabId = StringUtils.trimToNull(clabId);
+        String paramHospitalId = StringUtils.trimToNull(hospitalId);
+        if (paramClabId == null && paramHospitalId == null) {
             throw new ApiException(ApiResponseCode.E40001);
         }
         InstitutionInfoRequest request = new InstitutionInfoRequest();
-        request.setClabId(clabId);
-        request.setHospitalId(hospitalId);
+        request.setClabId(paramClabId);
+        request.setHospitalId(paramHospitalId);
         InstitutionInfoResponse response = sampleService.getInstitutionInfo(request);
         return success(response);
     }

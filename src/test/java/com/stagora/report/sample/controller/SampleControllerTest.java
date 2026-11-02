@@ -26,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.stagora.global.api.ApiResponseCode;
 import com.stagora.global.exception.ApiException;
+import com.stagora.global.exception.ApiExceptionHandler;
 import com.stagora.report.sample.dto.AreasResponse;
 import com.stagora.report.sample.dto.InstitutionInfoRequest;
 import com.stagora.report.sample.dto.InstitutionInfoResponse;
@@ -96,6 +97,24 @@ class SampleControllerTest {
 
         assertThat(result.getResponse().getContentAsString()).contains("hospital-id", "S0000");
         assertServiceRequest("clab-id", "hospital-id");
+    }
+
+    @Test
+    void missingIdentifiersReturnBadRequestOverHttp() throws Exception {
+        messages.addMessage("error.validation.failed", Locale.ENGLISH, "Validation failed.");
+        var result = MockMvcBuilders.standaloneSetup(controller)
+            .setControllerAdvice(new ApiExceptionHandler(messages)).build()
+            .perform(get("/apis/report/v1/sample/institutioninfo"))
+            .andExpect(status().isBadRequest()).andReturn();
+        assertThat(result.getResponse().getContentAsString()).contains("E40001");
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void normalizesWhitespaceBeforeForwardingIdentifiers() {
+        controller.institutionInfo(" clab-id ", " \t ");
+
+        assertServiceRequest("clab-id", null);
     }
 
     @Test

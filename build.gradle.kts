@@ -37,11 +37,11 @@ tasks.named("checkstyleTest") {
 	enabled = false
 }
 
-// 운영 Java와 함께 MyBatis Mapper XML의 SQL 포맷을 검사한다.
+// 운영 Java와 src/main/resources 아래 XML의 작성 규칙을 검사한다.
 tasks.named<Checkstyle>("checkstyleMain") {
-	source(fileTree("src/main/resources/mapper") {
+	setSource(files(sourceSets.main.get().allJava, fileTree("src/main/resources") {
 		include("**/*.xml")
-	})
+	}))
 }
 
 repositories {

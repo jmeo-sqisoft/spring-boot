@@ -31,10 +31,9 @@
 | 필드 | 일반 인스턴스 필드는 private, 설정된 예외 허용 | `VisibilityModifier` |
 | 선언 | 한 줄에 한 문장, 변수는 개별 선언 | `OneStatementPerLine`, `MultipleVariableDeclarations` |
 
-Java 파일의 탭 금지는 XML 안에 작성하는 SQL의 정렬 규칙과 별개입니다.
-Mapper XML의 SQL에는 [XML · SQL 포맷 가이드](../guide_xml_format.md)를 적용합니다.
-
 ## 들여쓰기와 줄바꿈
+
+탭 금지는 Java와 XML에 동일하게 적용합니다. XML·SQL 작성 기준은 [MyBatis 가이드](mybatis.md)를 따릅니다.
 
 ### 공백 4칸
 

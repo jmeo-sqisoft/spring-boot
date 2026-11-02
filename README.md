@@ -17,7 +17,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 - Actuator (`spring-boot-starter-actuator`)
 - HikariCP (JDBC 의존성을 통해 기본 포함)
 - Checkstyle 14.3.0 (규칙: `config/checkstyle/checkstyle.xml`)
-- JaCoCo (테스트 커버리지 보고서)
+- JaCoCo 0.8.15 (Gradle 9.8.2 기본 버전, 테스트 커버리지 보고서)
 - SonarQube Gradle Plugin 6.3.1.5724 (서버와 토큰 별도 설정)
 - Gradle 9.8.2 (Kotlin DSL)
 
@@ -84,6 +84,8 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 기본값은 비활성화이며, `app.xss.enabled=true` 또는 환경 변수 `XSS_ENABLED=true`로 켤 수 있습니다.
 설정을 변경하면 애플리케이션을 재시작합니다.
 규칙은 `src/main/resources/lucy-xss-servlet-filter-rule.xml`에서 관리합니다.
+`lucy-xss-sax.xml`에는 `<p>`, `<br>`, `<b>`만 허용하고 속성을 제거하는 별도 규칙이 있습니다.
+현재 기본 처리는 `XssPreventerDefender`이며, SAX 규칙은 `XssSaxFilterDefender`에 연결한 경우에 적용됩니다.
 
 ## 패키지 구조
 
@@ -94,7 +96,8 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 spring-boot/
 ├── config/
 │   └── checkstyle/                       # Java·Mapper XML 스타일 검사 규칙
-├── doc/
+├── docs/
+│   └── development-guides/              # 개발 가이드
 ├── gradle/
 │   └── wrapper/                          # Gradle 실행 버전과 Wrapper
 ├── src/
@@ -106,7 +109,7 @@ spring-boot/
 │       │   │   ├── config/               # DataSource·다국어·CORS·OpenAPI·XSS 설정
 │       │   │   ├── constants/            # 공통 언어 코드·메시지 키
 │       │   │   ├── enums/                # 기관 유형·데이터 유형
-│       │   │   ├── exception/            # 공통 API 예외
+│       │   │   ├── exception/            # ApiException과 다국어 오류 응답 처리기
 │       │   │   ├── filter/               # Jakarta 호환 Lucy XSS 필터와 요청 래퍼
 │       │   │   └── util/                 # 언어·문자열 처리
 │       │   └── report/sample/
@@ -122,6 +125,7 @@ spring-boot/
 │           ├── application-dev.yml       # 개발 환경
 │           ├── application-uat.yml       # 사용자 인수 테스트 환경
 │           ├── application-prd.yml       # 운영 환경
+│           ├── lucy-xss-sax.xml           # p·br·b 태그만 허용하는 SAX 규칙
 │           └── lucy-xss-servlet-filter-rule.xml  # 요청 파라미터 XSS 규칙
 ├── .gitignore                            # Git 추적 제외 설정
 ├── build.gradle.kts                      # 의존성과 빌드·검증 설정
@@ -131,12 +135,6 @@ spring-boot/
 ├── README.md
 └── settings.gradle.kts                   # 프로젝트 이름과 모듈 구성
 ```
-
-## XML 작성 규칙
-
-Mapper XML의 SQL은 [XML · SQL 포맷 가이드](docs/guide_xml_format.md)를 따릅니다.
-소문자 SQL, 탭 정렬, 선두 콤마, 테이블 별칭, JOIN 줄바꿈과 독립된 세미콜론 규칙을 사용하며
-문자열 리터럴과 MyBatis 바인딩 변수는 원본을 유지합니다.
 
 ## 빌드 및 검증
 
@@ -160,7 +158,7 @@ Mapper XML의 SQL은 [XML · SQL 포맷 가이드](docs/guide_xml_format.md)를 
 
 ### 코드 스타일 검사
 
-Checkstyle로 운영 Java 소스(`src/main/java`)와 Mapper XML(`src/main/resources/mapper`)을 검사합니다.
+Checkstyle로 운영 Java 소스(`src/main/java`)와 `src/main/resources` 아래 XML을 검사합니다.
 
 ```powershell
 .\gradlew.bat checkstyleMain

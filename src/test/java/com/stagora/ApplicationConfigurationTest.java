@@ -48,6 +48,8 @@ class ApplicationConfigurationTest {
                 "--server.port=0",
                 "--app.xss.enabled=" + xssEnabled,
                 "--spring.datasource.local.url=jdbc:postgresql://localhost:1/config_test",
+                "--spring.datasource.local.username=test",
+                "--spring.datasource.local.password=test",
                 "--spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access=false",
                 "--spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect")) {
             DataSource dataSource = context.getBean(DataSource.class);

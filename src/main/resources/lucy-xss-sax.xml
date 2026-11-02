@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.nhncorp.com/lucy-xss">
+    <!-- 기본 규칙을 상속하지 않고 p, br, b 태그만 허용한다. -->
+    <elementRule>
+        <element name="p"/>
+        <element name="br"/>
+        <element name="b"/>
+    </elementRule>
+
+    <!-- 속성은 모두 허용하지 않는다. 이벤트 핸들러와 style도 제거한다. -->
+    <attributeRule/>
+</config>

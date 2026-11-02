@@ -134,7 +134,7 @@ spring-boot/
 
 ## XML 작성 규칙
 
-Mapper XML의 SQL은 [XML · SQL 포맷 가이드](doc/guide_xml_format.md)를 따릅니다.
+Mapper XML의 SQL은 [XML · SQL 포맷 가이드](docs/guide_xml_format.md)를 따릅니다.
 소문자 SQL, 탭 정렬, 선두 콤마, 테이블 별칭, JOIN 줄바꿈과 독립된 세미콜론 규칙을 사용하며
 문자열 리터럴과 MyBatis 바인딩 변수는 원본을 유지합니다.
 

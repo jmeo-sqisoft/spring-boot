@@ -1,8 +1,8 @@
 # Java 코드 작성 가이드
 
-[Checkstyle 설정](../config/checkstyle/checkstyle.xml)을 기준으로 Java 코드의
+[Checkstyle 설정](../../config/checkstyle/checkstyle.xml)을 기준으로 Java 코드의
 포맷, 이름, import 및 기본 코딩 규칙을 정리합니다.
-운영 코드(`src/main/java`)에 적용합니다.
+운영 코드(`../../src/main/java`)에 적용합니다.
 
 ## 목차
 
@@ -32,7 +32,7 @@
 | 선언 | 한 줄에 한 문장, 변수는 개별 선언 | `OneStatementPerLine`, `MultipleVariableDeclarations` |
 
 Java 파일의 탭 금지는 XML 안에 작성하는 SQL의 정렬 규칙과 별개입니다.
-Mapper XML의 SQL에는 [XML · SQL 포맷 가이드](guide_xml_format.md)를 적용합니다.
+Mapper XML의 SQL에는 [XML · SQL 포맷 가이드](../guide_xml_format.md)를 적용합니다.
 
 ## 들여쓰기와 줄바꿈
 
@@ -276,9 +276,9 @@ public class SampleService {
 
 | 대상 | HTML 보고서 | XML 보고서 |
 | --- | --- | --- |
-| 운영 코드 | `build/reports/checkstyle/main.html` | `build/reports/checkstyle/main.xml` |
+| 운영 코드 | `../../build/reports/checkstyle/main.html` | `../../build/reports/checkstyle/main.xml` |
 
-검사 도구 버전은 [빌드 설정](../build.gradle.kts)의 Checkstyle 14.3.0입니다.
+검사 도구 버전은 [빌드 설정](../../build.gradle.kts)의 Checkstyle 14.3.0입니다.
 현재 위반 심각도는 `warning`이며 `maxWarnings=Int.MAX_VALUE`, `maxErrors=0`으로 설정되어 있습니다.
 따라서 `BUILD SUCCESSFUL`만으로 위반이 없다고 판단하지 말고 콘솔과 보고서의 위반 건수를 확인합니다.
 

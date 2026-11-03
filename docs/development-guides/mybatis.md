@@ -111,6 +111,30 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 ### 조회 · 서브쿼리 · 조인
 
 ```sql
+with cte_sample_with1 as (
+    select
+          a.nat_info_no
+        , a.nat_area_cd
+        , b.sub_dvsn_nm
+        , b.sub_dvsn_ko_nm
+    from sample_with1 as a
+    inner join sample_with2 as b on a.nat_info_no = b.nat_info_no
+    where a.use_yn = 'Y'
+      and b.use_yn = 'Y'
+      and a.nat_area_cd is not null
+)
+, cte_sample_with2 as (
+    select
+          a.nat_info_no
+        , a.nat_area_cd
+        , b.sub_dvsn_nm
+        , b.sub_dvsn_ko_nm
+    from sample_with1 as a
+    inner join sample_with2 as b on a.nat_info_no = b.nat_info_no
+    where a.use_yn = 'Y'
+      and b.use_yn = 'Y'
+      and a.nat_area_cd is not null
+)
 select
       c.fg_seq
     , case when a.sc_type = 1 then 'F'
@@ -128,6 +152,13 @@ select
                            else 'N'
                       end
       end as sct_type
+    , case when exists (
+            select 1
+            from gmcs_main_daily as x
+            where x.hospital_id = a.hospital_id
+           ) then 'LIS'
+           else 'HL7'
+      end as data_type
     , a.sct
     , now() as current_date
 from sample as a

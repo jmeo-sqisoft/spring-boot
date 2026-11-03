@@ -112,22 +112,22 @@ group by a.clab_id
 -- query id: getNationInfo
 with cte_nation_and_sub_dvsn as materialized (
     select
-          x.nat_info_no
-        , x.nat_area_cd
-        , x.nat_cd
-        , x.nat_nm
-        , x.nat_ko_nm
-        , x.latud
-        , x.lngtud
-        , y.sub_dvsn_no
-        , y.sub_dvsn_cd
-        , y.sub_dvsn_nm
-        , y.sub_dvsn_ko_nm
-    from nation_info as x
-    inner join nation_sub_dvsn_info as y on x.nat_info_no = y.nat_info_no
-    where x.use_yn = 'Y'
-      and y.use_yn = 'Y'
-      and x.nat_area_cd is not null
+          a.nat_info_no
+        , a.nat_area_cd
+        , a.nat_cd
+        , a.nat_nm
+        , a.nat_ko_nm
+        , a.latud
+        , a.lngtud
+        , b.sub_dvsn_no
+        , b.sub_dvsn_cd
+        , b.sub_dvsn_nm
+        , b.sub_dvsn_ko_nm
+    from nation_info as a
+    inner join nation_sub_dvsn_info as b on a.nat_info_no = b.nat_info_no
+    where a.use_yn = 'Y'
+      and b.use_yn = 'Y'
+      and a.nat_area_cd is not null
 )
 select
       a.nat_info_no as nation_info_no

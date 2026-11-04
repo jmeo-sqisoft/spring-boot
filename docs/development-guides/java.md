@@ -95,10 +95,10 @@ URL이 있는 주석도 해당 줄 전체가 길이 검사에서 제외됩니다
 `else`, `catch`, `finally`는 앞 블록의 닫는 중괄호와 같은 줄에 둡니다.
 
 ```java
-if (hospitalId != null && !hospitalId.isEmpty()) {
-    return mapper.getHospitalInfo(hospitalId);
+if (StringUtils.isNotBlank(request.getHospitalId())) {
+    return mapper.getHospitalInfo(request);
 } else {
-    return mapper.getClabInfo(clabId);
+    return mapper.getClabInfo(request);
 }
 ```
 
@@ -266,7 +266,7 @@ public class SampleService {
 프로젝트 루트에서 실행합니다.
 
 ```powershell
-# 운영 Java 코드
+# 운영 Java와 src/main/resources 아래 XML
 .\gradlew.bat checkstyleMain
 ```
 

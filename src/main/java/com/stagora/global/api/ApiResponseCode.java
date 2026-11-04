@@ -7,14 +7,11 @@ import org.springframework.util.StringUtils;
 
 import com.stagora.global.constants.Messages;
 
-import lombok.Getter;
-
 /**
  * API 응답 코드와 HTTP 상태, 기본 다국어 메시지 키를 관리한다.
  * 오류 코드는 E + HTTP 상태 3자리 + 해당 상태의 순번 2자리로 구성한다.
  * 순번은 HTTP 상태별로 01부터 시작하며, 성공 코드는 S0000을 사용한다.
  */
-@Getter
 public enum ApiResponseCode {
     // 2xx: 정상 처리
     S0000(HttpStatus.OK, "S0000", "success.default"),
@@ -106,5 +103,26 @@ public enum ApiResponseCode {
      */
     public int getStatusCode() {
         return httpStatus.value();
+    }
+
+    /**
+     * 응답에 사용할 HTTP 상태를 반환한다.
+     */
+    public HttpStatus getHttpStatus() {
+        return httpStatus;
+    }
+
+    /**
+     * 응답 본문의 코드를 반환한다.
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * 다국어 메시지 조회에 사용할 기본 키를 반환한다.
+     */
+    public String getDefaultMessageKey() {
+        return defaultMessageKey;
     }
 }

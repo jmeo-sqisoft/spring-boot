@@ -1,32 +1,22 @@
 package com.stagora;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import javax.sql.DataSource;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.Ordered;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.p6spy.engine.spy.P6DataSource;
-import com.stagora.global.filter.LucyXssFilter;
 import com.stagora.report.sample.controller.SampleController;
 import com.stagora.report.sample.dto.AreasConverter;
 import com.stagora.report.sample.dto.InstitutionInfoConverter;
@@ -39,28 +29,19 @@ import jakarta.persistence.EntityManagerFactory;
 
 class ApplicationConfigurationTest {
     @ParameterizedTest
-    @CsvSource({"dev,true", "dev,false", "uat,true", "uat,false", "prd,true", "prd,false"})
-    void profilesStartWithoutExternalServices(String profile, boolean xssEnabled) throws Exception {
+    @ValueSource(strings = {"dev", "uat", "prd"})
+    void profilesStartWithoutExternalServices(String profile) throws Exception {
         SpringApplication application = new SpringApplication(Application.class);
         application.setWebApplicationType(WebApplicationType.SERVLET);
         try (ConfigurableApplicationContext context = application.run(
                 "--spring.profiles.active=" + profile,
                 "--server.port=0",
-                "--app.xss.enabled=" + xssEnabled,
                 "--spring.datasource.local.url=jdbc:postgresql://localhost:1/config_test",
                 "--spring.datasource.local.username=test",
                 "--spring.datasource.local.password=test",
                 "--spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access=false",
                 "--spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect")) {
             DataSource dataSource = context.getBean(DataSource.class);
-            assertThat(context.containsBean("lucyXssFilter")).isEqualTo(xssEnabled);
-            if (xssEnabled) {
-                FilterRegistrationBean<?> xssRegistration =
-                    context.getBean("lucyXssFilter", FilterRegistrationBean.class);
-                assertThat(xssRegistration.getFilter()).isInstanceOf(LucyXssFilter.class);
-                assertThat(xssRegistration.getUrlPatterns()).containsExactly("/*");
-                assertThat(xssRegistration.getOrder()).isEqualTo(Ordered.HIGHEST_PRECEDENCE + 10);
-            }
             assertThat(context.getBean(SampleController.class)).isNotNull();
             assertThat(context.getBean(SampleService.class)).isNotNull();
             assertThat(context.getBean(SampleMapper.class)).isNotNull();
@@ -89,7 +70,6 @@ class ApplicationConfigurationTest {
                 .containsProperty("spring.cloud.azure.keyvault.secret.property-source-enabled"))
                 .isFalse();
             String baseUrl = "http://localhost:" + context.getEnvironment().getProperty("local.server.port");
-            registerXssProbe(context);
             try (HttpClient client = HttpClient.newHttpClient()) {
                 HttpResponse<String> invalidInstitution = client.send(
                     HttpRequest.newBuilder(URI.create(baseUrl
@@ -98,21 +78,6 @@ class ApplicationConfigurationTest {
                     HttpResponse.BodyHandlers.ofString());
                 assertThat(invalidInstitution.statusCode()).isEqualTo(400);
                 assertThat(invalidInstitution.body()).contains("E40001", "Validation failed.");
-                String input = "<script>alert(1)</script>한글";
-                String encoded = URLEncoder.encode(input, StandardCharsets.UTF_8);
-                String expected = xssEnabled ? "&lt;script&gt;alert(1)&lt;/script&gt;한글" : input;
-                HttpResponse<String> query = client.send(
-                    HttpRequest.newBuilder(URI.create(baseUrl + "/_test/xss?value=" + encoded))
-                        .GET().build(), HttpResponse.BodyHandlers.ofString());
-                assertThat(query.statusCode()).isEqualTo(200);
-                assertThat(query.body()).isEqualTo(expected);
-                HttpResponse<String> form = client.send(
-                    HttpRequest.newBuilder(URI.create(baseUrl + "/_test/xss"))
-                        .header("Content-Type", "application/x-www-form-urlencoded")
-                        .POST(HttpRequest.BodyPublishers.ofString("value=" + encoded)).build(),
-                    HttpResponse.BodyHandlers.ofString());
-                assertThat(form.statusCode()).isEqualTo(200);
-                assertThat(form.body()).isEqualTo(expected);
                 HttpResponse<String> docs = client.send(
                     HttpRequest.newBuilder(URI.create(baseUrl + "/local-api-docs")).GET().build(),
                     HttpResponse.BodyHandlers.ofString());
@@ -144,24 +109,6 @@ class ApplicationConfigurationTest {
                 assertThat(health.statusCode()).isEqualTo(200);
                 assertThat(health.body()).contains("UP");
             }
-        }
-    }
-
-    private void registerXssProbe(ConfigurableApplicationContext context) throws Exception {
-        var mapping = context.getBean("requestMappingHandlerMapping",
-            RequestMappingHandlerMapping.class);
-        var info = RequestMappingInfo.paths("/_test/xss")
-            .methods(RequestMethod.GET, RequestMethod.POST)
-            .produces("text/plain;charset=UTF-8")
-            .options(mapping.getBuilderConfiguration()).build();
-        mapping.registerMapping(info, new XssProbe(),
-            XssProbe.class.getMethod("echo", String.class));
-    }
-
-    public static class XssProbe {
-        @ResponseBody
-        public String echo(@RequestParam("value") String value) {
-            return value;
         }
     }
 }

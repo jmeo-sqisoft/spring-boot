@@ -74,13 +74,13 @@ select
            else 'HL7'
       end as data_type
 from mv_clab_region as a
-left outer join mv_gmcs_clab_contract as b
-             on a.clab_id = b.clab_id
-            and current_date between b.provide_start_dt and b.provide_end_dt
-left outer join mv_clab_affiliated_hospital as c
-             on c.clab_id = a.clab_id
-            and c.hospital_id is not null
-left outer join mv_hospital_region as d on d.hospital_id = c.hospital_id
+inner join mv_gmcs_clab_contract as b
+        on a.clab_id = b.clab_id
+       and current_date between b.provide_start_dt and b.provide_end_dt
+left join mv_clab_affiliated_hospital as c
+       on c.clab_id = a.clab_id
+      and c.hospital_id is not null
+left join mv_hospital_region as d on d.hospital_id = c.hospital_id
 where a.clab_id = #{clabId}
 group by a.clab_id
 ]]>
@@ -154,12 +154,12 @@ inner join comm_cd as b
         on a.nat_area_cd = b.comm_cd
        and b.comm_grp_cd = 'CM009'
        and b.use_yn = 'Y'
-left outer join (
-        select x.country_no
-        from gmcs_test_monthly as x
-        where x.target_system_code = 'GMCS'
-        group by x.country_no
-    ) as c on c.country_no = a.nat_info_no
+left join (
+    select x.country_no
+    from gmcs_test_monthly as x
+    where x.target_system_code = 'GMCS'
+    group by x.country_no
+) as c on c.country_no = a.nat_info_no
 where 1 = 1
 ]]>
     </select>

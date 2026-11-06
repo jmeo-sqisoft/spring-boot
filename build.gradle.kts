@@ -55,7 +55,6 @@ val lombokVersion = "1.18.48"
 val mapstructVersion = "1.6.3"
 val lombokMapstructBindingVersion = "0.2.0"
 val postgresqlDriverVersion = "42.7.14"
-val lucyXssServletVersion = "2.0.1"
 
 extra["netty.version"] = "4.2.17.Final"
 ext["tomcat.version"] = "11.0.25"
@@ -67,9 +66,6 @@ dependencies {
 
 	// Web
 	implementation("org.springframework.boot:spring-boot-starter-web")
-
-	// Lucy 규칙 엔진을 Jakarta Servlet용 요청 필터에서 사용한다.
-	implementation("com.navercorp.lucy:lucy-xss-servlet:$lucyXssServletVersion")
 
 	// Actuator
 	implementation("org.springframework.boot:spring-boot-starter-actuator")

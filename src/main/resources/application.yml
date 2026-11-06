@@ -39,8 +39,6 @@ mybatis:
     log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
 
 app:
-  xss:
-    enabled: ${XSS_ENABLED:false}
   sql-logging:
     enabled: true
 

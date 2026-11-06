@@ -20,13 +20,23 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 | 05 | 컬럼 구분 | 최상위 SELECT의 첫 식은 공백 6칸, 다음 식은 공백 4칸 뒤 `, `로 시작해 식의 시작 위치를 맞춥니다. |
 | 06 | SELECT | 여러 식을 조회하면 `select` 다음 줄부터 작성합니다. 단일 컬럼 서브쿼리는 같은 줄 또는 다음 줄에 작성할 수 있습니다. |
 | 07 | FROM·WHERE | `from 테이블명`, `where 조건식`처럼 키워드와 첫 대상을 같은 줄에 작성합니다. |
-| 08 | JOIN·ON | JOIN과 대상은 같은 줄에 두고, `on`은 같은 줄 또는 다음 줄에 작성합니다. 이어지는 조건은 식의 시작 위치를 맞춥니다. |
+| 08 | JOIN·ON | `left outer join` 대신 `left join`을 사용합니다. JOIN과 대상은 같은 줄에 두고, 이어지는 조건은 식의 시작 위치를 맞춥니다. |
 | 09 | 파라미터 바인딩 | `#{...}`로 바인딩하고, `${...}`는 사용하지 않습니다. |
 | 10 | 탭·공백 | 탭은 사용하지 않습니다. 기본 블록 들여쓰기는 공백 4칸이며 컬럼·조건의 수직 정렬에는 추가 공백을 사용합니다. |
 | 11 | INSERT·UPDATE | 컬럼·값·대입식을 줄바꿈하고 선두 콤마를 사용해 시작 위치를 맞춥니다. |
 | 12 | 문장 종료 | 세미콜론을 생략하고, 마지막 SQL 구문 뒤에서 줄을 바꿔 종료합니다. |
+| 13 | 쿼리 주석 | 각 조회·입력·수정·삭제 SQL의 첫 줄에 `/* Mapper명.쿼리ID */`를 작성합니다. |
 
 ## 상세 작성 기준
+
+### 쿼리 주석과 XML 표현
+
+- 각 `<select>`, `<insert>`, `<update>`, `<delete>`의 SQL 첫 줄에 `/* Mapper명.쿼리ID */`를 작성합니다.
+- Mapper명은 namespace의 마지막 이름이며, 쿼리 ID는 해당 XML 요소의 `id`와 일치시킵니다.
+- 주석은 한 줄로 작성하고, `/*` 뒤와 `*/` 앞에 공백 한 칸을 둡니다.
+- 주석 다음 줄에서 `select`, `with`, `insert`, `update`, `delete` 등 SQL을 시작합니다.
+- CTE가 있는 문장도 전체 쿼리의 시작에 주석을 한 번 작성합니다.
+- SQL은 XML 요소 안에 직접 작성할 수 있습니다. `<`, `&` 등 XML 특수 문자는 이스케이프하거나 CDATA로 감쌉니다.
 
 ### 기본 표기와 별칭
 
@@ -74,8 +84,12 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 - SELECT 목록의 서브쿼리는 `, (`로 시작하고, 닫는 괄호 뒤에 `as 별칭`을 작성합니다.
 - JOIN의 서브쿼리는 JOIN 키워드 뒤에 여는 괄호를 두고, 내부 쿼리를 들여쓴 뒤 `) as 별칭`으로 닫습니다.
 - 일반 테이블 JOIN은 JOIN 키워드 뒤에 테이블과 별칭을 같은 줄에 작성합니다.
+- 왼쪽 외부 조인은 `left join`으로 표기하고 `outer`는 생략합니다.
 - 조인 조건을 한 줄에 작성하는 경우 대상 뒤에 `on 조건식`으로 이어 씁니다.
 - 조건을 여러 줄로 나누는 경우 `on`을 다음 줄에 두고, 이어지는 `and`·`or` 뒤의 식 시작 위치를 맞춥니다.
+- 최상위 `inner join`의 다음 줄은 `on` 앞에 공백 8칸, `and` 앞에 공백 7칸을 둡니다.
+- 최상위 `left join`의 다음 줄은 `on` 앞에 공백 7칸, `and` 앞에 공백 6칸을 둡니다.
+- JOIN의 서브쿼리 본문은 공백 4칸을 추가해 들여쓰고, 닫는 괄호는 JOIN 키워드의 시작 위치에 맞춥니다.
 - JOIN 조건은 `on`, 조회 대상의 필터 조건은 `where`에 작성합니다.
 - WHERE의 추가 조건은 최상위 기준 공백 2칸 뒤 `and`·`or`로 시작합니다.
 - IN 서브쿼리는 `컬럼 in (`으로 열고, 내부 쿼리를 들여쓴 뒤 닫는 괄호를 별도 줄에 작성합니다.
@@ -111,6 +125,7 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 ### 조회 · 서브쿼리 · 조인
 
 ```sql
+/* SampleMapper.sample1 */
 with cte_sample_with1 as (
     select
           a.nat_info_no
@@ -118,7 +133,8 @@ with cte_sample_with1 as (
         , b.sub_dvsn_nm
         , b.sub_dvsn_ko_nm
     from sample_with1 as a
-    inner join sample_with2 as b on a.nat_info_no = b.nat_info_no
+    inner join sample_with2 as b
+            on a.nat_info_no = b.nat_info_no
     where a.use_yn = 'Y'
       and b.use_yn = 'Y'
       and a.nat_area_cd is not null
@@ -130,7 +146,8 @@ with cte_sample_with1 as (
         , b.sub_dvsn_nm
         , b.sub_dvsn_ko_nm
     from sample_with1 as a
-    inner join sample_with2 as b on a.nat_info_no = b.nat_info_no
+    inner join sample_with2 as b
+            on a.nat_info_no = b.nat_info_no
     where a.use_yn = 'Y'
       and b.use_yn = 'Y'
       and a.nat_area_cd is not null
@@ -147,32 +164,48 @@ select
         from sampleZ as x
         where x.sct = a.sct
       ) as sct_name
-    , case a.sct when 'A203' then 'S'
-                 else case when a.sc_type = 1 then 'F'
-                           else 'N'
-                      end
+    , case a.sct
+          when 'A203' then 'S'
+          else
+              case when a.sc_type = 1 then 'F'
+                   else 'N'
+              end
       end as sct_type
     , case when exists (
             select 1
             from gmcs_main_daily as x
             where x.hospital_id = a.hospital_id
-           ) then 'LIS'
+          ) then 'LIS'
            else 'HL7'
       end as data_type
     , a.sct
     , now() as current_date
 from sample as a
+inner join sample3 aa
+        on aa.col1 = a.col1
+       and aa.col2 = a.col2
 inner join (
-        select y.fg_seq
-        from sampleX as x
-        inner join sampleY as y on y.code = a.cust_code
-        where a.svc_date >= getdate()
-    ) as b on b.fg_seq = a.fg_seq
-left outer join sample1 as c on c.fg_seq = a.fg_seq and c.sct = a.sct and ((a.sc_type = 1 and c.gGroup = 'F') or (a.sc_type = 2 and c.gGroup = 'N'))
-left outer join sample2 as d
-             on d.fg_seq = c.fg_seq
-            and d.sct = c.sct
-            and ((d.sc_type = 1 and d.gGroup = 'F') or (d.sc_type = 2 and d.gGroup = 'N'))
+    select y.fg_seq
+    from sampleX as x
+    inner join sampleY as y
+            on y.code = a.cust_code
+    where a.svc_date >= getdate()
+) as b
+        on b.fg_seq = a.fg_seq
+left join sample1 as c
+       on c.fg_seq = a.fg_seq
+      and c.sct = a.sct
+      and (
+            (a.sc_type = 1 and c.gGroup = 'F')
+            or (a.sc_type = 2 and c.gGroup = 'N')
+          )
+left join sample2 as d
+       on d.fg_seq = c.fg_seq
+      and d.sct = c.sct
+      and (
+            (d.sc_type = 1 and d.gGroup = 'F')
+            or (d.sc_type = 2 and d.gGroup = 'N')
+          )
 where a.op_type = 'I'
   and a.isn in (
         select x.isn
@@ -184,6 +217,7 @@ where a.op_type = 'I'
 ### 데이터 입력
 
 ```sql
+/* SampleMapper.sample2 */
 insert into sample (
       col_1
     , col_2
@@ -196,6 +230,7 @@ insert into sample (
 ### 데이터 수정
 
 ```sql
+/* SampleMapper.sample3 */
 update sample
 set   col_2 = 'b'
     , col_3 = 'c'

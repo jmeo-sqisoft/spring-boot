@@ -5,9 +5,7 @@
 <mapper namespace="com.stagora.report.sample.mapper.SampleMapper">
 
     <select id="getArea" resultType="com.stagora.report.sample.model.Area">
-<![CDATA[
--- file name: SampleMapper.xml
--- query id: getArea
+/* SampleMapper.getArea */
 select
       a.comm_cd as area_code
     , a.comm_cd_nm as area_name
@@ -15,13 +13,10 @@ from comm_cd as a
 where a.use_yn = 'Y'
   and a.comm_grp_cd = 'CM009'
 order by a.sort_val
-]]>
     </select>
 
     <select id="getHospitalInfo" resultType="com.stagora.report.sample.model.InstitutionInfo">
-<![CDATA[
--- file name: SampleMapper.xml
--- query id: getHospitalInfo
+/* SampleMapper.getHospitalInfo */
 select
       a.hospital_id
     , coalesce(min(a.hospital_nm), a.hospital_id::text) as institution_name
@@ -43,14 +38,11 @@ select
 from mv_hospital_region as a
 where a.hospital_id = #{hospitalId}::uuid
 group by a.hospital_id
-]]>
     </select>
 
     <!-- 검사실 ID로 조회하며, 제휴 병원이 있으면 병원명 목록과 AFFILIATED 유형을 반환한다. -->
     <select id="getClabInfo" resultType="com.stagora.report.sample.model.InstitutionInfo">
-<![CDATA[
--- file name: SampleMapper.xml
--- query id: getClabInfo
+/* SampleMapper.getClabInfo */
 select
       a.clab_id
     , case when count(c.hospital_id) > 0 then string_agg(distinct d.hospital_nm, ' / ' order by d.hospital_nm)
@@ -83,7 +75,6 @@ left join mv_clab_affiliated_hospital as c
 left join mv_hospital_region as d on d.hospital_id = c.hospital_id
 where a.clab_id = #{clabId}
 group by a.clab_id
-]]>
     </select>
 
     <resultMap id="nationInfoMap" type="com.stagora.report.sample.model.NationInfoGroup">
@@ -107,9 +98,7 @@ group by a.clab_id
     </resultMap>
 
     <select id="getNationInfo" resultMap="nationInfoMap">
-<![CDATA[
--- file name: SampleMapper.xml
--- query id: getNationInfo
+/* SampleMapper.getNationInfo */
 with cte_nation_and_sub_dvsn as materialized (
     select
           a.nat_info_no
@@ -161,7 +150,6 @@ left join (
     group by x.country_no
 ) as c on c.country_no = a.nat_info_no
 where 1 = 1
-]]>
     </select>
 
 </mapper>

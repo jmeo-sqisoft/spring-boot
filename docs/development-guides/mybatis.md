@@ -7,6 +7,7 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 
 - [핵심 규칙](#핵심-규칙)
 - [상세 작성 기준](#상세-작성-기준)
+- [자동 검사 범위](#자동-검사-범위)
 - [SQL 작성 예시](#sql-작성-예시)
 
 ## 핵심 규칙
@@ -18,9 +19,9 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 | 03 | 테이블 별칭 | `a`, `b`, `c`처럼 짧은 소문자를 사용하고, 서브쿼리 내부는 `x`, `y`처럼 바깥 참조와 구분합니다. |
 | 04 | AS 표기 | 컬럼·서브쿼리 결과 별칭에는 `as`를 사용합니다. 테이블 별칭은 `as` 사용을 기본으로 하되 생략도 허용합니다. |
 | 05 | 컬럼 구분 | 최상위 SELECT의 첫 식은 공백 6칸, 다음 식은 공백 4칸 뒤 `, `로 시작해 식의 시작 위치를 맞춥니다. |
-| 06 | SELECT | 여러 식을 조회하면 `select` 다음 줄부터 작성합니다. 단일 컬럼 서브쿼리는 같은 줄 또는 다음 줄에 작성할 수 있습니다. |
+| 06 | SELECT | 단일 컬럼을 포함해 SELECT 목록은 `select` 다음 줄부터 작성합니다. EXISTS의 `select 1`은 같은 줄에 작성할 수 있습니다. |
 | 07 | FROM·WHERE | `from 테이블명`, `where 조건식`처럼 키워드와 첫 대상을 같은 줄에 작성합니다. |
-| 08 | JOIN·ON | `left outer join` 대신 `left join`을 사용합니다. JOIN과 대상은 같은 줄에 두고, 이어지는 조건은 식의 시작 위치를 맞춥니다. |
+| 08 | JOIN·ON | `left outer join` 대신 `left join`을 사용합니다. JOIN과 대상은 같은 줄에 두고, `on` 조건은 다음 줄에 작성합니다. |
 | 09 | 파라미터 바인딩 | `#{...}`로 바인딩하고, `${...}`는 사용하지 않습니다. |
 | 10 | 탭·공백 | 탭은 사용하지 않습니다. 기본 블록 들여쓰기는 공백 4칸이며 컬럼·조건의 수직 정렬에는 추가 공백을 사용합니다. |
 | 11 | INSERT·UPDATE | 컬럼·값·대입식을 줄바꿈하고 선두 콤마를 사용해 시작 위치를 맞춥니다. |
@@ -51,20 +52,20 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 
 ### SELECT와 컬럼 정렬
 
-- 여러 식을 조회하는 `select`는 단독 줄에 작성하고, 다음 줄부터 컬럼을 나열합니다.
+- `select`는 단독 줄에 작성하고, 다음 줄부터 컬럼을 나열합니다.
 - 최상위 SELECT의 첫 식은 공백 6칸 뒤에 작성합니다.
 - 다음 식은 공백 4칸 뒤에 `, `를 붙여 첫 식과 시작 위치를 맞춥니다.
 - 콤마는 앞선 식의 줄 끝에 붙이지 않습니다.
-- 단일 컬럼 서브쿼리는 `select 컬럼`을 같은 줄에 작성하거나 `select` 다음 줄에 컬럼을 작성할 수 있습니다.
-- 컬럼을 다음 줄에 작성하는 경우 컬럼은 해당 `select`보다 안쪽으로 들여씁니다.
+- 단일 컬럼 서브쿼리도 컬럼을 다음 줄로 내리고, 해당 `select`보다 안쪽으로 들여씁니다.
+- EXISTS의 존재 여부 확인용 `select 1`은 같은 줄 작성을 허용합니다.
 - 서브쿼리는 바깥 블록보다 안쪽에 배치하고, 내부 SELECT 목록의 선두 콤마와 식 시작 위치를 맞춥니다.
 
 | 위치 | 정렬 형태 |
 | --- | --- |
-| 여러 식의 조회 시작 | `select` 단독 줄 |
+| 조회 시작 | `select` 단독 줄 |
 | 최상위 첫 식 | 공백 6칸 + 컬럼 또는 식 |
 | 최상위 다음 식 | 공백 4칸 + `, ` + 컬럼 또는 식 |
-| 단일 컬럼 서브쿼리 | `select 컬럼` 또는 줄바꿈 형식 |
+| 단일 컬럼 서브쿼리 | `select` 다음 줄에 컬럼·상수 작성 |
 | 첫 테이블 | `from 테이블명 as 별칭` |
 | 첫 조건 | `where 조건식` |
 | 다음 WHERE 조건 | 공백 2칸 + `and 조건식` 또는 `or 조건식` |
@@ -73,9 +74,10 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 
 - XML과 SQL 모두 탭을 사용하지 않습니다.
 - 기본 블록 들여쓰기는 공백 4칸으로 하고, 컬럼·조건·괄호의 정렬에는 필요한 공백을 추가합니다.
-- `case when`과 `case 컬럼 when` 두 형식을 모두 사용합니다.
+- CASE는 `case` 또는 `case 컬럼`으로 시작하고 `when`은 다음 줄에 작성합니다.
 - `when 조건 then 결과`는 같은 줄에 작성하고, `else 결과`는 다음 줄에서 `when`의 시작 위치와 정렬합니다.
-- `end`는 대응하는 `case`의 시작 위치와 정렬합니다. 중첩 CASE의 각 분기에도 같은 기준을 적용합니다.
+- CASE 내부 분기는 `case`보다 공백 4칸 안쪽에 작성하고, `when`과 `else`의 시작 위치를 맞춥니다.
+- `end`는 대응하는 `case`의 시작 위치와 정렬합니다. 중첩 CASE는 `else` 다음 줄에서 공백 4칸을 추가해 시작합니다.
 - SELECT 목록의 CASE가 끝나면 `end as 별칭`으로 닫습니다.
 - 포맷을 맞추기 위해 SQL 문자열 내부의 공백이나 실제 값을 변경하지 않습니다.
 
@@ -85,8 +87,8 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 - JOIN의 서브쿼리는 JOIN 키워드 뒤에 여는 괄호를 두고, 내부 쿼리를 들여쓴 뒤 `) as 별칭`으로 닫습니다.
 - 일반 테이블 JOIN은 JOIN 키워드 뒤에 테이블과 별칭을 같은 줄에 작성합니다.
 - 왼쪽 외부 조인은 `left join`으로 표기하고 `outer`는 생략합니다.
-- 조인 조건을 한 줄에 작성하는 경우 대상 뒤에 `on 조건식`으로 이어 씁니다.
-- 조건을 여러 줄로 나누는 경우 `on`을 다음 줄에 두고, 이어지는 `and`·`or` 뒤의 식 시작 위치를 맞춥니다.
+- `on 조건식`은 JOIN 대상의 다음 줄에 작성합니다. 서브쿼리 JOIN도 닫는 괄호·별칭 다음 줄에 작성합니다.
+- 추가 조건은 다음 줄의 `and`·`or`로 시작하고, 각 조건식의 시작 위치를 맞춥니다.
 - 최상위 `inner join`의 다음 줄은 `on` 앞에 공백 8칸, `and` 앞에 공백 7칸을 둡니다.
 - 최상위 `left join`의 다음 줄은 `on` 앞에 공백 7칸, `and` 앞에 공백 6칸을 둡니다.
 - JOIN의 서브쿼리 본문은 공백 4칸을 추가해 들여쓰고, 닫는 괄호는 JOIN 키워드의 시작 위치에 맞춥니다.
@@ -120,6 +122,18 @@ SQL은 핵심 규칙과 상세 작성 기준에 따라 작성합니다. 문서 �
 - SELECT·INSERT·UPDATE 모두 문장 끝에 세미콜론을 작성하지 않습니다.
 - 마지막 구문 뒤에서 줄을 바꾸고 SQL 블록을 종료합니다.
 
+## 자동 검사 범위
+
+[Checkstyle 설정](../../config/checkstyle/checkstyle.xml)은 SELECT 목록 줄바꿈,
+`case`·`case 컬럼` 뒤 WHEN 줄바꿈, ELSE 뒤 중첩 CASE 줄바꿈, JOIN의 ON 줄바꿈을 검사합니다.
+존재 여부를 확인하는 `select 1`의 같은 줄 작성은 허용합니다.
+기존 탭 금지, FROM·WHERE와 첫 대상의 같은 줄 배치, JOIN 대상의 같은 줄 배치,
+`left outer join` 금지, 쿼리 시작 주석, 세미콜론 생략, 파라미터 바인딩과 콤마 검사도 유지합니다.
+
+정규식 기반 검사이므로 CASE의 정확한 분기 정렬, 복잡한 식을 기준으로 하는 CASE,
+중첩 괄호·동적 SQL의 들여쓰기와 별칭 참조 관계는 별도로 확인합니다.
+ON 검사에서는 문자열·주석·XML 표기가 포함된 행을 제외합니다.
+
 ## SQL 작성 예시
 
 ### 조회 · 서브쿼리 · 조인
@@ -133,8 +147,8 @@ with cte_sample_with1 as (
         , b.sub_dvsn_nm
         , b.sub_dvsn_ko_nm
     from sample_with1 as a
-    inner join sample_with2 as b
-            on a.nat_info_no = b.nat_info_no
+    join sample_with2 as b
+      on a.nat_info_no = b.nat_info_no
     where a.use_yn = 'Y'
       and b.use_yn = 'Y'
       and a.nat_area_cd is not null
@@ -146,16 +160,17 @@ with cte_sample_with1 as (
         , b.sub_dvsn_nm
         , b.sub_dvsn_ko_nm
     from sample_with1 as a
-    inner join sample_with2 as b
-            on a.nat_info_no = b.nat_info_no
+    join sample_with2 as b
+      on a.nat_info_no = b.nat_info_no
     where a.use_yn = 'Y'
       and b.use_yn = 'Y'
       and a.nat_area_cd is not null
 )
 select
       c.fg_seq
-    , case when a.sc_type = 1 then 'F'
-           else 'N'
+    , case
+          when a.sc_type = 1 then 'F'
+          else 'N'
       end as g_group
     , (
         select
@@ -167,28 +182,31 @@ select
     , case a.sct
           when 'A203' then 'S'
           else
-              case when a.sc_type = 1 then 'F'
-                   else 'N'
+              case
+                  when a.sc_type = 1 then 'F'
+                  else 'N'
               end
       end as sct_type
-    , case when exists (
-            select 1
-            from gmcs_main_daily as x
-            where x.hospital_id = a.hospital_id
+    , case
+          when exists (
+              select 1
+              from gmcs_main_daily as x
+              where x.hospital_id = a.hospital_id
           ) then 'LIS'
-           else 'HL7'
+          else 'HL7'
       end as data_type
     , a.sct
     , now() as current_date
 from sample as a
-inner join sample3 aa
+inner join sample3 as aa
         on aa.col1 = a.col1
        and aa.col2 = a.col2
 inner join (
-    select y.fg_seq
+    select
+          y.fg_seq
     from sampleX as x
-    inner join sampleY as y
-            on y.code = a.cust_code
+    join sampleY as y
+      on y.code = a.cust_code
     where a.svc_date >= getdate()
 ) as b
         on b.fg_seq = a.fg_seq
@@ -197,19 +215,20 @@ left join sample1 as c
       and c.sct = a.sct
       and (
             (a.sc_type = 1 and c.gGroup = 'F')
-            or (a.sc_type = 2 and c.gGroup = 'N')
-          )
+         or (a.sc_type = 2 and c.gGroup = 'N')
+      )
 left join sample2 as d
        on d.fg_seq = c.fg_seq
       and d.sct = c.sct
       and (
             (d.sc_type = 1 and d.gGroup = 'F')
-            or (d.sc_type = 2 and d.gGroup = 'N')
-          )
+         or (d.sc_type = 2 and d.gGroup = 'N')
+      )
 where a.op_type = 'I'
   and a.isn in (
-        select x.isn
-        from sample2 x
+        select
+              x.isn
+        from sample2 as x
         where x.cno = a.cno
   )
 ```

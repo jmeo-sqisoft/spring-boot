@@ -28,12 +28,13 @@ select
     , null::timestamptz as registration_date
     , null::timestamptz as expiration_date
     , '' as contact_email
-    , case when exists (
-            select 1
-            from gmcs_main_daily as x
-            where x.hospital_id = a.hospital_id
-           ) then 'LIS'
-           else 'HL7'
+    , case
+          when exists (
+              select 1
+              from gmcs_main_daily as x
+              where x.hospital_id = a.hospital_id
+          ) then 'LIS'
+          else 'HL7'
       end as data_type
 from mv_hospital_region as a
 where a.hospital_id = #{hospitalId}::uuid
@@ -45,11 +46,13 @@ group by a.hospital_id
 /* SampleMapper.getClabInfo */
 select
       a.clab_id
-    , case when count(c.hospital_id) > 0 then string_agg(distinct d.hospital_nm, ' / ' order by d.hospital_nm)
-           else min(a.clab_nm)
+    , case
+          when count(c.hospital_id) > 0 then string_agg(distinct d.hospital_nm, ' / ' order by d.hospital_nm)
+          else min(a.clab_nm)
       end as institution_name
-    , case when count(c.hospital_id) > 0 then 'AFFILIATED'
-           else 'CLAB'
+    , case
+          when count(c.hospital_id) > 0 then 'AFFILIATED'
+          else 'CLAB'
       end as institution_type
     , min(a.sub_dvsn_nm) as city_name
     , min(a.nat_cd) as nation_code
@@ -58,12 +61,13 @@ select
     , min(b.provide_start_dt) as registration_date
     , max(b.provide_end_dt) as contract_expiration_date
     , min(a.contact_email) as contact_email
-    , case when exists (
-            select 1
-            from gmcs_main_daily as x
-            where x.clab_id = a.clab_id
-           ) then 'LIS'
-           else 'HL7'
+    , case
+          when exists (
+              select 1
+              from gmcs_main_daily as x
+              where x.clab_id = a.clab_id
+          ) then 'LIS'
+          else 'HL7'
       end as data_type
 from mv_clab_region as a
 inner join mv_gmcs_clab_contract as b
@@ -72,7 +76,8 @@ inner join mv_gmcs_clab_contract as b
 left join mv_clab_affiliated_hospital as c
        on c.clab_id = a.clab_id
       and c.hospital_id is not null
-left join mv_hospital_region as d on d.hospital_id = c.hospital_id
+left join mv_hospital_region as d
+       on d.hospital_id = c.hospital_id
 where a.clab_id = #{clabId}
 group by a.clab_id
     </select>
@@ -113,7 +118,8 @@ with cte_nation_and_sub_dvsn as materialized (
         , b.sub_dvsn_nm
         , b.sub_dvsn_ko_nm
     from nation_info as a
-    inner join nation_sub_dvsn_info as b on a.nat_info_no = b.nat_info_no
+    inner join nation_sub_dvsn_info as b
+            on a.nat_info_no = b.nat_info_no
     where a.use_yn = 'Y'
       and b.use_yn = 'Y'
       and a.nat_area_cd is not null
@@ -121,22 +127,26 @@ with cte_nation_and_sub_dvsn as materialized (
 select
       a.nat_info_no as nation_info_no
     , a.nat_cd as nation_code
-    , case when coalesce(#{lang}, 'en') = 'ko' then a.nat_ko_nm
-           else a.nat_nm
+    , case
+          when coalesce(#{lang}, 'en') = 'ko' then a.nat_ko_nm
+          else a.nat_nm
       end as nation_name
     , a.latud as latitude
     , a.lngtud as longitude
     , b.comm_cd as area_code
-    , case when coalesce(#{lang}, 'en') = 'ko' then b.cond_1_val
-           else b.comm_cd_nm
+    , case
+          when coalesce(#{lang}, 'en') = 'ko' then b.cond_1_val
+          else b.comm_cd_nm
       end as area_name
     , a.sub_dvsn_no as nation_region_no
     , a.sub_dvsn_cd as nation_region_code
-    , case when coalesce(#{lang}, 'en') = 'ko' then a.sub_dvsn_ko_nm
-           else a.sub_dvsn_nm
+    , case
+          when coalesce(#{lang}, 'en') = 'ko' then a.sub_dvsn_ko_nm
+          else a.sub_dvsn_nm
       end as nation_region_name
-    , case when c.country_no is null then 0
-           else 1
+    , case
+          when c.country_no is null then 0
+          else 1
       end as is_participating
 from cte_nation_and_sub_dvsn as a
 inner join comm_cd as b
@@ -144,11 +154,13 @@ inner join comm_cd as b
        and b.comm_grp_cd = 'CM009'
        and b.use_yn = 'Y'
 left join (
-    select x.country_no
+    select
+          x.country_no
     from gmcs_test_monthly as x
     where x.target_system_code = 'GMCS'
     group by x.country_no
-) as c on c.country_no = a.nat_info_no
+) as c
+       on c.country_no = a.nat_info_no
 where 1 = 1
     </select>
 

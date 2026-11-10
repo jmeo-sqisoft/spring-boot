@@ -1,0 +1,25 @@
+spring:
+  config:
+    activate:
+      on-profile: perf
+
+app:
+  sql-logging:
+    enabled: false
+
+logging:
+  level:
+    com.seegene.gmcs: debug
+    org.hibernate.SQL: "OFF"
+    org.hibernate.orm.jdbc.bind: "OFF"
+    com.seegene.gmcs.report.monthly.mapper: info
+    com.seegene.gmcs.report.daily.mapper: info
+    com.seegene.gmcs.nation.mapper: info
+    com.seegene.gmcs.test.mapper: info
+    p6spy: info
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

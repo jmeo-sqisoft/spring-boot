@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Tag(name = "Sample", description = "Sample API")
 @RestController
-@RequestMapping("/apis/report/v1")
+@RequestMapping("/apis/report/v1/sample")
 @RequiredArgsConstructor
 public class SampleController extends AbstractApiController {
     private final MessageSource messageSource;
@@ -41,7 +41,7 @@ public class SampleController extends AbstractApiController {
      * 지역 목록을 조회해 공통 성공 응답으로 반환한다.
      */
     @Operation(summary = "지역 목록 조회", description = "사용 중인 지역 코드와 이름을 조회합니다.")
-    @GetMapping("/sample/areas")
+    @GetMapping("/areas")
     public ResponseEntity<StaResponse<List<AreasResponse>>> getAreas() {
         List<AreasResponse> response = sampleService.getArea();
         return super.success(response);
@@ -53,7 +53,7 @@ public class SampleController extends AbstractApiController {
      */
     @Operation(summary = "기관 정보 조회",
         description = "clabId 또는 hospitalId 중 하나 이상 필요하며, hospitalId가 있으면 병원을 조회합니다.")
-    @GetMapping("/sample/institutioninfo")
+    @GetMapping("/institutioninfo")
     public ResponseEntity<StaResponse<InstitutionInfoResponse>> institutionInfo(
         @Schema(description = "검사실 ID", example = "CL0001")
         @RequestParam(required = false) String clabId,
@@ -76,7 +76,7 @@ public class SampleController extends AbstractApiController {
      */
     @Operation(summary = "지역별 국가 목록 조회",
         description = "요청 언어에 따라 지역·국가·하위 지역을 조회하고 지역명과 국가명으로 정렬합니다.")
-    @GetMapping("/sample/nations")
+    @GetMapping("/nations")
     public ResponseEntity<StaResponse<List<NationInfoResponse>>> getNations(Locale locale) {
         List<NationInfoResponse> response = sampleService.getNationInfo(locale);
         return super.success(response);

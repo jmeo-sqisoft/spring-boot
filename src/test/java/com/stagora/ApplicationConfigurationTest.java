@@ -95,7 +95,9 @@ class ApplicationConfigurationTest {
                     HttpResponse.BodyHandlers.ofString());
                 assertThat(docs.statusCode()).isEqualTo(isSwaggerEnabled ? 200 : 404);
                 if (isSwaggerEnabled) {
-                    assertThat(docs.body()).contains("Local API", "openapi");
+                    assertThat(docs.body()).contains("Local API", "openapi")
+                        .contains("\"sampleIds\"", "\"panelCode\"", "\"periodMonths\"")
+                        .doesNotContain("\"sampleIdsText\"");
                     assertThat(docs.body()).contains("/apis/report/v1/sample/areas",
                         "/apis/report/v1/sample/institutioninfo", "/apis/report/v1/sample/nations");
                     HttpResponse<String> ui = client.send(

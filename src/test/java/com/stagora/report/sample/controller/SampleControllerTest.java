@@ -8,20 +8,27 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.stagora.global.api.ApiResponseCode;
@@ -84,29 +91,53 @@ class SampleControllerTest {
         assertServiceRequest(clabId, hospitalId);
     }
 
-    @Test
-    void passesQueryParametersToServiceAsRequestDto() throws Exception {
+    @ParameterizedTest
+    @CsvSource({"ko-KR, 정상적으로 처리 되었습니다.", "en-US, Processed successfully."})
+    void passesQueryParametersToServiceAsRequestDto(String language, String expectedMessage)
+        throws Exception {
         var institution = new InstitutionInfoResponse();
         institution.setInstitutionId("hospital-id");
         when(service.getInstitutionInfo(any(InstitutionInfoRequest.class))).thenReturn(institution);
 
-        var result = MockMvcBuilders.standaloneSetup(controller).build()
+        var httpController = new SampleController(messageSource(), service);
+        MockMvcBuilders.standaloneSetup(httpController).build()
             .perform(get("/apis/report/v1/sample/institutioninfo")
+                .header("Accept-Language", language)
                 .param("clabId", "clab-id").param("hospitalId", "hospital-id"))
-            .andExpect(status().isOk()).andReturn();
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$").value(aMapWithSize(3)))
+            .andExpect(jsonPath("$.code").value("S0000"))
+            .andExpect(jsonPath("$.message").value(expectedMessage))
+            .andExpect(jsonPath("$.data.institutionId").value("hospital-id"));
 
-        assertThat(result.getResponse().getContentAsString()).contains("hospital-id", "S0000");
         assertServiceRequest("clab-id", "hospital-id");
     }
 
-    @Test
-    void missingIdentifiersReturnBadRequestOverHttp() throws Exception {
-        messages.addMessage("error.validation.failed", Locale.ENGLISH, "Validation failed.");
-        var result = MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new ApiExceptionHandler(messages)).build()
-            .perform(get("/apis/report/v1/sample/institutioninfo"))
-            .andExpect(status().isBadRequest()).andReturn();
-        assertThat(result.getResponse().getContentAsString()).contains("E40001");
+    @ParameterizedTest
+    @MethodSource("localizedMissingIdentifiers")
+    void missingIdentifiersReturnBadRequestOverHttp(String language, String expectedMessage,
+        String clabId, String hospitalId) throws Exception {
+        var bundle = messageSource();
+        var httpController = new SampleController(bundle, service);
+        var request = get("/apis/report/v1/sample/institutioninfo")
+            .header("Accept-Language", language);
+        if (clabId != null) {
+            request.param("clabId", clabId);
+        }
+        if (hospitalId != null) {
+            request.param("hospitalId", hospitalId);
+        }
+
+        MockMvcBuilders.standaloneSetup(httpController)
+            .setControllerAdvice(new ApiExceptionHandler(bundle)).build()
+            .perform(request)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$").value(aMapWithSize(3)))
+            .andExpect(jsonPath("$.code").value("E40001"))
+            .andExpect(jsonPath("$.message").value(expectedMessage))
+            .andExpect(jsonPath("$.data").value(nullValue()));
         verifyNoInteractions(service);
     }
 
@@ -141,6 +172,24 @@ class SampleControllerTest {
     private static Stream<Arguments> missingIdentifiers() {
         return Stream.of(null, "", " ", "\t").flatMap(clabId ->
             Stream.of(null, "", " ", "\t").map(hospitalId -> Arguments.of(clabId, hospitalId)));
+    }
+
+    private static Stream<Arguments> localizedMissingIdentifiers() {
+        return Stream.of("ko-KR", "en-US").flatMap(language -> {
+            String expectedMessage = "ko-KR".equals(language)
+                ? "입력값 검증에 실패했습니다." : "Validation failed.";
+            return Stream.of(null, "", " ", "\t").flatMap(clabId ->
+                Stream.of(null, "", " ", "\t").map(hospitalId ->
+                    Arguments.of(language, expectedMessage, clabId, hospitalId)));
+        });
+    }
+
+    private static ResourceBundleMessageSource messageSource() {
+        var bundle = new ResourceBundleMessageSource();
+        bundle.setBasename("messages/messages");
+        bundle.setDefaultEncoding("UTF-8");
+        bundle.setFallbackToSystemLocale(false);
+        return bundle;
     }
 
     private static Stream<Arguments> validIdentifiers() {

@@ -1,10 +1,10 @@
 package com.stagora.report.sample.mapper;
 
 import java.io.InputStream;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -14,12 +14,12 @@ import javax.sql.rowset.RowSetMetaDataImpl;
 import javax.sql.rowset.RowSetProvider;
 
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
+import org.apache.ibatis.executor.resultset.DefaultResultSetHandler;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.reflection.ParamNameResolver;
-import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.scripting.defaults.DefaultParameterHandler;
-import org.apache.ibatis.executor.resultset.DefaultResultSetHandler;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.RowBounds;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,8 +27,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.AdditionalAnswers;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -89,7 +89,8 @@ class SampleMapperTest {
         var method = SampleMapper.class.getMethod(query, InstitutionInfoRequest.class);
         var parameters = new ParamNameResolver(configuration, method)
             .getNamedParams(new Object[] {request});
-        var statement = configuration.getMappedStatement(SampleMapper.class.getName() + "." + query);
+        var statement = configuration.getMappedStatement(
+            SampleMapper.class.getName() + "." + query);
         var boundSql = statement.getBoundSql(parameters);
         var preparedStatement = mock(PreparedStatement.class);
 
@@ -144,7 +145,8 @@ class SampleMapperTest {
             doReturn(false).when(resultSet).isClosed();
             when(jdbcStatement.getResultSet()).thenReturn(resultSet);
             when(jdbcStatement.getUpdateCount()).thenReturn(-1);
-            var mapped = configuration.getMappedStatement(SampleMapper.class.getName() + "." + query);
+            var mapped = configuration.getMappedStatement(
+                SampleMapper.class.getName() + "." + query);
             var handler = new DefaultResultSetHandler(null, mapped, null, null,
                 mapped.getBoundSql(new InstitutionInfoRequest()), RowBounds.DEFAULT);
 

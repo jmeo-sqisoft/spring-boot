@@ -10,7 +10,7 @@ import javax.sql.DataSource;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -29,8 +29,10 @@ import jakarta.persistence.EntityManagerFactory;
 
 class ApplicationConfigurationTest {
     @ParameterizedTest
-    @ValueSource(strings = {"dev", "uat", "prd"})
-    void profilesStartWithoutExternalServices(String profile) throws Exception {
+    @CsvSource({"dev, true, true, debug", "uat, true, false, debug",
+        "prd, false, false, warn", "perf, false, false, debug", "onprem, false, false, warn"})
+    void profilesStartWithoutExternalServices(String profile, boolean isSqlLoggingEnabled,
+        boolean isSwaggerEnabled, String expectedLogLevel) throws Exception {
         SpringApplication application = new SpringApplication(Application.class);
         application.setWebApplicationType(WebApplicationType.SERVLET);
         try (ConfigurableApplicationContext context = application.run(
@@ -51,7 +53,17 @@ class ApplicationConfigurationTest {
             HikariDataSource hikari = dataSource.unwrap(HikariDataSource.class);
             assertThat(hikari.getPoolName()).isEqualTo("gmcs-be-hikari-pool");
             assertThat(hikari.getDataSourceProperties()).containsEntry("ApplicationName", "gmcs");
-            assertThat(dataSource instanceof P6DataSource).isEqualTo(!"prd".equals(profile));
+            assertThat(dataSource instanceof P6DataSource).isEqualTo(isSqlLoggingEnabled);
+            assertThat(context.getEnvironment()
+                .getProperty("app.sql-logging.enabled", Boolean.class))
+                .isEqualTo(isSqlLoggingEnabled);
+            assertThat(context.getEnvironment().getProperty("logging.level.com.stagora"))
+                .isEqualTo(expectedLogLevel);
+            if ("perf".equals(profile)) {
+                assertThat(context.getEnvironment()
+                    .getProperty("logging.level.com.stagora.report.sample.mapper"))
+                    .isEqualTo("info");
+            }
             assertThat(context.getBean(SqlSessionFactory.class)
                 .getConfiguration().getEnvironment().getDataSource())
                 .isSameAs(dataSource);
@@ -61,7 +73,7 @@ class ApplicationConfigurationTest {
                 .isEqualTo("com.stagora");
             assertThat(context.getEnvironment()
                 .getProperty("springdoc.swagger-ui.enabled", Boolean.class))
-                .isEqualTo("dev".equals(profile));
+                .isEqualTo(isSwaggerEnabled);
             assertThat(context.getMessage("success.default", null, Locale.ENGLISH))
                 .isEqualTo("Processed successfully.");
             assertThat(context.getMessage("success.default", null, Locale.KOREAN))
@@ -81,8 +93,8 @@ class ApplicationConfigurationTest {
                 HttpResponse<String> docs = client.send(
                     HttpRequest.newBuilder(URI.create(baseUrl + "/local-api-docs")).GET().build(),
                     HttpResponse.BodyHandlers.ofString());
-                assertThat(docs.statusCode()).isEqualTo("dev".equals(profile) ? 200 : 404);
-                if ("dev".equals(profile)) {
+                assertThat(docs.statusCode()).isEqualTo(isSwaggerEnabled ? 200 : 404);
+                if (isSwaggerEnabled) {
                     assertThat(docs.body()).contains("Local API", "openapi");
                     assertThat(docs.body()).contains("/apis/report/v1/sample/areas",
                         "/apis/report/v1/sample/institutioninfo", "/apis/report/v1/sample/nations");
@@ -92,12 +104,14 @@ class ApplicationConfigurationTest {
                     assertThat(ui.statusCode()).isEqualTo(200);
                     assertThat(ui.body()).contains("swagger-ui", "swagger-ui-bundle.js");
                     HttpResponse<String> config = client.send(
-                        HttpRequest.newBuilder(URI.create(baseUrl + "/local-api-docs/swagger-config"))
+                        HttpRequest.newBuilder(URI.create(
+                            baseUrl + "/local-api-docs/swagger-config"))
                             .GET().build(), HttpResponse.BodyHandlers.ofString());
                     assertThat(config.statusCode()).isEqualTo(200);
                     assertThat(config.body()).contains("/local-api-docs");
                     HttpResponse<String> script = client.send(
-                        HttpRequest.newBuilder(URI.create(baseUrl + "/swagger-ui/swagger-ui-bundle.js"))
+                        HttpRequest.newBuilder(URI.create(
+                            baseUrl + "/swagger-ui/swagger-ui-bundle.js"))
                             .method("HEAD", HttpRequest.BodyPublishers.noBody()).build(),
                         HttpResponse.BodyHandlers.ofString());
                     assertThat(script.statusCode()).isEqualTo(200);

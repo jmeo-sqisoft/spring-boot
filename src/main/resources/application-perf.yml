@@ -9,13 +9,10 @@ app:
 
 logging:
   level:
-    com.seegene.gmcs: debug
+    com.stagora: debug
     org.hibernate.SQL: "OFF"
     org.hibernate.orm.jdbc.bind: "OFF"
-    com.seegene.gmcs.report.monthly.mapper: info
-    com.seegene.gmcs.report.daily.mapper: info
-    com.seegene.gmcs.nation.mapper: info
-    com.seegene.gmcs.test.mapper: info
+    com.stagora.report.sample.mapper: info
     p6spy: info
 
 springdoc:

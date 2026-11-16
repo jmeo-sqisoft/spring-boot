@@ -14,8 +14,7 @@ class JpaAwareSqlLogFormatterTest {
             "select * from example_rows where name = ?",
             "select * from example_rows where name = 'question? O''Brien'", "jdbc:postgresql:test");
 
-        assertThat(message).containsOnlyOnce("example_rows")
-            .contains("'question? O''Brien'", "statement", "10")
+        assertThat(message).containsOnlyOnce("example_rows").contains("'question? O''Brien'", "statement", "10")
             .doesNotContain("name = ?");
     }
 
@@ -24,8 +23,7 @@ class JpaAwareSqlLogFormatterTest {
     void emptyEventsDoNotFallBackToPreparedSql(boolean jpa) {
         JpaAwareSqlLogFormatter formatter = new JpaAwareSqlLogFormatter(() -> jpa);
 
-        String message = formatter.formatMessage(1, "now", 10L, "commit",
-            "select ?", "", "jdbc:postgresql:test");
+        String message = formatter.formatMessage(1, "now", 10L, "commit", "select ?", "", "jdbc:postgresql:test");
 
         assertThat(message).contains("commit").doesNotContain("select ?");
     }

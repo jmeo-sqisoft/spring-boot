@@ -36,17 +36,13 @@ public class DataSourceConfig {
      */
     @Bean
     @Primary
-    public DataSource localDataSource(
-            DataSourceProperties localDataSourceProperties,
-            Environment environment,
+    public DataSource localDataSource(DataSourceProperties localDataSourceProperties, Environment environment,
             @Value("${app.sql-logging.enabled:false}") boolean sqlLoggingEnabled) {
         HikariDataSource hikariDataSource = localDataSourceProperties.initializeDataSourceBuilder()
-            .type(HikariDataSource.class)
-            .build();
+            .type(HikariDataSource.class).build();
 
         // 접속 정보와 별도로 설정한 풀 옵션과 JDBC 드라이버 프로퍼티를 반영한다.
-        Binder.get(environment)
-            .bind("spring.datasource.local.hikari", Bindable.ofInstance(hikariDataSource));
+        Binder.get(environment).bind("spring.datasource.local.hikari", Bindable.ofInstance(hikariDataSource));
 
         if (!sqlLoggingEnabled) {
             return hikariDataSource;
@@ -54,8 +50,7 @@ public class DataSourceConfig {
 
         // P6Spy 설정은 JVM 전역에 적용되며, 모듈을 다시 로드해 변경 내용을 반영한다.
         System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.Slf4JLogger");
-        System.setProperty("p6spy.config.logMessageFormat",
-            JpaAwareSqlLogFormatter.class.getName());
+        System.setProperty("p6spy.config.logMessageFormat", JpaAwareSqlLogFormatter.class.getName());
         P6ModuleManager.getInstance().reload();
 
         return new P6DataSource(hikariDataSource);

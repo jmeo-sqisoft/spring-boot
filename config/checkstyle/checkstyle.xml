@@ -5,7 +5,7 @@
 
 <!--
     Java 소스와 MyBatis Mapper XML의 작성 규칙을 검사하는 Checkstyle 설정.
-    Java와 XML은 탭을 허용하지 않는다. Java 한 줄은 최대 100자로 제한한다(일부 예외 적용).
+    Java와 XML은 탭을 허용하지 않는다. Java 한 줄은 최대 120자로 제한한다(일부 예외 적용).
     이름 표기법, import 순서, 필드 접근 제한, 중괄호와 공백 사용 등을 검사한다.
     위반 사항은 경고로 보고하며, 빌드 실패 기준은 build.gradle.kts에서 설정한다.
     검사 대상: 운영 Java 소스와 src/main/resources 아래 XML.
@@ -37,10 +37,10 @@
         <property name="eachLine" value="true"/>
     </module>
 
-    <!-- 2.2 한 줄 최대 100자: package·import·URL 등 예외 적용 -->
+    <!-- 2.2 한 줄 최대 120자: package·import·URL 등 예외 적용 -->
     <module name="LineLength">
         <property name="fileExtensions" value="java"/>
-        <property name="max" value="100"/>
+        <property name="max" value="120"/>
         <property name="ignorePattern" value="^package.*|^import.*|a]+ href|href|http://|https://|ftp://"/>
     </module>
 

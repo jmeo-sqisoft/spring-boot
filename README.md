@@ -73,7 +73,7 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 | GET | `/apis/reports/v1/sample/areas` | 지역 정보 전체 목록 조회 | 없음 |
 | GET | `/apis/reports/v1/sample/institutioninfo` | 기관 정보 조회 | `clabId`, `hospitalId` 중 하나 이상 필요 |
 | GET | `/apis/reports/v1/sample/nations` | 지역별 국가 목록과 국가 하위 지역 조회 | 없음 |
-| POST | `/apis/reports/v1/patient/list` | 환자 리포트 목록 조회 | JSON 본문: 필수 `sampleIds` 배열, 검사 패널·기간 |
+| POST | `/apis/reports/v1/patient/list` | 환자 리포트 목록 조회 | JSON 본문: 검색 탭, Sample ID 또는 분류·질환, 검사일 기간, 페이지 |
 | GET | `/apis/reports/v1/patient/detail` | 목록과 동일한 검사 정보·전체 PNG 단건 조회 | 필수 쿼리 파라미터 `sampleId` (UUID) |
 
 성공 응답은 `StaResponse<T>` 형태의 `code`, `message`, `data`를 사용하며 성공 코드는 `S0000`입니다.

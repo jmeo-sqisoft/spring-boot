@@ -61,15 +61,13 @@ public final class StringUtil {
         if (list == null) {
             return Collections.emptyList();
         }
-        return list.stream()
-            .sorted((a, b) -> {
-                try {
-                    return Double.compare(Double.parseDouble(a), Double.parseDouble(b));
-                } catch (NumberFormatException e) {
-                    return a.compareTo(b);
-                }
-            })
-            .toList();
+        return list.stream().sorted((a, b) -> {
+            try {
+                return Double.compare(Double.parseDouble(a), Double.parseDouble(b));
+            } catch (NumberFormatException e) {
+                return a.compareTo(b);
+            }
+        }).toList();
     }
 
     /**

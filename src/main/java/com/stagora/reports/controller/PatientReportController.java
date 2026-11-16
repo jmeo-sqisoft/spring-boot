@@ -33,8 +33,7 @@ public class PatientReportController extends AbstractApiController {
     private final MessageSource messageSource;
     private final PatientReportService patientReportService;
 
-    @Operation(summary = "환자 리포트 목록 조회",
-        description = "Sample ID 또는 검사 분류·질환 탭의 조건과 검사일로 페이지별 리포트를 조회합니다.")
+    @Operation(summary = "환자 리포트 목록 조회", description = "Sample ID 또는 검사 분류·질환 탭의 조건과 검사일로 페이지별 리포트를 조회합니다.")
     @PostMapping("/list")
     public ResponseEntity<StaResponse<PatientListResponse>> getPatientList(
         @RequestBody(required = false) PatientListSearchRequest request) {
@@ -44,8 +43,7 @@ public class PatientReportController extends AbstractApiController {
         return success(patientReportService.getPatientList(request.normalized()));
     }
 
-    @Operation(summary = "환자 리포트 상세 조회",
-        description = "UUID로 목록과 동일한 검사 정보 및 1장 이상의 PNG를 한 번에 조회합니다.")
+    @Operation(summary = "환자 리포트 상세 조회", description = "UUID로 목록과 동일한 검사 정보 및 1장 이상의 PNG를 한 번에 조회합니다.")
     @GetMapping("/detail")
     public ResponseEntity<StaResponse<PatientDetailResponse>> getPatientDetail(
         @Parameter(description = "환자 리포트 Sample ID (UUID)") @RequestParam String sampleId) {

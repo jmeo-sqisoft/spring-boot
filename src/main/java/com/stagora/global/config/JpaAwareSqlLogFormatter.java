@@ -38,8 +38,7 @@ public class JpaAwareSqlLogFormatter implements MessageFormattingStrategy {
             return delegate.formatMessage(connectionId, now, elapsed, category, "", sql, url);
         }
         // delegate에는 prepared SQL을 전달하지 않아 SQL이 중복 출력되지 않도록 한다.
-        String formattedSql = sql == null || sql.isBlank()
-            ? sql : FormatStyle.BASIC.getFormatter().format(sql);
+        String formattedSql = sql == null || sql.isBlank() ? sql : FormatStyle.BASIC.getFormatter().format(sql);
         return delegate.formatMessage(connectionId, now, elapsed, category, "", formattedSql, url);
     }
 }

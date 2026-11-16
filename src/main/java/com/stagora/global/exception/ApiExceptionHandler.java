@@ -24,8 +24,7 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<StaResponse<Object>> handle(ApiException exception, Locale locale) {
-        String message = messageSource.getMessage(exception.getMessageKey(), null,
-            exception.getMessageKey(), locale);
+        String message = messageSource.getMessage(exception.getMessageKey(), null, exception.getMessageKey(), locale);
         return ResponseEntity.status(exception.getStatusCode())
             .body(new StaResponse<>(exception.getErrorCode(), message, exception.getData()));
     }

@@ -28,9 +28,7 @@ public abstract class AbstractApiController {
         Locale locale = LocaleContextHolder.getLocale();
         String message = getMessageSource().getMessage(
             Messages.KEY_SUCCESS_DEFAULT, null, Messages.KEY_SUCCESS_DEFAULT, locale);
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(StaResponse.success(message, data));
+        return ResponseEntity.status(HttpStatus.OK).body(StaResponse.success(message, data));
     }
 
     /**

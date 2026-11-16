@@ -23,7 +23,7 @@
 | 파일 | UTF-8, 파일 끝 개행 | `charset`, `NewlineAtEndOfFile` |
 | 탭 | 사용 금지, 탭이 있는 모든 줄 보고 | `FileTabCharacter`, `eachLine=true` |
 | 들여쓰기 | 공백 4칸 | `Indentation` |
-| 한 줄 길이 | 최대 100자, 설정된 예외 적용 | `LineLength` |
+| 한 줄 길이 | 최대 120자, 설정된 예외 적용 | `LineLength` |
 | 중괄호 | 여는 중괄호는 같은 줄, 제어문 본문에 중괄호 사용 | `LeftCurly`, `RightCurly`, `NeedBraces` |
 | 공백 | 연산자 양옆, 쉼표·세미콜론 뒤 공백 | `WhitespaceAround`, `WhitespaceAfter` |
 | 이름 | 타입 PascalCase, 메서드·변수 camelCase, 상수 UPPER_SNAKE_CASE | 이름 검사 모듈 |
@@ -59,7 +59,7 @@ List<NationInfo> sorted = nations.stream()
     .toList();
 ```
 
-### 한 줄 최대 100자
+### 한 줄 최대 120자
 
 주석과 애너테이션도 줄 길이 검사 대상입니다.
 긴 인자 목록이나 애너테이션 속성은 줄바꿈하고, 문자열 값은 변경하지 않습니다.

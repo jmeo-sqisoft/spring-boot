@@ -25,8 +25,7 @@ class ApiExceptionTest {
         var data = Map.of("field", "hospitalId");
         var cause = new IllegalArgumentException("Invalid identifier");
 
-        var exception = new ApiException(ApiResponseCode.E40001,
-            "error.validation.hospitalId.invalid", data, cause);
+        var exception = new ApiException(ApiResponseCode.E40001, "error.validation.hospitalId.invalid", data, cause);
 
         assertThat(exception.getStatusCode()).isEqualTo(400);
         assertThat(exception.getErrorCode()).isEqualTo("E40001");

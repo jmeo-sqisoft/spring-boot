@@ -92,10 +92,8 @@ public enum ApiResponseCode {
             return null;
         }
 
-        return Arrays.stream(ApiResponseCode.values())
-            .filter(apiCode -> apiCode.code.equalsIgnoreCase(errorCode))
-            .findFirst()
-            .orElse(null);
+        return Arrays.stream(ApiResponseCode.values()).filter(apiCode -> apiCode.code.equalsIgnoreCase(errorCode))
+            .findFirst().orElse(null);
     }
 
     /**

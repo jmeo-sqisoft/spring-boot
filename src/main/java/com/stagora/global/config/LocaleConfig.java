@@ -19,8 +19,7 @@ public class LocaleConfig {
      */
     @Bean
     public MessageSource messageSource() {
-        ReloadableResourceBundleMessageSource messageSource =
-            new ReloadableResourceBundleMessageSource();
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.setBasenames("classpath:messages/messages");
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         messageSource.setDefaultLocale(Locale.KOREA);

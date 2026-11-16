@@ -69,13 +69,10 @@ public class SampleService {
             if (nation.getNationInfoVOs() != null) {
                 nation.setNationInfoVOs(nation.getNationInfoVOs().stream()
                     .sorted(Comparator.comparing(NationInfo::getNationName,
-                        Comparator.nullsLast(Comparator.naturalOrder())))
-                    .toList());
+                        Comparator.nullsLast(Comparator.naturalOrder()))).toList());
             }
         });
-        return nations.stream()
-            .sorted(Comparator.comparing(NationInfoResponse::getAreaName,
-                Comparator.nullsLast(Comparator.naturalOrder())))
-            .toList();
+        return nations.stream().sorted(Comparator.comparing(NationInfoResponse::getAreaName,
+                Comparator.nullsLast(Comparator.naturalOrder()))).toList();
     }
 }

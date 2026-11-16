@@ -35,15 +35,12 @@ public class PatientReportService {
         if (report == null) {
             throw new ApiException(ApiResponseCode.E40401);
         }
-        List<PatientPageContent> files =
-            patientReportMapper.getPatientPageContents(request.sampleId());
+        List<PatientPageContent> files = patientReportMapper.getPatientPageContents(request.sampleId());
         if (files.isEmpty()) {
             throw new ApiException(ApiResponseCode.E40401);
         }
-        List<PatientPageImageResponse> pages = files.stream()
-            .sorted(Comparator.comparingInt(PatientPageContent::page))
-            .map(file -> new PatientPageImageResponse(file.page(), "image/png", file.contents()))
-            .toList();
+        List<PatientPageImageResponse> pages = files.stream().sorted(Comparator.comparingInt(PatientPageContent::page))
+            .map(file -> new PatientPageImageResponse(file.page(), "image/png", file.contents())).toList();
         return new PatientDetailResponse(patientSearchConverter.toResponse(report), pages);
     }
 
@@ -53,8 +50,7 @@ public class PatientReportService {
      */
     public PatientListResponse getPatientList(PatientListSearchRequest request) {
         long total = patientReportMapper.getPatientListCount(request);
-        List<PatientItemResponse> items = total == 0 ? List.of()
-            : patientReportMapper.getPatientList(request).stream()
+        List<PatientItemResponse> items = total == 0 ? List.of() : patientReportMapper.getPatientList(request).stream()
                 .map(patientSearchConverter::toItemResponse).toList();
         long pages = total / request.size() + (total % request.size() == 0 ? 0 : 1);
         return new PatientListResponse(total, request.page(), request.size(), pages, items);

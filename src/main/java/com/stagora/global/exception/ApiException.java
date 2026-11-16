@@ -44,8 +44,7 @@ public class ApiException extends RuntimeException {
     /**
      * 오류 정보, 부가 데이터와 원인 예외를 지정한다.
      */
-    public ApiException(int statusCode, String errorCode, String messageKey,
-        Object data, Throwable cause) {
+    public ApiException(int statusCode, String errorCode, String messageKey, Object data, Throwable cause) {
         super(messageKey, cause);
         this.statusCode = statusCode;
         this.errorCode = errorCode;
@@ -71,12 +70,10 @@ public class ApiException extends RuntimeException {
      * 응답 코드, 선택적인 메시지 키와 부가 데이터를 지정한다.
      */
     public ApiException(ApiResponseCode responseCode, String messageKeyOverride, Object data) {
-        super(messageKeyOverride != null
-            ? messageKeyOverride : responseCode.getDefaultMessageKey());
+        super(messageKeyOverride != null ? messageKeyOverride : responseCode.getDefaultMessageKey());
         this.statusCode = responseCode.getStatusCode();
         this.errorCode = responseCode.getCode();
-        this.messageKey = messageKeyOverride != null
-            ? messageKeyOverride : responseCode.getDefaultMessageKey();
+        this.messageKey = messageKeyOverride != null ? messageKeyOverride : responseCode.getDefaultMessageKey();
         this.data = data;
     }
 
@@ -90,14 +87,11 @@ public class ApiException extends RuntimeException {
     /**
      * 응답 코드, 선택적인 메시지 키, 부가 데이터와 원인 예외를 지정한다.
      */
-    public ApiException(ApiResponseCode responseCode, String messageKeyOverride,
-        Object data, Throwable cause) {
-        super(messageKeyOverride != null
-            ? messageKeyOverride : responseCode.getDefaultMessageKey(), cause);
+    public ApiException(ApiResponseCode responseCode, String messageKeyOverride, Object data, Throwable cause) {
+        super(messageKeyOverride != null ? messageKeyOverride : responseCode.getDefaultMessageKey(), cause);
         this.statusCode = responseCode.getStatusCode();
         this.errorCode = responseCode.getCode();
-        this.messageKey = messageKeyOverride != null
-            ? messageKeyOverride : responseCode.getDefaultMessageKey();
+        this.messageKey = messageKeyOverride != null ? messageKeyOverride : responseCode.getDefaultMessageKey();
         this.data = data;
     }
 }

@@ -23,10 +23,6 @@ public record StaResponse<T>(
      */
     @SuppressWarnings("unchecked")
     public static <T> StaResponse<T> success(String message, Object data) {
-        return (StaResponse<T>) StaResponse.builder()
-            .code(CODE_SUCCESS)
-            .message(message)
-            .data(data)
-            .build();
+        return (StaResponse<T>) StaResponse.builder().code(CODE_SUCCESS).message(message).data(data).build();
     }
 }

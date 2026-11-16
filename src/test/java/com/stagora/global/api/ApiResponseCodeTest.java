@@ -15,8 +15,7 @@ class ApiResponseCodeTest {
     @ParameterizedTest
     @EnumSource(ApiResponseCode.class)
     void resolvesCodesIgnoringCaseAndProvidesTranslatedMessages(ApiResponseCode code) {
-        assertThat(ApiResponseCode.fromErrorCode(code.getCode().toLowerCase(Locale.ROOT)))
-            .isSameAs(code);
+        assertThat(ApiResponseCode.fromErrorCode(code.getCode().toLowerCase(Locale.ROOT))).isSameAs(code);
         var messages = new ResourceBundleMessageSource();
         messages.setBasename("messages/messages");
         messages.setDefaultEncoding("UTF-8");

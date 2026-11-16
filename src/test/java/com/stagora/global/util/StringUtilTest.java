@@ -38,8 +38,7 @@ class StringUtilTest {
 
     @Test
     void sortsNonNumericValuesLexicographically() {
-        assertThat(StringUtil.sortNumericList(List.of("z", "b", "a")))
-            .containsExactly("a", "b", "z");
+        assertThat(StringUtil.sortNumericList(List.of("z", "b", "a"))).containsExactly("a", "b", "z");
     }
 
     @Test

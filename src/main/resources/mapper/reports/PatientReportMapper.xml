@@ -5,7 +5,9 @@
 <mapper namespace="com.stagora.reports.mapper.PatientReportMapper">
 
     <!-- 임의 데이터: 검체 13개 × 패널 10개. 검사일은 DB의 오늘을 기준으로 생성한다. -->
-    <sql id="patientListSource">
+    <select id="getPatientList" resultType="com.stagora.reports.model.PatientListItem">
+/* PatientReportMapper.getPatientList */
+        <bind name="rowOffset" value="_parameter.offset()"/>
 with cte_panels as (
     select
           1 as row_no
@@ -127,11 +129,21 @@ with cte_panels as (
     from cte_panels as a
     cross join generate_series(0, 12) as b(batch_no)
 )
-    </sql>
-
-    <!-- 목록과 전체 건수에 같은 조건을 적용한다. 모든 외부 값은 바인딩한다. -->
-    <sql id="patientListFilters">
-where a.test_date &lt;= current_date
+select
+      a.report_id
+    , a.sample_id
+    , a.test_classification
+    , a.disease
+    , a.disease_name
+    , a.panel_code
+    , a.panel_name
+    , a.test_date
+    , a.detected_analytes_count
+    , a.report_created_date
+    , a.print_count
+    , a.last_printed_at
+from cte_reports as a
+where a.test_date <![CDATA[ <= ]]> current_date
         <choose>
             <when test="searchType == 'SAMPLE_ID'">
   and a.sample_id in
@@ -159,27 +171,6 @@ where a.test_date &lt;= current_date
   and a.test_date >= current_date - interval '1 month'
             </when>
         </choose>
-    </sql>
-
-    <select id="getPatientList" resultType="com.stagora.reports.model.PatientListItem">
-/* PatientReportMapper.getPatientList */
-        <bind name="rowOffset" value="_parameter.offset()"/>
-        <include refid="patientListSource"/>
-select
-      a.report_id
-    , a.sample_id
-    , a.test_classification
-    , a.disease
-    , a.disease_name
-    , a.panel_code
-    , a.panel_name
-    , a.test_date
-    , a.detected_analytes_count
-    , a.report_created_date
-    , a.print_count
-    , a.last_printed_at
-from cte_reports as a
-        <include refid="patientListFilters"/>
 order by a.test_date desc
        , a.sample_id
        , a.report_id
@@ -189,11 +180,158 @@ offset #{rowOffset}
 
     <select id="getPatientListCount" resultType="long">
 /* PatientReportMapper.getPatientListCount */
-        <include refid="patientListSource"/>
+with cte_panels as (
+    select
+          1 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'HPV_STI' as disease
+        , 'Human Papillomavirus Infections + Sexually Transmitted Infections' as disease_name
+        , 'RTI' as panel_code
+        , 'HPV + STI Comprehensive Panel' as panel_name
+        , 10 as detected_analytes_count
+        , 0 as print_count
+    union all
+    select
+          2 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'RP' as disease
+        , 'Respiratory Tract Infections' as disease_name
+        , 'ABI' as panel_code
+        , 'Respiratory Comprehensive Panel' as panel_name
+        , 4 as detected_analytes_count
+        , 2 as print_count
+    union all
+    select
+          3 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'GI' as disease
+        , 'Gastrointestinal Infections' as disease_name
+        , 'GTI' as panel_code
+        , 'Gastrointestinal Comprehensive Panel' as panel_name
+        , 10 as detected_analytes_count
+        , 0 as print_count
+    union all
+    select
+          4 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'HPV_STI' as disease
+        , 'Human Papillomavirus Infections + Sexually Transmitted Infections' as disease_name
+        , 'RTI' as panel_code
+        , 'HPV + STI Comprehensive Panel' as panel_name
+        , 4 as detected_analytes_count
+        , 2 as print_count
+    union all
+    select
+          5 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'RP' as disease
+        , 'Respiratory Tract Infections' as disease_name
+        , 'ABI' as panel_code
+        , 'Respiratory Comprehensive Panel' as panel_name
+        , 10 as detected_analytes_count
+        , 0 as print_count
+    union all
+    select
+          6 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'OTHERS' as disease
+        , 'Other Diseases' as disease_name
+        , 'N_TEV' as panel_code
+        , 'Other Pathogens Detection' as panel_name
+        , 4 as detected_analytes_count
+        , 0 as print_count
+    union all
+    select
+          7 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'HPV' as disease
+        , 'Human Papillomavirus Infections' as disease_name
+        , 'N2_HR' as panel_code
+        , 'Novaplex II HPV28 Detection' as panel_name
+        , 10 as detected_analytes_count
+        , 0 as print_count
+    union all
+    select
+          8 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'HPV' as disease
+        , 'Human Papillomavirus Infections' as disease_name
+        , 'N2_HPV28' as panel_code
+        , 'Novaplex II HPV28 Detection' as panel_name
+        , 4 as detected_analytes_count
+        , 0 as print_count
+    union all
+    select
+          9 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'RP' as disease
+        , 'Respiratory Tract Infections' as disease_name
+        , 'RP1+RP2' as panel_code
+        , 'Respiratory Panel 1 + 2' as panel_name
+        , 10 as detected_analytes_count
+        , 0 as print_count
+    union all
+    select
+          10 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'RP' as disease
+        , 'Respiratory Tract Infections' as disease_name
+        , 'RP1+RP2+RP3+RP4' as panel_code
+        , 'Respiratory Panel 1 + 2 + 3 + 4' as panel_name
+        , 4 as detected_analytes_count
+        , 0 as print_count
+)
+, cte_reports as (
+    select
+          md5(b.batch_no::text || '-' || a.row_no::text)::uuid::text as report_id
+        , 'S26-1015-' || lpad((231 + b.batch_no)::text, 4, '0') as sample_id
+        , a.test_classification
+        , a.disease
+        , a.disease_name
+        , a.panel_code
+        , a.panel_name
+        , current_date - (b.batch_no * 3 + a.row_no - 1) as test_date
+        , a.detected_analytes_count
+        , current_date - (b.batch_no * 3 + a.row_no - 1) as report_created_date
+        , a.print_count
+        , case
+              when a.print_count = 0 then null::timestamp
+              else (current_date - (b.batch_no * 3 + a.row_no - 1))::timestamp
+          end as last_printed_at
+    from cte_panels as a
+    cross join generate_series(0, 12) as b(batch_no)
+)
 select
-      count(*)
+      count(1)
 from cte_reports as a
-        <include refid="patientListFilters"/>
+where a.test_date <![CDATA[ <= ]]> current_date
+        <choose>
+            <when test="searchType == 'SAMPLE_ID'">
+  and a.sample_id in
+                <foreach collection="sampleIds" item="sampleId" open="(" separator="," close=")">
+                    #{sampleId}
+                </foreach>
+            </when>
+            <otherwise>
+                <if test="testClassification != 'ALL'">
+  and a.test_classification = #{testClassification}
+                </if>
+                <if test="disease != 'ALL'">
+  and a.disease = #{disease}
+                </if>
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="testDate == 'TODAY'">
+  and a.test_date >= current_date
+            </when>
+            <when test="testDate == 'LAST_7_DAYS'">
+  and a.test_date >= current_date - 6
+            </when>
+            <when test="testDate == 'LAST_1_MONTH'">
+  and a.test_date >= current_date - interval '1 month'
+            </when>
+        </choose>
     </select>
     <select id="getPatientDetail" resultType="com.stagora.reports.model.PatientSearch">
 /* PatientReportMapper.getPatientDetail */

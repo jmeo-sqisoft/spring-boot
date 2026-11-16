@@ -4,7 +4,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.UUID;
 
 import com.stagora.global.api.ApiResponseCode;
 import com.stagora.global.exception.ApiException;
@@ -12,7 +11,7 @@ import com.stagora.global.exception.ApiException;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Sample ID·검사 패널·최근 기간으로 리포트를 조회하는 요청")
-public record ReportSearchRequest(
+public record PatientListSearchRequest(
     @Schema(description = "조회할 Sample ID 배열. 중복 제거 후 1~50건 필수",
         requiredMode = Schema.RequiredMode.REQUIRED,
         example = "[\"01a01ce1-5d69-7d03-99c9-669409908df7\"]")
@@ -30,7 +29,7 @@ public record ReportSearchRequest(
      * 잘못된 조건은 HTTP 400 예외로 처리하며, 실제 조회 기간은 SQL에서 계산한다.
      * 원본 요청은 변경하지 않고 정규화한 새 요청을 반환한다.
      */
-    public ReportSearchRequest normalized() {
+    public PatientListSearchRequest normalized() {
         if (sampleIds == null || sampleIds.isEmpty()) {
             throw new ApiException(ApiResponseCode.E40001);
         }
@@ -52,27 +51,8 @@ public record ReportSearchRequest(
         if (months < 1 || months > 12) {
             throw new ApiException(ApiResponseCode.E40001);
         }
-        return new ReportSearchRequest(List.copyOf(uniqueIds),
+        return new PatientListSearchRequest(List.copyOf(uniqueIds),
             "ALL".equals(panel) ? null : panel, months);
-    }
-
-    /**
-     * 단건 조회의 UUID를 표준 문자열로 정규화하며, 잘못된 값은 HTTP 400으로 처리한다.
-     */
-    public static String normalizedSampleId(String sampleId) {
-        if (sampleId == null) {
-            throw new ApiException(ApiResponseCode.E40001);
-        }
-        String value = sampleId.trim();
-        try {
-            String normalized = UUID.fromString(value).toString();
-            if (!normalized.equalsIgnoreCase(value)) {
-                throw new ApiException(ApiResponseCode.E40001);
-            }
-            return normalized;
-        } catch (IllegalArgumentException exception) {
-            throw new ApiException(ApiResponseCode.E40001);
-        }
     }
 
     /**

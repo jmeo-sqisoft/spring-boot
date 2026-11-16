@@ -1,12 +1,12 @@
-package com.stagora.report.result.model;
+package com.stagora.report.result.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "리포트 검사 정보와 출력 이력을 담는 DB 조회 모델")
-public record ReportSearch(
+@Schema(description = "개별 리포트의 검사 정보와 기존 출력 이력")
+public record PatientSearchResponse(
     @Schema(description = "검체 일련번호", example = "01a01ce1-5a44-7416-943e-598621a158a2")
     String sampleId,
     @Schema(description = "검사 패널 코드", example = "ABI")

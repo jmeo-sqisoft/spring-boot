@@ -11,7 +11,7 @@ import com.stagora.report.result.model.ReportSearch;
 
 @Mapper
 public interface ReportResultMapper {
-    List<ReportSearch> findReports(ReportSearchRequest request);
+    List<ReportSearch> selectReports(ReportSearchRequest request);
 
     ReportSearch selectReport(@Param("sampleId") String sampleId);
 

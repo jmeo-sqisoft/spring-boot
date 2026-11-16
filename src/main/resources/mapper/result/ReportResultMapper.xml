@@ -4,8 +4,8 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.stagora.report.result.mapper.ReportResultMapper">
 
-    <select id="findReports" resultType="com.stagora.report.result.model.ReportSearch">
-/* ReportResultMapper.findReports */
+    <select id="selectReports" resultType="com.stagora.report.result.model.ReportSearch">
+/* ReportResultMapper.selectReports */
 with cte_reports as (
     select
           '01a01ce1-5d69-7d03-99c9-669409908df7' as sample_id

@@ -19,23 +19,21 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Hospital Report", description = "병원 리포트 API")
 @RestController
-@RequestMapping("/apis/report/v1/hospital")
+@RequestMapping("/apis/reports/v1/hospital")
 @RequiredArgsConstructor
 public class HospitalReportController extends AbstractApiController {
     private final MessageSource messageSource;
 
     @Operation(summary = "병원 리포트 목록 조회", description = "서비스 연결 전이며 빈 목록을 반환합니다.")
     @GetMapping("/list")
-    public ResponseEntity<StaResponse<List<Object>>> getPatientList() {
-        // TODO: 병원 리포트 목록 조회 서비스를 연결한다.
+    public ResponseEntity<StaResponse<List<Object>>> getHospitalList() {
         return success(List.of());
     }
 
     @Operation(summary = "병원 리포트 상세 조회", description = "서비스 연결 전이며 data는 null입니다.")
     @GetMapping("/detail")
-    public ResponseEntity<StaResponse<Object>> detail(
-        @Parameter(description = "병원 리포트 ID") @RequestParam String id) {
-        // TODO: 병원 리포트 상세 조회 서비스를 연결한다.
+    public ResponseEntity<StaResponse<Object>> getHospitalDetail(
+        @Parameter(description = "병원 리포트 ID") @RequestParam String sampleId) {
         return success(null);
     }
 

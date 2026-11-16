@@ -85,7 +85,7 @@ class ApplicationConfigurationTest {
             try (HttpClient client = HttpClient.newHttpClient()) {
                 HttpResponse<String> invalidInstitution = client.send(
                     HttpRequest.newBuilder(URI.create(baseUrl
-                        + "/apis/report/v1/sample/institutioninfo"))
+                        + "/apis/reports/v1/sample/institutioninfo"))
                         .header("Accept-Language", "en").GET().build(),
                     HttpResponse.BodyHandlers.ofString());
                 assertThat(invalidInstitution.statusCode()).isEqualTo(400);
@@ -97,11 +97,11 @@ class ApplicationConfigurationTest {
                 if (isSwaggerEnabled) {
                     assertThat(docs.body()).contains("Local API", "openapi")
                         .contains("\"sampleIds\"", "\"panelCode\"", "\"periodMonths\"")
-                        .contains("/apis/report/v1/patient/list",
-                            "/apis/report/v1/patient/detail")
-                        .doesNotContain("\"sampleIdsText\"", "/apis/report/v1/reports");
-                    assertThat(docs.body()).contains("/apis/report/v1/sample/areas",
-                        "/apis/report/v1/sample/institutioninfo", "/apis/report/v1/sample/nations");
+                        .contains("/apis/reports/v1/patient/list",
+                            "/apis/reports/v1/patient/detail")
+                        .doesNotContain("\"sampleIdsText\"", "/apis/reports/v1/reports");
+                    assertThat(docs.body()).contains("/apis/reports/v1/sample/areas",
+                        "/apis/reports/v1/sample/institutioninfo", "/apis/reports/v1/sample/nations");
                     HttpResponse<String> ui = client.send(
                         HttpRequest.newBuilder(URI.create(baseUrl + "/swagger-ui/index.html"))
                             .GET().build(), HttpResponse.BodyHandlers.ofString());

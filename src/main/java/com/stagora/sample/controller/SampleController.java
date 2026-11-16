@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Tag(name = "Sample", description = "Sample API")
 @RestController
-@RequestMapping("/apis/report/v1/sample")
+@RequestMapping("/apis/reports/v1/sample")
 @RequiredArgsConstructor
 public class SampleController extends AbstractApiController {
     private final MessageSource messageSource;

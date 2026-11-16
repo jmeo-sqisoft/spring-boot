@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Patient Report", description = "환자 리포트 API")
 @RestController
-@RequestMapping("/apis/report/v1/patient")
+@RequestMapping("/apis/reports/v1/patient")
 @RequiredArgsConstructor
 public class PatientReportController extends AbstractApiController {
     private final MessageSource messageSource;

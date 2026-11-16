@@ -12,6 +12,7 @@ import com.stagora.reports.dto.PatientDetailSearchRequest;
 import com.stagora.reports.dto.PatientItemResponse;
 import com.stagora.reports.dto.PatientListResponse;
 import com.stagora.reports.dto.PatientListSearchRequest;
+import com.stagora.reports.dto.PatientListSummaryResponse;
 import com.stagora.reports.dto.PatientPageImageResponse;
 import com.stagora.reports.dto.PatientSearchConverter;
 import com.stagora.reports.mapper.PatientReportMapper;
@@ -49,10 +50,14 @@ public class PatientReportService {
      * 같은 Sample ID의 여러 리포트를 각각 반환하며 미조회 ID의 빈 행은 추가하지 않는다.
      */
     public PatientListResponse getPatientList(PatientListSearchRequest request) {
-        long total = patientReportMapper.getPatientListCount(request);
+        var statistics = patientReportMapper.getPatientListStatistics(request);
+        long total = statistics.reportCount();
         List<PatientItemResponse> items = total == 0 ? List.of() : patientReportMapper.getPatientList(request).stream()
                 .map(patientSearchConverter::toItemResponse).toList();
         long pages = total / request.size() + (total % request.size() == 0 ? 0 : 1);
-        return new PatientListResponse(total, request.page(), request.size(), pages, items);
+        PatientListSummaryResponse summary = "SAMPLE_ID".equals(request.searchType())
+            ? new PatientListSummaryResponse(request.sampleIds().size(), statistics.foundSampleIdCount(), total,
+                statistics.noResultsCount(), statistics.notFoundCount()) : null;
+        return new PatientListResponse(total, request.page(), request.size(), pages, summary, items);
     }
 }

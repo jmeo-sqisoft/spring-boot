@@ -178,8 +178,9 @@ limit #{size}
 offset #{rowOffset}
     </select>
 
-    <select id="getPatientListCount" resultType="long">
-/* PatientReportMapper.getPatientListCount */
+    <select id="getPatientListStatistics" resultType="com.stagora.reports.model.PatientListStatistics">
+/* PatientReportMapper.getPatientListStatistics */
+        <bind name="enteredCount" value="_parameter.sampleIds().size()"/>
 with cte_panels as (
     select
           1 as row_no
@@ -301,9 +302,15 @@ with cte_panels as (
     from cte_panels as a
     cross join generate_series(0, 12) as b(batch_no)
 )
-select
-      count(1)
-from cte_reports as a
+, cte_samples as (
+    select
+          'S26-1015-' || lpad(a.sample_no::text, 4, '0') as sample_id
+    from generate_series(231, 244) as a(sample_no)
+)
+, cte_filtered as (
+    select
+          a.*
+    from cte_reports as a
 where a.test_date <![CDATA[ <= ]]> current_date
         <choose>
             <when test="searchType == 'SAMPLE_ID'">
@@ -332,6 +339,42 @@ where a.test_date <![CDATA[ <= ]]> current_date
   and a.test_date >= current_date - interval '1 month'
             </when>
         </choose>
+)
+select
+      count(1) as report_count
+    , count(distinct a.sample_id) as found_sample_id_count
+        <choose>
+            <when test="searchType == 'SAMPLE_ID'">
+    , (
+        select
+              count(1)
+        from cte_samples as x
+        where x.sample_id in
+                <foreach collection="sampleIds" item="sampleId" open="(" separator="," close=")">
+                    #{sampleId}
+                </foreach>
+          and not exists (
+                select 1
+                from cte_filtered as y
+                where y.sample_id = x.sample_id
+          )
+      ) as no_results_count
+    , #{enteredCount} - (
+        select
+              count(1)
+        from cte_samples as x
+        where x.sample_id in
+                <foreach collection="sampleIds" item="sampleId" open="(" separator="," close=")">
+                    #{sampleId}
+                </foreach>
+      ) as not_found_count
+            </when>
+            <otherwise>
+    , 0::bigint as no_results_count
+    , 0::bigint as not_found_count
+            </otherwise>
+        </choose>
+from cte_filtered as a
     </select>
     <select id="getPatientDetail" resultType="com.stagora.reports.model.PatientSearch">
 /* PatientReportMapper.getPatientDetail */

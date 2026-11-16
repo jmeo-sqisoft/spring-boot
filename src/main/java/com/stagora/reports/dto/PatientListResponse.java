@@ -14,6 +14,8 @@ public record PatientListResponse(
     int size,
     @Schema(description = "전체 페이지 수. 조회 결과가 없으면 0", example = "13")
     long totalPages,
+    @Schema(description = "Sample ID 검색의 요약 카드. 검사 분류 검색에서는 null")
+    PatientListSummaryResponse summary,
     @Schema(description = "현재 페이지의 리포트. 미조회 Sample ID에 대한 빈 행은 추가하지 않음")
     List<PatientItemResponse> items
 ) {

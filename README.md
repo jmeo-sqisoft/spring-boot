@@ -73,7 +73,8 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 | GET | `/apis/report/v1/sample/areas` | 지역 정보 전체 목록 조회 | 없음 |
 | GET | `/apis/report/v1/sample/institutioninfo` | 기관 정보 조회 | `clabId`, `hospitalId` 중 하나 이상 필요 |
 | GET | `/apis/report/v1/sample/nations` | 지역별 국가 목록과 국가 하위 지역 조회 | 없음 |
-| POST | `/apis/report/v1/reports/search` | 리포트 조회 | 필수 `sampleIds` 배열, 검사 패널·기간 |
+| POST | `/apis/report/v1/patient/list` | 환자 리포트 목록 조회 | JSON 본문: 필수 `sampleIds` 배열, 검사 패널·기간 |
+| GET | `/apis/report/v1/patient/detail` | 목록과 동일한 검사 정보·전체 PNG 단건 조회 | 필수 쿼리 파라미터 `sampleId` (UUID) |
 
 성공 응답은 `StaResponse<T>` 형태의 `code`, `message`, `data`를 사용하며 성공 코드는 `S0000`입니다.
 
@@ -100,12 +101,12 @@ spring-boot/
 │       │   │   ├── enums/                # 기관 유형·데이터 유형
 │       │   │   ├── exception/            # ApiException과 다국어 오류 응답 처리기
 │       │   │   └── util/                 # 언어·문자열 처리
-│       │   └── report/
-│       │       ├── result/               # 리포트 일괄 조회
-│       │       │   ├── controller/       # ReportResultController
+│       │   └── reports/
+│       │       ├── result/               # 환자 리포트 목록·상세 및 병원·이력 조회 골격
+│       │       │   ├── controller/       # PatientReport·HospitalReport·ReportHistoryController
 │       │       │   ├── dto/              # 조회 요청·응답과 MapStruct 변환기
-│       │       │   ├── mapper/           # ReportResultMapper
-│       │       │   ├── model/            # ReportSearch
+│       │       │   ├── mapper/           # PatientReportMapper
+│       │       │   ├── model/            # PatientSearch
 │       │       │   └── service/          # 입력 순서 정렬·미조회 처리
 │       │       └── sample/
 │       │           ├── controller/       # SampleController

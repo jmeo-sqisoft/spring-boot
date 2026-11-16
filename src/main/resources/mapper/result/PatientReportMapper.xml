@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.stagora.report.result.mapper.PatientReportMapper">
+<mapper namespace="com.stagora.reports.result.mapper.PatientReportMapper">
 
-    <select id="getPatientList" resultType="com.stagora.report.result.model.PatientSearch">
+    <select id="getPatientList" resultType="com.stagora.reports.result.model.PatientSearch">
 /* PatientReportMapper.getPatientList */
 with cte_reports as (
     select
@@ -59,7 +59,7 @@ order by a.test_date desc
        , a.sample_id
     </select>
 
-    <select id="getPatientDetail" resultType="com.stagora.report.result.model.PatientSearch">
+    <select id="getPatientDetail" resultType="com.stagora.reports.result.model.PatientSearch">
 /* PatientReportMapper.getPatientDetail */
 with cte_reports as (
     select
@@ -105,7 +105,7 @@ from cte_reports as a
 where a.sample_id = #{sampleId}
     </select>
 
-    <select id="getPatientPageContents" resultType="com.stagora.report.result.model.PatientPageContent">
+    <select id="getPatientPageContents" resultType="com.stagora.reports.result.model.PatientPageContent">
 /* PatientReportMapper.getPatientPageContents */
 select
       a.page

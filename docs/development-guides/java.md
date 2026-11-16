@@ -49,24 +49,25 @@
 | `lineWrappingIndentation` | `4` | 이어지는 줄의 들여쓰기 |
 | `arrayInitIndent` | `4` | 배열 초기화 내용 들여쓰기 |
 
-줄이 길어지면 인자, 메서드 체인, 연산식 등을 의미 단위로 나눕니다.
+한 줄이 120자를 넘으면 인자, 메서드 체인, 연산식 등을 의미 단위로 나눕니다.
 다음 예시처럼 이어지는 줄을 한 단계 들여씁니다.
 
 ```java
 List<NationInfo> sorted = nations.stream()
-    .sorted(Comparator.comparing(NationInfo::getNationName,
-        Comparator.nullsLast(Comparator.naturalOrder())))
+    .sorted(Comparator.comparing(NationInfo::getNationName, Comparator.nullsLast(Comparator.naturalOrder())))
     .toList();
 ```
 
 ### 한 줄 최대 120자
 
 주석과 애너테이션도 줄 길이 검사 대상입니다.
-긴 인자 목록이나 애너테이션 속성은 줄바꿈하고, 문자열 값은 변경하지 않습니다.
+들여쓰기를 포함해 한 줄이 120자 이내이면 불필요하게 줄바꿈하지 않습니다.
+메서드 선언·호출의 인자 목록, 애너테이션 속성, 메서드 체인, 연산식에도 동일하게 적용합니다.
+120자를 넘는 경우 의미 단위로 줄바꿈하며, 문자열 값과 텍스트 블록의 내용은 변경하지 않습니다.
+블록·선언·주석 등 서로 다른 코드 요소를 구분하는 줄바꿈은 유지합니다.
 
 ```java
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
-    unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface AreasConverter {
     AreasResponse toResponse(Area area);
 }

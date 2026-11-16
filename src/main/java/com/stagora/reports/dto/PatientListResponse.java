@@ -4,15 +4,17 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "리포트 조회 건수와 입력 순서의 결과 목록")
+@Schema(description = "필터 적용 후 전체 건수와 페이지별 환자 리포트 목록")
 public record PatientListResponse(
-    @Schema(description = "정규화·중복 제거를 마친 입력 ID 수", example = "4", minimum = "1")
-    int requestedCount,
-    @Schema(description = "입력 ID 중 조건에 맞는 리포트가 조회된 수", example = "3", minimum = "0")
-    int foundCount,
-    @Schema(description = "입력 ID 중 현재 조회 조건에서 미조회된 수", example = "1", minimum = "0")
-    int missingCount,
-    @Schema(description = "입력 ID 순서의 결과 목록. 미조회 항목을 포함하며 크기는 requestedCount와 같음")
+    @Schema(description = "현재 검색 조건의 전체 리포트 건수", example = "130")
+    long totalCount,
+    @Schema(description = "현재 페이지 (1부터 시작)", example = "1")
+    int page,
+    @Schema(description = "페이지당 건수", example = "10")
+    int size,
+    @Schema(description = "전체 페이지 수. 조회 결과가 없으면 0", example = "13")
+    long totalPages,
+    @Schema(description = "현재 페이지의 리포트. 미조회 Sample ID에 대한 빈 행은 추가하지 않음")
     List<PatientItemResponse> items
 ) {
 }

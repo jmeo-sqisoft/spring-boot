@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -62,7 +63,9 @@ class ApplicationConfigurationTest {
             if ("perf".equals(profile)) {
                 assertThat(context.getEnvironment()
                     .getProperty("logging.level.com.stagora.sample.mapper"))
-                    .isEqualTo("info");
+                    .isNull();
+                assertThat(LoggerFactory.getLogger("com.stagora.sample.mapper").isDebugEnabled())
+                    .isTrue();
             }
             assertThat(context.getBean(SqlSessionFactory.class)
                 .getConfiguration().getEnvironment().getDataSource())
@@ -96,10 +99,12 @@ class ApplicationConfigurationTest {
                 assertThat(docs.statusCode()).isEqualTo(isSwaggerEnabled ? 200 : 404);
                 if (isSwaggerEnabled) {
                     assertThat(docs.body()).contains("Local API", "openapi")
-                        .contains("\"sampleIds\"", "\"panelCode\"", "\"periodMonths\"")
+                        .contains("\"sampleIds\"", "\"testClassification\"", "\"testDate\"",
+                            "\"totalCount\"", "\"detectedAnalytesCount\"")
                         .contains("/apis/reports/v1/patient/list",
                             "/apis/reports/v1/patient/detail")
-                        .doesNotContain("\"sampleIdsText\"", "/apis/reports/v1/reports");
+                        .doesNotContain("\"sampleIdsText\"", "\"periodMonths\"",
+                            "/apis/reports/v1/reports");
                     assertThat(docs.body()).contains("/apis/reports/v1/sample/areas",
                         "/apis/reports/v1/sample/institutioninfo", "/apis/reports/v1/sample/nations");
                     HttpResponse<String> ui = client.send(

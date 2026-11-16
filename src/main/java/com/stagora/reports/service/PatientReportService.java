@@ -2,9 +2,6 @@ package com.stagora.reports.service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -51,22 +48,15 @@ public class PatientReportService {
     }
 
     /**
-     * 필수 Sample ID와 검사 패널·기간 조건으로 리포트를 조회한다.
-     * 입력 순서를 유지하고, 조건에 맞는 리포트가 없는 ID도 결과에 포함한다.
+     * 탭별 검색 조건으로 전체 건수와 현재 페이지를 조회한다.
+     * 같은 Sample ID의 여러 리포트를 각각 반환하며 미조회 ID의 빈 행은 추가하지 않는다.
      */
     public PatientListResponse getPatientList(PatientListSearchRequest request) {
-        List<PatientSearch> rows = patientReportMapper.getPatientList(request);
-        // DB 조회 순서와 관계없이 입력 ID 순서로 결과를 구성할 수 있도록 매핑한다.
-        Map<String, PatientSearch> reports = rows.stream()
-            .collect(Collectors.toMap(PatientSearch::sampleId, Function.identity()));
-        List<PatientItemResponse> items = request.sampleIds().stream().map(sampleId -> {
-            PatientSearch report = reports.get(sampleId);
-            // 미조회 ID는 reportAvailable=false, report=null로 반환한다.
-            return new PatientItemResponse(sampleId, report != null,
-                patientSearchConverter.toResponse(report));
-        }).toList();
-        int foundCount = (int)items.stream().filter(PatientItemResponse::reportAvailable).count();
-        return new PatientListResponse(
-            items.size(), foundCount, items.size() - foundCount, items);
+        long total = patientReportMapper.getPatientListCount(request);
+        List<PatientItemResponse> items = total == 0 ? List.of()
+            : patientReportMapper.getPatientList(request).stream()
+                .map(patientSearchConverter::toItemResponse).toList();
+        long pages = total / request.size() + (total % request.size() == 0 ? 0 : 1);
+        return new PatientListResponse(total, request.page(), request.size(), pages, items);
     }
 }

@@ -34,7 +34,7 @@ public class PatientReportController extends AbstractApiController {
     private final PatientReportService patientReportService;
 
     @Operation(summary = "환자 리포트 목록 조회",
-        description = "Sample ID는 필수이며, 입력 순서대로 리포트와 미조회 항목을 반환합니다.")
+        description = "Sample ID 또는 검사 분류·질환 탭의 조건과 검사일로 페이지별 리포트를 조회합니다.")
     @PostMapping("/list")
     public ResponseEntity<StaResponse<PatientListResponse>> getPatientList(
         @RequestBody(required = false) PatientListSearchRequest request) {

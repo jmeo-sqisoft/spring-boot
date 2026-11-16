@@ -17,12 +17,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.p6spy.engine.spy.P6DataSource;
-import com.stagora.reports.sample.controller.SampleController;
-import com.stagora.reports.sample.dto.AreasConverter;
-import com.stagora.reports.sample.dto.InstitutionInfoConverter;
-import com.stagora.reports.sample.dto.NationInfoConverter;
-import com.stagora.reports.sample.mapper.SampleMapper;
-import com.stagora.reports.sample.service.SampleService;
+import com.stagora.sample.controller.SampleController;
+import com.stagora.sample.dto.AreasConverter;
+import com.stagora.sample.dto.InstitutionInfoConverter;
+import com.stagora.sample.dto.NationInfoConverter;
+import com.stagora.sample.mapper.SampleMapper;
+import com.stagora.sample.service.SampleService;
 import com.zaxxer.hikari.HikariDataSource;
 
 import jakarta.persistence.EntityManagerFactory;
@@ -61,7 +61,7 @@ class ApplicationConfigurationTest {
                 .isEqualTo(expectedLogLevel);
             if ("perf".equals(profile)) {
                 assertThat(context.getEnvironment()
-                    .getProperty("logging.level.com.stagora.reports.sample.mapper"))
+                    .getProperty("logging.level.com.stagora.sample.mapper"))
                     .isEqualTo("info");
             }
             assertThat(context.getBean(SqlSessionFactory.class)

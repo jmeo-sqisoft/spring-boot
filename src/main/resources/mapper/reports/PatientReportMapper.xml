@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stagora.reports.mapper.PatientReportMapper">
+
+    <select id="getPatientList" resultType="com.stagora.reports.model.PatientSearch">
+/* PatientReportMapper.getPatientList */
+with cte_reports as (
+    select
+          '01a01ce1-5d69-7d03-99c9-669409908df7' as sample_id
+        , 'RTI' as panel_code
+        , '생식기 감염 종합' as panel_name
+        , date '2026-10-15' as test_date
+        , 5 as positive_count
+        , date '2026-10-15' as report_created_date
+        , 0 as print_count
+        , null::timestamp as last_printed_at
+    union all
+    select
+          '01a01ce1-5a44-7416-943e-598621a158a2' as sample_id
+        , 'ABI' as panel_code
+        , '호흡기 감염 종합' as panel_name
+        , date '2026-10-15' as test_date
+        , 5 as positive_count
+        , date '2026-10-15' as report_created_date
+        , 1 as print_count
+        , timestamp '2026-10-16 00:00:00' as last_printed_at
+    union all
+    select
+          '01a01ce1-5f82-7099-bc35-0a139bc766b2' as sample_id
+        , 'GTI' as panel_code
+        , '소화기 감염 종합' as panel_name
+        , date '2026-10-15' as test_date
+        , 4 as positive_count
+        , date '2026-10-15' as report_created_date
+        , 0 as print_count
+        , null::timestamp as last_printed_at
+)
+select
+      a.sample_id
+    , a.panel_code
+    , a.panel_name
+    , a.test_date
+    , a.positive_count
+    , a.report_created_date
+    , a.print_count
+    , a.last_printed_at
+from cte_reports as a
+where a.test_date >= current_date - (#{periodMonths} * interval '1 month')
+  and a.sample_id in
+    <foreach collection="sampleIds" item="sampleId" open="(" separator="," close=")">
+        #{sampleId}
+    </foreach>
+    <if test="panelCode != null">
+  and a.panel_code = #{panelCode}
+    </if>
+order by a.test_date desc
+       , a.sample_id
+    </select>
+
+    <select id="getPatientDetail" resultType="com.stagora.reports.model.PatientSearch">
+/* PatientReportMapper.getPatientDetail */
+with cte_reports as (
+    select
+          '01a01ce1-5d69-7d03-99c9-669409908df7' as sample_id
+        , 'RTI' as panel_code
+        , '생식기 감염 종합' as panel_name
+        , date '2026-10-15' as test_date
+        , 5 as positive_count
+        , date '2026-10-15' as report_created_date
+        , 0 as print_count
+        , null::timestamp as last_printed_at
+    union all
+    select
+          '01a01ce1-5a44-7416-943e-598621a158a2' as sample_id
+        , 'ABI' as panel_code
+        , '호흡기 감염 종합' as panel_name
+        , date '2026-10-15' as test_date
+        , 5 as positive_count
+        , date '2026-10-15' as report_created_date
+        , 1 as print_count
+        , timestamp '2026-10-16 00:00:00' as last_printed_at
+    union all
+    select
+          '01a01ce1-5f82-7099-bc35-0a139bc766b2' as sample_id
+        , 'GTI' as panel_code
+        , '소화기 감염 종합' as panel_name
+        , date '2026-10-15' as test_date
+        , 4 as positive_count
+        , date '2026-10-15' as report_created_date
+        , 0 as print_count
+        , null::timestamp as last_printed_at
+)
+select
+      a.sample_id
+    , a.panel_code
+    , a.panel_name
+    , a.test_date
+    , a.positive_count
+    , a.report_created_date
+    , a.print_count
+    , a.last_printed_at
+from cte_reports as a
+where a.sample_id = #{sampleId}
+    </select>
+
+    <select id="getPatientPageContents" resultType="com.stagora.reports.model.PatientPageContent">
+/* PatientReportMapper.getPatientPageContents */
+select
+      a.page
+    , a.contents
+from comm_files as a
+where a.id = #{sampleId}::uuid
+  and a.page > 0
+  and octet_length(a.contents) > 0
+order by a.page
+    </select>
+
+</mapper>

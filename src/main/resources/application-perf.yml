@@ -12,7 +12,6 @@ logging:
     com.stagora: debug
     org.hibernate.SQL: "OFF"
     org.hibernate.orm.jdbc.bind: "OFF"
-    com.stagora.reports.sample.mapper: info
     p6spy: info
 
 springdoc:

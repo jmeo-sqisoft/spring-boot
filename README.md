@@ -101,22 +101,21 @@ spring-boot/
 │       │   │   ├── enums/                # 기관 유형·데이터 유형
 │       │   │   ├── exception/            # ApiException과 다국어 오류 응답 처리기
 │       │   │   └── util/                 # 언어·문자열 처리
-│       │   └── reports/
-│       │       ├── result/               # 환자 리포트 목록·상세 및 병원·이력 조회 골격
-│       │       │   ├── controller/       # PatientReport·HospitalReport·ReportHistoryController
-│       │       │   ├── dto/              # 조회 요청·응답과 MapStruct 변환기
-│       │       │   ├── mapper/           # PatientReportMapper
-│       │       │   ├── model/            # PatientSearch
-│       │       │   └── service/          # 입력 순서 정렬·미조회 처리
-│       │       └── sample/
-│       │           ├── controller/       # SampleController
-│       │           ├── dto/              # 요청·응답 객체와 MapStruct 변환기
-│       │           ├── mapper/           # SampleMapper 인터페이스
-│       │           ├── model/            # MyBatis 조회 결과 모델
-│       │           └── service/          # SampleService
+│       │   ├── reports/                  # 환자 리포트 목록·상세 및 병원·이력 조회 골격
+│       │   │   ├── controller/           # PatientReport·HospitalReport·ReportHistoryController
+│       │   │   ├── dto/                  # 조회 요청·응답과 MapStruct 변환기
+│       │   │   ├── mapper/               # PatientReportMapper
+│       │   │   ├── model/                # PatientSearch
+│       │   │   └── service/              # 입력 순서 정렬·미조회 처리
+│       │   └── sample/
+│       │       ├── controller/           # SampleController
+│       │       ├── dto/                  # 요청·응답 객체와 MapStruct 변환기
+│       │       ├── mapper/               # SampleMapper 인터페이스
+│       │       ├── model/                # MyBatis 조회 결과 모델
+│       │       └── service/              # SampleService
 │       └── resources/
 │           ├── mapper/sample/            # SampleMapper의 SQL·결과 매핑
-│           ├── mapper/result/            # UNION ALL 리포트 조회 SQL
+│           ├── mapper/reports/            # UNION ALL 리포트 조회 SQL
 │           ├── messages/                 # 기본·한국어·영어 메시지
 │           ├── application.yml           # 공통 설정
 │           ├── application-dev.yml       # 개발 환경

@@ -129,7 +129,7 @@ for (int index = 0; index < values.size(); index++) {
 | 대상 | 표기·예시 | 검사 정규식 |
 | --- | --- | --- |
 | 클래스·인터페이스 등 타입 | PascalCase: `SampleService`, `XmlHttpRequest` | `^[A-Z][a-zA-Z0-9]*$` |
-| 패키지 | 소문자: `com.stagora.reports.sample` | `^[a-z]+(\.[a-z][a-z0-9]*)*$` |
+| 패키지 | 소문자: `com.stagora.sample` | `^[a-z]+(\.[a-z][a-z0-9]*)*$` |
 | 메서드 | camelCase: `getNationInfo` | `^[a-z][a-zA-Z0-9]*$` |
 | 인스턴스 필드 | camelCase: `institutionName` | `^[a-z][a-zA-Z0-9]*$` |
 | 지역 변수 | camelCase: `areaCode` | `^[a-z][a-zA-Z0-9]*$` |
@@ -168,7 +168,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import com.stagora.reports.sample.model.Area;
+import com.stagora.sample.model.Area;
 ```
 
 ### 와일드카드와 미사용 import
@@ -235,16 +235,16 @@ int total = first + second;
 ## 작성 예시
 
 ```java
-package com.stagora.reports.sample.service;
+package com.stagora.sample.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.stagora.reports.sample.dto.AreasConverter;
-import com.stagora.reports.sample.dto.AreasResponse;
-import com.stagora.reports.sample.mapper.SampleMapper;
-import com.stagora.reports.sample.model.Area;
+import com.stagora.sample.dto.AreasConverter;
+import com.stagora.sample.dto.AreasResponse;
+import com.stagora.sample.mapper.SampleMapper;
+import com.stagora.sample.model.Area;
 
 import lombok.RequiredArgsConstructor;
 

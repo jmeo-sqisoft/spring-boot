@@ -1,5 +1,6 @@
 package com.stagora.report.result.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -7,11 +8,16 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.stagora.global.api.ApiResponseCode;
+import com.stagora.global.exception.ApiException;
+import com.stagora.report.result.dto.ReportDetailResponse;
 import com.stagora.report.result.dto.ReportItemResponse;
+import com.stagora.report.result.dto.ReportPageImageResponse;
 import com.stagora.report.result.dto.ReportSearchConverter;
 import com.stagora.report.result.dto.ReportSearchRequest;
 import com.stagora.report.result.dto.ReportSearchResultResponse;
 import com.stagora.report.result.mapper.ReportResultMapper;
+import com.stagora.report.result.model.ReportPageContent;
 import com.stagora.report.result.model.ReportSearch;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +27,26 @@ import lombok.RequiredArgsConstructor;
 public class ReportResultService {
     private final ReportResultMapper reportResultMapper;
     private final ReportSearchConverter reportSearchConverter;
+
+    /**
+     * 목록과 동일한 검사 정보와 전체 PNG를 단건 응답으로 묶는다.
+     * 검사 정보 또는 이미지가 없으면 HTTP 404이며, 조회로 출력 이력을 변경하지 않는다.
+     */
+    public ReportDetailResponse detail(String sampleId) {
+        ReportSearch report = reportResultMapper.selectReport(sampleId);
+        if (report == null) {
+            throw new ApiException(ApiResponseCode.E40401);
+        }
+        List<ReportPageContent> files = reportResultMapper.selectPageContents(sampleId);
+        if (files.isEmpty()) {
+            throw new ApiException(ApiResponseCode.E40401);
+        }
+        List<ReportPageImageResponse> pages = files.stream()
+            .sorted(Comparator.comparingInt(ReportPageContent::page))
+            .map(file -> new ReportPageImageResponse(file.page(), "image/png", file.contents()))
+            .toList();
+        return new ReportDetailResponse(reportSearchConverter.toResponse(report), pages);
+    }
 
     /**
      * 필수 Sample ID와 검사 패널·기간 조건으로 리포트를 조회한다.

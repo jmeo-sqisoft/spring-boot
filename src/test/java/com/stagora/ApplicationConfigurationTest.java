@@ -97,7 +97,9 @@ class ApplicationConfigurationTest {
                 if (isSwaggerEnabled) {
                     assertThat(docs.body()).contains("Local API", "openapi")
                         .contains("\"sampleIds\"", "\"panelCode\"", "\"periodMonths\"")
-                        .doesNotContain("\"sampleIdsText\"");
+                        .contains("/apis/report/v1/reports/{sampleId}")
+                        .doesNotContain("\"sampleIdsText\"", "/apis/report/v1/reports/preview",
+                            "/apis/report/v1/reports/{sampleId}/pages");
                     assertThat(docs.body()).contains("/apis/report/v1/sample/areas",
                         "/apis/report/v1/sample/institutioninfo", "/apis/report/v1/sample/nations");
                     HttpResponse<String> ui = client.send(

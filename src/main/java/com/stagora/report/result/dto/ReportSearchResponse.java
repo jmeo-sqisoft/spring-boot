@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "개별 리포트의 검사 정보와 기존 출력 이력")
 public record ReportSearchResponse(
-    @Schema(description = "검체 일련번호", example = "S26-1015-0232")
+    @Schema(description = "검체 일련번호", example = "01a01ce1-5a44-7416-943e-598621a158a2")
     String sampleId,
     @Schema(description = "검사 패널 코드", example = "ABI")
     String panelCode,

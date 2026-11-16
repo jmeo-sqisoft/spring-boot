@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 
 import com.stagora.global.api.ApiResponseCode;
 import com.stagora.global.exception.ApiException;
@@ -14,7 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record ReportSearchRequest(
     @Schema(description = "조회할 Sample ID 배열. 중복 제거 후 1~50건 필수",
         requiredMode = Schema.RequiredMode.REQUIRED,
-        example = "[\"S26-1015-0231\", \"S26-1015-0232\", \"S26-1015-0235\", \"S26-1015-0240\"]")
+        example = "[\"01a01ce1-5d69-7d03-99c9-669409908df7\"]")
     List<String> sampleIds,
     @Schema(description = "검사 패널. 생략하면 전체", example = "ALL", defaultValue = "ALL",
         allowableValues = {"ALL", "RTI", "ABI", "GTI"})
@@ -53,6 +54,25 @@ public record ReportSearchRequest(
         }
         return new ReportSearchRequest(List.copyOf(uniqueIds),
             "ALL".equals(panel) ? null : panel, months);
+    }
+
+    /**
+     * 단건 조회의 UUID를 표준 문자열로 정규화하며, 잘못된 값은 HTTP 400으로 처리한다.
+     */
+    public static String normalizedSampleId(String sampleId) {
+        if (sampleId == null) {
+            throw new ApiException(ApiResponseCode.E40001);
+        }
+        String value = sampleId.trim();
+        try {
+            String normalized = UUID.fromString(value).toString();
+            if (!normalized.equalsIgnoreCase(value)) {
+                throw new ApiException(ApiResponseCode.E40001);
+            }
+            return normalized;
+        } catch (IllegalArgumentException exception) {
+            throw new ApiException(ApiResponseCode.E40001);
+        }
     }
 
     /**

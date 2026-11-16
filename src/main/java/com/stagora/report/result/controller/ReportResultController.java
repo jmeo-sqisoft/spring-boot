@@ -1,7 +1,10 @@
 package com.stagora.report.result.controller;
 
 import org.springframework.context.MessageSource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +14,7 @@ import com.stagora.global.api.AbstractApiController;
 import com.stagora.global.api.ApiResponseCode;
 import com.stagora.global.api.StaResponse;
 import com.stagora.global.exception.ApiException;
+import com.stagora.report.result.dto.ReportDetailResponse;
 import com.stagora.report.result.dto.ReportSearchRequest;
 import com.stagora.report.result.dto.ReportSearchResultResponse;
 import com.stagora.report.result.service.ReportResultService;
@@ -36,6 +40,16 @@ public class ReportResultController extends AbstractApiController {
             throw new ApiException(ApiResponseCode.E40001);
         }
         return success(reportResultService.search(request.normalized()));
+    }
+
+    @Operation(summary = "리포트 단건 조회",
+        description = "UUID로 목록과 동일한 검사 정보 및 1장 이상의 PNG를 한 번에 조회합니다.")
+    @GetMapping("/{sampleId}")
+    public ResponseEntity<StaResponse<ReportDetailResponse>> detail(@PathVariable String sampleId) {
+        String id = ReportSearchRequest.normalizedSampleId(sampleId);
+        var response = success(reportResultService.detail(id));
+        return ResponseEntity.status(response.getStatusCode()).cacheControl(CacheControl.noStore())
+            .header("X-Content-Type-Options", "nosniff").body(response.getBody());
     }
 
     @Override

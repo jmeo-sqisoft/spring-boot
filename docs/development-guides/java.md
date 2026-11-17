@@ -53,8 +53,8 @@
 다음 예시처럼 이어지는 줄을 한 단계 들여씁니다.
 
 ```java
-List<NationInfo> sorted = nations.stream()
-    .sorted(Comparator.comparing(NationInfo::getNationName, Comparator.nullsLast(Comparator.naturalOrder())))
+List<PatientSearch> sorted = reports.stream()
+    .sorted(Comparator.comparing(PatientSearch::sampleId, Comparator.nullsLast(Comparator.naturalOrder())))
     .toList();
 ```
 
@@ -68,8 +68,8 @@ List<NationInfo> sorted = nations.stream()
 
 ```java
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
-public interface AreasConverter {
-    AreasResponse toResponse(Area area);
+public interface PatientSearchConverter {
+    PatientSearchResponse toResponse(PatientSearch report);
 }
 ```
 
@@ -129,8 +129,8 @@ for (int index = 0; index < values.size(); index++) {
 
 | 대상 | 표기·예시 | 검사 정규식 |
 | --- | --- | --- |
-| 클래스·인터페이스 등 타입 | PascalCase: `SampleService`, `XmlHttpRequest` | `^[A-Z][a-zA-Z0-9]*$` |
-| 패키지 | 소문자: `com.stagora.sample` | `^[a-z]+(\.[a-z][a-z0-9]*)*$` |
+| 클래스·인터페이스 등 타입 | PascalCase: `PatientReportService`, `XmlHttpRequest` | `^[A-Z][a-zA-Z0-9]*$` |
+| 패키지 | 소문자: `com.stagora.reports` | `^[a-z]+(\.[a-z][a-z0-9]*)*$` |
 | 메서드 | camelCase: `getNationInfo` | `^[a-z][a-zA-Z0-9]*$` |
 | 인스턴스 필드 | camelCase: `institutionName` | `^[a-z][a-zA-Z0-9]*$` |
 | 지역 변수 | camelCase: `areaCode` | `^[a-z][a-zA-Z0-9]*$` |
@@ -169,7 +169,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import com.stagora.sample.model.Area;
+import com.stagora.reports.model.PatientSearch;
 ```
 
 ### 와일드카드와 미사용 import
@@ -197,7 +197,7 @@ public static final 상수 등 모듈 기본 예외도 적용됩니다.
 ```java
 public static final String DEFAULT_LANGUAGE = "en";
 
-private final SampleMapper sampleMapper;
+private final PatientReportMapper patientReportMapper;
 private String institutionName;
 ```
 
@@ -236,29 +236,17 @@ int total = first + second;
 ## 작성 예시
 
 ```java
-package com.stagora.sample.service;
+package com.stagora.reports.dto;
 
-import java.util.List;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.ReportingPolicy;
 
-import org.springframework.stereotype.Service;
+import com.stagora.reports.model.PatientSearch;
 
-import com.stagora.sample.dto.AreasConverter;
-import com.stagora.sample.dto.AreasResponse;
-import com.stagora.sample.mapper.SampleMapper;
-import com.stagora.sample.model.Area;
-
-import lombok.RequiredArgsConstructor;
-
-@Service
-@RequiredArgsConstructor
-public class SampleService {
-    private final SampleMapper sampleMapper;
-    private final AreasConverter areasConverter;
-
-    public List<AreasResponse> getArea() {
-        List<Area> areas = sampleMapper.getArea();
-        return areasConverter.toResponses(areas);
-    }
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
+public interface PatientSearchConverter {
+    PatientSearchResponse toResponse(PatientSearch report);
 }
 ```
 

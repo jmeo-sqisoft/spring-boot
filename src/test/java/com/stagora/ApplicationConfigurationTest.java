@@ -18,12 +18,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.p6spy.engine.spy.P6DataSource;
-import com.stagora.sample.controller.SampleController;
-import com.stagora.sample.dto.AreasConverter;
-import com.stagora.sample.dto.InstitutionInfoConverter;
-import com.stagora.sample.dto.NationInfoConverter;
-import com.stagora.sample.mapper.SampleMapper;
-import com.stagora.sample.service.SampleService;
+import com.stagora.reports.controller.PatientReportController;
+import com.stagora.reports.dto.PatientSearchConverter;
+import com.stagora.reports.mapper.PatientReportMapper;
+import com.stagora.reports.service.PatientReportService;
 import com.zaxxer.hikari.HikariDataSource;
 
 import jakarta.persistence.EntityManagerFactory;
@@ -42,12 +40,10 @@ class ApplicationConfigurationTest {
                 "--spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access=false",
                 "--spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect")) {
             DataSource dataSource = context.getBean(DataSource.class);
-            assertThat(context.getBean(SampleController.class)).isNotNull();
-            assertThat(context.getBean(SampleService.class)).isNotNull();
-            assertThat(context.getBean(SampleMapper.class)).isNotNull();
-            assertThat(context.getBean(AreasConverter.class)).isNotNull();
-            assertThat(context.getBean(InstitutionInfoConverter.class)).isNotNull();
-            assertThat(context.getBean(NationInfoConverter.class)).isNotNull();
+            assertThat(context.getBean(PatientReportController.class)).isNotNull();
+            assertThat(context.getBean(PatientReportService.class)).isNotNull();
+            assertThat(context.getBean(PatientReportMapper.class)).isNotNull();
+            assertThat(context.getBean(PatientSearchConverter.class)).isNotNull();
             HikariDataSource hikari = dataSource.unwrap(HikariDataSource.class);
             assertThat(hikari.getPoolName()).isEqualTo("gmcs-be-hikari-pool");
             assertThat(hikari.getDataSourceProperties()).containsEntry("ApplicationName", "gmcs");
@@ -56,8 +52,8 @@ class ApplicationConfigurationTest {
                 .isEqualTo(isSqlLoggingEnabled);
             assertThat(context.getEnvironment().getProperty("logging.level.com.stagora")).isEqualTo(expectedLogLevel);
             if ("perf".equals(profile)) {
-                assertThat(context.getEnvironment().getProperty("logging.level.com.stagora.sample.mapper")).isNull();
-                assertThat(LoggerFactory.getLogger("com.stagora.sample.mapper").isDebugEnabled()).isTrue();
+                assertThat(context.getEnvironment().getProperty("logging.level.com.stagora.reports.mapper")).isNull();
+                assertThat(LoggerFactory.getLogger("com.stagora.reports.mapper").isDebugEnabled()).isTrue();
             }
             assertThat(context.getBean(SqlSessionFactory.class).getConfiguration().getEnvironment().getDataSource())
                 .isSameAs(dataSource);
@@ -73,11 +69,12 @@ class ApplicationConfigurationTest {
                 .containsProperty("spring.cloud.azure.keyvault.secret.property-source-enabled")).isFalse();
             String baseUrl = "http://localhost:" + context.getEnvironment().getProperty("local.server.port");
             try (HttpClient client = HttpClient.newHttpClient()) {
-                HttpResponse<String> invalidInstitution = client.send(HttpRequest.newBuilder(URI.create(baseUrl
-                        + "/apis/reports/v1/sample/institutioninfo")).header("Accept-Language", "en").GET().build(),
+                HttpResponse<String> invalidPatientDetail = client.send(HttpRequest.newBuilder(URI.create(baseUrl
+                        + "/apis/reports/v1/patient/detail?sampleId=invalid"))
+                        .header("Accept-Language", "en").GET().build(),
                     HttpResponse.BodyHandlers.ofString());
-                assertThat(invalidInstitution.statusCode()).isEqualTo(400);
-                assertThat(invalidInstitution.body()).contains("E40001", "Validation failed.");
+                assertThat(invalidPatientDetail.statusCode()).isEqualTo(400);
+                assertThat(invalidPatientDetail.body()).contains("E40001", "Validation failed.");
                 HttpResponse<String> docs = client.send(
                     HttpRequest.newBuilder(URI.create(baseUrl + "/local-api-docs")).GET().build(),
                     HttpResponse.BodyHandlers.ofString());
@@ -90,8 +87,7 @@ class ApplicationConfigurationTest {
                         .contains("/apis/reports/v1/patient/list",
                             "/apis/reports/v1/patient/detail").doesNotContain("\"sampleIdsText\"", "\"periodMonths\"",
                             "/apis/reports/v1/reports");
-                    assertThat(docs.body()).contains("/apis/reports/v1/sample/areas",
-                        "/apis/reports/v1/sample/institutioninfo", "/apis/reports/v1/sample/nations");
+                    assertThat(docs.body()).doesNotContain("/apis/reports/v1/sample/");
                     HttpResponse<String> ui = client.send(
                         HttpRequest.newBuilder(URI.create(baseUrl + "/swagger-ui/index.html"))
                             .GET().build(), HttpResponse.BodyHandlers.ofString());

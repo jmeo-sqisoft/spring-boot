@@ -70,9 +70,6 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 
 | Method | Path | 설명 | 요청 값 |
 | --- | --- | --- | --- |
-| GET | `/apis/reports/v1/sample/areas` | 지역 정보 전체 목록 조회 | 없음 |
-| GET | `/apis/reports/v1/sample/institutioninfo` | 기관 정보 조회 | `clabId`, `hospitalId` 중 하나 이상 필요 |
-| GET | `/apis/reports/v1/sample/nations` | 지역별 국가 목록과 국가 하위 지역 조회 | 없음 |
 | POST | `/apis/reports/v1/patient/list` | 환자 리포트 목록 조회 | JSON 본문: 검색 탭, Sample ID 또는 분류·질환, 검사일 기간, 페이지 |
 | GET | `/apis/reports/v1/patient/detail` | 목록과 동일한 검사 정보·전체 PNG 단건 조회 | 필수 쿼리 파라미터 `sampleId` (UUID) |
 
@@ -101,20 +98,13 @@ spring-boot/
 │       │   │   ├── enums/                # 기관 유형·데이터 유형
 │       │   │   ├── exception/            # ApiException과 다국어 오류 응답 처리기
 │       │   │   └── util/                 # 언어·문자열 처리
-│       │   ├── reports/                  # 환자 리포트 목록·상세 및 병원·이력 조회 골격
-│       │   │   ├── controller/           # PatientReport·HospitalReport·ReportHistoryController
-│       │   │   ├── dto/                  # 조회 요청·응답과 MapStruct 변환기
-│       │   │   ├── mapper/               # PatientReportMapper
-│       │   │   ├── model/                # PatientSearch
-│       │   │   └── service/              # 입력 순서 정렬·미조회 처리
-│       │   └── sample/
-│       │       ├── controller/           # SampleController
-│       │       ├── dto/                  # 요청·응답 객체와 MapStruct 변환기
-│       │       ├── mapper/               # SampleMapper 인터페이스
-│       │       ├── model/                # MyBatis 조회 결과 모델
-│       │       └── service/              # SampleService
+│       │   └── reports/                  # 환자 리포트 목록·상세 및 병원·이력 조회 골격
+│       │       ├── controller/           # PatientReport·HospitalReport·ReportHistoryController
+│       │       ├── dto/                  # 조회 요청·응답과 MapStruct 변환기
+│       │       ├── mapper/               # PatientReportMapper
+│       │       ├── model/                # 리포트·페이지·집계 조회 모델
+│       │       └── service/              # 목록·집계·상세 응답 처리
 │       └── resources/
-│           ├── mapper/sample/            # SampleMapper의 SQL·결과 매핑
 │           ├── mapper/reports/            # UNION ALL 리포트 조회 SQL
 │           ├── messages/                 # 기본·한국어·영어 메시지
 │           ├── application.yml           # 공통 설정

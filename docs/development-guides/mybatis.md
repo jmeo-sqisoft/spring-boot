@@ -139,7 +139,7 @@ ON 검사에서는 문자열·주석·XML 표기가 포함된 행을 제외합�
 ### 조회 · 서브쿼리 · 조인
 
 ```sql
-/* SampleMapper.sample1 */
+/* ExampleMapper.selectList */
 with cte_sample_with1 as (
     select
           a.nat_info_no
@@ -236,7 +236,7 @@ where a.op_type = 'I'
 ### 데이터 입력
 
 ```sql
-/* SampleMapper.sample2 */
+/* ExampleMapper.insertExample */
 insert into sample (
       col_1
     , col_2
@@ -249,7 +249,7 @@ insert into sample (
 ### 데이터 수정
 
 ```sql
-/* SampleMapper.sample3 */
+/* ExampleMapper.updateExample */
 update sample
 set   col_2 = 'b'
     , col_3 = 'c'

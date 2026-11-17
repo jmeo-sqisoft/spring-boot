@@ -53,17 +53,7 @@ public record PatientListSearchRequest(
             }
             ids = normalizedIds();
         } else {
-            if (sampleIds != null && !sampleIds.isEmpty()) {
-                throw new ApiException(ApiResponseCode.E40001);
-            }
-            Set<String> diseases = switch (classification) {
-                case "COMPREHENSIVE_PANEL" -> Set.of("ALL", "HPV_STI", "RP", "GI");
-                case "OTHER_PANELS" -> Set.of("ALL", "HPV", "STI", "RP", "GI", "OTHERS");
-                default -> Set.of("ALL");
-            };
-            if (!diseases.contains(diseaseCode)) {
-                throw new ApiException(ApiResponseCode.E40001);
-            }
+            validateClassification(classification, diseaseCode);
         }
         return new PatientListSearchRequest(type, ids, classification, diseaseCode, date, number, limit);
     }
@@ -75,33 +65,51 @@ public record PatientListSearchRequest(
         return ((long)page - 1) * size;
     }
 
+    private void validateClassification(String classification, String diseaseCode) {
+        if (sampleIds != null && !sampleIds.isEmpty()) {
+            throw new ApiException(ApiResponseCode.E40001);
+        }
+        Set<String> diseases = switch (classification) {
+            case "COMPREHENSIVE_PANEL" -> Set.of("ALL", "HPV_STI", "RP", "GI");
+            case "OTHER_PANELS" -> Set.of("ALL", "HPV", "STI", "RP", "GI", "OTHERS");
+            default -> Set.of("ALL");
+        };
+        if (!diseases.contains(diseaseCode)) {
+            throw new ApiException(ApiResponseCode.E40001);
+        }
+    }
+
     private List<String> normalizedIds() {
         if (sampleIds == null || sampleIds.isEmpty()) {
             throw new ApiException(ApiResponseCode.E40001);
         }
         Set<String> ids = new LinkedHashSet<>();
         for (String input : sampleIds) {
-            if (input == null) {
-                throw new ApiException(ApiResponseCode.E40001);
-            }
-            for (String token : input.split("[\\r\\n,\\t]+")) {
-                String id = token.trim();
-                if (id.isEmpty()) {
-                    continue;
-                }
-                if (!id.matches("[A-Za-z0-9][A-Za-z0-9-]{0,63}")) {
-                    throw new ApiException(ApiResponseCode.E40001);
-                }
-                ids.add(id);
-                if (ids.size() > 50) {
-                    throw new ApiException(ApiResponseCode.E40001);
-                }
-            }
+            addNormalizedIds(input, ids);
         }
         if (ids.isEmpty()) {
             throw new ApiException(ApiResponseCode.E40001);
         }
         return List.copyOf(ids);
+    }
+
+    private static void addNormalizedIds(String input, Set<String> ids) {
+        if (input == null) {
+            throw new ApiException(ApiResponseCode.E40001);
+        }
+        for (String token : input.split("[\\r\\n,\\t]+")) {
+            String id = token.trim();
+            if (id.isEmpty()) {
+                continue;
+            }
+            if (!id.matches("[A-Za-z0-9][A-Za-z0-9-]{0,63}")) {
+                throw new ApiException(ApiResponseCode.E40001);
+            }
+            ids.add(id);
+            if (ids.size() > 50) {
+                throw new ApiException(ApiResponseCode.E40001);
+            }
+        }
     }
 
     private static String code(String value, String defaultValue) {

@@ -2,11 +2,13 @@ package com.stagora.reports.mapper;
 
 import java.io.InputStream;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.scripting.defaults.DefaultParameterHandler;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.Test;
@@ -39,21 +41,14 @@ class PatientReportMapperTest {
             countSql.indexOf(", cte_samples")).trim();
 
         assertThat(statisticsSource).isEqualTo(listSource);
-        assertThat(countSql).contains(filters.trim()).doesNotContain("limit", "offset");
-        assertThat(countSql).contains("count(1) as report_count",
-            "count(distinct a.sample_id) as found_sample_id_count");
+        assertThat(countSql).contains(filters.trim()).doesNotContain("limit", "offset")
+            .contains("count(1) as report_count", "count(distinct a.sample_id) as found_sample_id_count");
         assertThat(sql).containsOnlyOnce("/* PatientReportMapper.getPatientList */")
             .contains("generate_series(0, 12)", "a.detected_analytes_count")
             .endsWith("order by a.test_date desc , a.sample_id , a.report_id limit ? offset ?");
         assertThat(statement.getResultMaps()).singleElement().satisfies(result ->
             assertThat(result.getType()).isEqualTo(PatientListItem.class));
-        assertThat(filters).contains("a.test_date <= current_date");
-        switch (request.testDate()) {
-            case "TODAY" -> assertThat(filters).contains("a.test_date >= current_date ");
-            case "LAST_7_DAYS" -> assertThat(filters).contains("a.test_date >= current_date - 6");
-            case "LAST_1_MONTH" -> assertThat(filters).contains("a.test_date >= current_date - interval '1 month'");
-            default -> assertThat(filters).doesNotContain("a.test_date >=");
-        }
+        assertDateFilters(filters, request.testDate());
         var prepared = mock(PreparedStatement.class);
         new DefaultParameterHandler(statement, request, bound).setParameters(prepared);
         int parameter = 1;
@@ -80,6 +75,21 @@ class PatientReportMapperTest {
         verify(prepared).setInt(parameter++, request.size());
         verify(prepared).setLong(parameter, 20L);
         assertThat(bound.getParameterMappings()).hasSize(parameter);
+        assertStatisticsBindings(count, request);
+    }
+
+    private void assertDateFilters(String filters, String period) {
+        assertThat(filters).contains("a.test_date <= current_date");
+        switch (period) {
+            case "TODAY" -> assertThat(filters).contains("a.test_date >= current_date ");
+            case "LAST_7_DAYS" -> assertThat(filters).contains("a.test_date >= current_date - 6");
+            case "LAST_1_MONTH" -> assertThat(filters).contains("a.test_date >= current_date - interval '1 month'");
+            default -> assertThat(filters).doesNotContain("a.test_date >=");
+        }
+    }
+
+    private void assertStatisticsBindings(MappedStatement count, PatientListSearchRequest request)
+        throws SQLException {
         if (!"SAMPLE_ID".equals(request.searchType())) {
             var statisticsSql = count.getBoundSql(request);
             var statisticsParameters = mock(PreparedStatement.class);

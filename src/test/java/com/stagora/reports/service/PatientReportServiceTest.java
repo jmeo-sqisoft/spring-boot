@@ -127,14 +127,12 @@ class PatientReportServiceTest {
         long noResults, long notFound) {
         var request = new PatientListSearchRequest("SAMPLE_ID", List.of(sampleId), null, null,
             period, null, null).normalized();
-        when(mapper.getPatientListStatistics(request))
-            .thenReturn(new PatientListStatistics(0, 0, noResults, notFound));
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(0, 0, noResults, notFound));
 
         var response = service.getPatientList(request);
 
         assertThat(response.totalCount()).isZero();
-        assertThat(response.summary())
-            .isEqualTo(new PatientListSummaryResponse(1, 0, 0, noResults, notFound));
+        assertThat(response.summary()).isEqualTo(new PatientListSummaryResponse(1, 0, 0, noResults, notFound));
         assertThat(response.items()).isEmpty();
         verify(mapper).getPatientListStatistics(request);
         verifyNoMoreInteractions(mapper);

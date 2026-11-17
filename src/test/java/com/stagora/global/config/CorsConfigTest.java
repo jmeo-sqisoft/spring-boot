@@ -28,8 +28,7 @@ class CorsConfigTest {
     @ValueSource(strings = {"http://localhost", "http://localhost:3000", "http://127.0.0.1",
         "http://127.0.0.1:5173", "http://[::1]", "http://[::1]:8080"})
     void defaultOriginsAllowCredentialsAndExposeAuthorization(String origin) throws Exception {
-        mvc(new AppProperties()).perform(get(PROBE_URL).header(HttpHeaders.ORIGIN, origin))
-            .andExpect(status().isOk())
+        mvc(new AppProperties()).perform(get(PROBE_URL).header(HttpHeaders.ORIGIN, origin)).andExpect(status().isOk())
             .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, origin))
             .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"))
             .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Authorization"));
@@ -46,8 +45,7 @@ class CorsConfigTest {
     @ParameterizedTest
     @ValueSource(strings = {"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
     void preflightAllowsConfiguredMethodsAndRequestedHeaders(String method) throws Exception {
-        mvc(new AppProperties()).perform(options(PROBE_URL)
-                .header(HttpHeaders.ORIGIN, "http://localhost:3000")
+        mvc(new AppProperties()).perform(options(PROBE_URL).header(HttpHeaders.ORIGIN, "http://localhost:3000")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, method)
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "content-type,x-request-id"))
             .andExpect(status().isOk())
@@ -58,8 +56,7 @@ class CorsConfigTest {
     @Test
     void rejectsUnconfiguredMethodAndEmptyOriginConfiguration() throws Exception {
         mvc(new AppProperties()).perform(options(PROBE_URL).header(HttpHeaders.ORIGIN, "http://localhost")
-                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "TRACE"))
-            .andExpect(status().isForbidden());
+                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "TRACE")).andExpect(status().isForbidden());
         var properties = new AppProperties();
         properties.getCors().setAllowedOriginPatterns(List.of());
         mvc(properties).perform(get(PROBE_URL).header(HttpHeaders.ORIGIN, "http://localhost"))
@@ -70,18 +67,15 @@ class CorsConfigTest {
     void customBoundOriginsReplaceDefaults() throws Exception {
         var bound = new AtomicReference<AppProperties>();
         new ApplicationContextRunner().withUserConfiguration(PropertiesConfiguration.class)
-            .withPropertyValues("app.cors.allowed-origin-patterns[0]=https://portal.example")
-            .run(context -> {
+            .withPropertyValues("app.cors.allowed-origin-patterns[0]=https://portal.example").run(context -> {
                 assertThat(context).hasNotFailed();
                 bound.set(context.getBean(AppProperties.class));
             });
         assertThat(bound.get().getCors().getAllowedOriginPatterns()).containsExactly("https://portal.example");
         var mvc = mvc(bound.get());
-        mvc.perform(get(PROBE_URL).header(HttpHeaders.ORIGIN, "https://portal.example"))
-            .andExpect(status().isOk())
+        mvc.perform(get(PROBE_URL).header(HttpHeaders.ORIGIN, "https://portal.example")).andExpect(status().isOk())
             .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://portal.example"));
-        mvc.perform(get(PROBE_URL).header(HttpHeaders.ORIGIN, "http://localhost"))
-            .andExpect(status().isForbidden());
+        mvc.perform(get(PROBE_URL).header(HttpHeaders.ORIGIN, "http://localhost")).andExpect(status().isForbidden());
     }
 
     private MockMvc mvc(AppProperties properties) {

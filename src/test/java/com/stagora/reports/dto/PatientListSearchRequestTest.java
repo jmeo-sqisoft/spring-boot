@@ -1,6 +1,7 @@
 package com.stagora.reports.dto;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.IntStream;
@@ -8,6 +9,7 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,7 +52,10 @@ class PatientListSearchRequestTest {
     void rejectsDiseaseOutsideSelectedClassification(String classification, String disease) {
         var input = new PatientListSearchRequest("TEST_CLASSIFICATION", null,
             classification, disease, null, null, null);
-        assertThatThrownBy(input::normalized).isInstanceOf(ApiException.class);
+        assertThatThrownBy(input::normalized).isInstanceOfSatisfying(ApiException.class, exception -> {
+            assertThat(exception.getStatusCode()).isEqualTo(400);
+            assertThat(exception.getErrorCode()).isEqualTo("E40001");
+        });
     }
 
     @ParameterizedTest
@@ -78,7 +83,7 @@ class PatientListSearchRequestTest {
         assertThatThrownBy(input::normalized).isInstanceOf(ApiException.class);
         var duplicates = new PatientListSearchRequest(null,
             IntStream.range(0, 100).mapToObj(index -> "S" + index % 50).toList(), null, null, null, null, null);
-        assertThat(duplicates.normalized().sampleIds()).hasSize(50);
+        assertThat(duplicates.normalized().sampleIds()).containsExactlyElementsOf(ids.subList(0, 50));
     }
 
     @Test
@@ -123,5 +128,21 @@ class PatientListSearchRequestTest {
         assertThat(normalized.searchType()).isEqualTo("TEST_CLASSIFICATION");
         assertThat(normalized.testClassification()).isEqualTo("ALL");
         assertThat(normalized.disease()).isEqualTo("ALL");
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidSampleIds")
+    void rejectsMissingOrMalformedSampleIdsWithValidationCode(List<String> ids) {
+        var request = new PatientListSearchRequest(null, ids, null, null, null, null, null);
+
+        assertThatThrownBy(request::normalized).isInstanceOfSatisfying(ApiException.class, exception -> {
+            assertThat(exception.getStatusCode()).isEqualTo(400);
+            assertThat(exception.getErrorCode()).isEqualTo("E40001");
+        });
+    }
+
+    private static List<List<String>> invalidSampleIds() {
+        return Arrays.asList(null, List.of(), Arrays.asList("S1", null), List.of(" ,\t\r\n "),
+            List.of("S1", "bad id"), List.of("-S1"), List.of("S1_2"));
     }
 }

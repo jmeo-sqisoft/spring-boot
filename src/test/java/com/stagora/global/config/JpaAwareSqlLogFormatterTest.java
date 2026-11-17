@@ -33,7 +33,6 @@ class JpaAwareSqlLogFormatterTest {
     }
 
     private static Stream<Arguments> emptyEvents() {
-        return Stream.of(false, true).flatMap(jpa -> Stream.of(null, "", " \t ")
-            .map(sql -> Arguments.of(jpa, sql)));
+        return Stream.of(false, true).flatMap(jpa -> Stream.of(null, "", " \t ").map(sql -> Arguments.of(jpa, sql)));
     }
 }

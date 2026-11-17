@@ -48,12 +48,10 @@ class PatientReportControllerTest {
         when(service.getPatientList(request)).thenReturn(new PatientListResponse(10, 1, 1, 10, summary, List.of(item)));
 
         mvc.perform(post("/apis/reports/v1/patient/list")
-                .header("Accept-Language", language).contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .header("Accept-Language", language).contentType(MediaType.APPLICATION_JSON).content("""
                     {"sampleIds":[" S26-1015-0231, S26-1015-0231 ",
                       "S26-1015-0244", "S26-1015-9999"],"size":1}
-                    """))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.code").value("S0000"))
+                    """)).andExpect(status().isOk()).andExpect(jsonPath("$.code").value("S0000"))
             .andExpect(jsonPath("$.message").value(message)).andExpect(jsonPath("$.data.totalCount").value(10))
             .andExpect(jsonPath("$.data.totalPages").value(10)).andExpect(jsonPath("$.data.page").value(1))
             .andExpect(jsonPath("$.data.size").value(1)).andExpect(jsonPath("$.data.items.length()").value(1))
@@ -90,8 +88,7 @@ class PatientReportControllerTest {
             """.formatted(date, page, size);
         mvc.perform(post("/apis/reports/v1/patient/list").contentType(MediaType.APPLICATION_JSON).content(body))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.totalCount").value(0))
-            .andExpect(jsonPath("$.data.summary").value(nullValue()))
-            .andExpect(jsonPath("$.data.items").isEmpty());
+            .andExpect(jsonPath("$.data.summary").value(nullValue())).andExpect(jsonPath("$.data.items").isEmpty());
         verify(service).getPatientList(request);
     }
 
@@ -131,8 +128,7 @@ class PatientReportControllerTest {
     @ValueSource(strings = {"{", "{\"sampleIds\":{}}", "{\"sampleIds\":[\"S1\"],\"size\":\"ten\"}"})
     void rejectsUnreadableJsonBeforeCallingService(String body) throws Exception {
         mvc.perform(post("/apis/reports/v1/patient/list").contentType(MediaType.APPLICATION_JSON).content(body))
-            .andExpect(status().isBadRequest())
-            .andExpect(result -> assertThat(result.getResolvedException())
+            .andExpect(status().isBadRequest()).andExpect(result -> assertThat(result.getResolvedException())
                 .isInstanceOf(HttpMessageNotReadableException.class));
         verifyNoInteractions(service);
     }

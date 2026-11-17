@@ -13,7 +13,6 @@ public class ApiException extends RuntimeException {
     private final int statusCode;
     private final String errorCode;
     private final String messageKey;
-    @SuppressWarnings("SerializableClass")
     private final transient Object data;
 
     /**

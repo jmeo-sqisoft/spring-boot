@@ -34,19 +34,22 @@ class AbstractApiControllerTest {
         var response = controller.success(data);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().code()).isEqualTo("S0000");
-        assertThat(response.getBody().message()).isEqualTo("정상 처리되었습니다.");
-        assertThat(response.getBody().data()).isSameAs(data);
+        var body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.code()).isEqualTo("S0000");
+        assertThat(body.message()).isEqualTo("정상 처리되었습니다.");
+        assertThat(body.data()).isSameAs(data);
     }
 
     @Test
     void fallsBackToMessageKeyAndSupportsNullData() {
         var response = controller.success(null);
 
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("success.default");
-        assertThat(response.getBody().data()).isNull();
+        var body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.code()).isEqualTo("S0000");
+        assertThat(body.message()).isEqualTo("success.default");
+        assertThat(body.data()).isNull();
     }
 
     @Test

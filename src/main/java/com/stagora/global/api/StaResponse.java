@@ -21,8 +21,7 @@ public record StaResponse<T>(
     /**
      * 성공 코드 S0000과 전달받은 메시지·데이터로 응답 본문을 생성한다.
      */
-    @SuppressWarnings("unchecked")
-    public static <T> StaResponse<T> success(String message, Object data) {
-        return (StaResponse<T>) StaResponse.builder().code(CODE_SUCCESS).message(message).data(data).build();
+    public static <T> StaResponse<T> success(String message, T data) {
+        return new StaResponse<>(CODE_SUCCESS, message, data);
     }
 }

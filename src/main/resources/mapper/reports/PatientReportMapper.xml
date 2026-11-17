@@ -311,32 +311,32 @@ with cte_panels as (
     select
           a.*
     from cte_reports as a
-where a.test_date <![CDATA[ <= ]]> current_date
+    where a.test_date <![CDATA[ <= ]]> current_date
         <choose>
             <when test="searchType == 'SAMPLE_ID'">
-  and a.sample_id in
+      and a.sample_id in
                 <foreach collection="sampleIds" item="sampleId" open="(" separator="," close=")">
                     #{sampleId}
                 </foreach>
             </when>
             <otherwise>
                 <if test="testClassification != 'ALL'">
-  and a.test_classification = #{testClassification}
+      and a.test_classification = #{testClassification}
                 </if>
                 <if test="disease != 'ALL'">
-  and a.disease = #{disease}
+      and a.disease = #{disease}
                 </if>
             </otherwise>
         </choose>
         <choose>
             <when test="testDate == 'TODAY'">
-  and a.test_date >= current_date
+      and a.test_date >= current_date
             </when>
             <when test="testDate == 'LAST_7_DAYS'">
-  and a.test_date >= current_date - 6
+      and a.test_date >= current_date - 6
             </when>
             <when test="testDate == 'LAST_1_MONTH'">
-  and a.test_date >= current_date - interval '1 month'
+      and a.test_date >= current_date - interval '1 month'
             </when>
         </choose>
 )

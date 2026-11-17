@@ -86,8 +86,7 @@ class ApplicationConfigurationTest {
                             "\"foundSampleIdCount\"", "\"noResultsCount\"", "\"notFoundCount\"")
                         .contains("/apis/reports/v1/patient/list",
                             "/apis/reports/v1/patient/detail").doesNotContain("\"sampleIdsText\"", "\"periodMonths\"",
-                            "/apis/reports/v1/reports");
-                    assertThat(docs.body()).doesNotContain("/apis/reports/v1/sample/");
+                            "/apis/reports/v1/reports", "/apis/reports/v1/sample/");
                     HttpResponse<String> ui = client.send(
                         HttpRequest.newBuilder(URI.create(baseUrl + "/swagger-ui/index.html"))
                             .GET().build(), HttpResponse.BodyHandlers.ofString());

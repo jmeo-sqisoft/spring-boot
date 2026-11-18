@@ -4,17 +4,20 @@ import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.scripting.defaults.DefaultParameterHandler;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -45,7 +48,7 @@ class PatientReportMapperTest {
             .contains("count(1) as report_count", "count(distinct a.sample_id) as found_sample_id_count");
         assertThat(sql).containsOnlyOnce("/* PatientReportMapper.getPatientList */")
             .contains("generate_series(0, 12)", "a.detected_analytes_count")
-            .endsWith("order by a.test_date desc , a.sample_id , a.report_id limit ? offset ?");
+            .endsWith("order by a.test_date desc , a.sample_id , a.report_id limit ? offset ((?::bigint - 1) * ?)");
         assertThat(statement.getResultMaps()).singleElement().satisfies(result ->
             assertThat(result.getType()).isEqualTo(PatientListItem.class));
         assertDateFilters(filters, request.testDate());
@@ -58,6 +61,8 @@ class PatientReportMapperTest {
                 verify(prepared).setString(parameter++, id);
             }
         } else {
+            assertThat(sql).doesNotContain("cte_input_samples", "unnest(array[");
+            assertThat(countSql).doesNotContain("cte_input_samples", "unnest(array[");
             assertThat(filters).doesNotContain("a.sample_id in");
             if (!"ALL".equals(request.testClassification())) {
                 assertThat(filters).contains("a.test_classification = ?");
@@ -73,9 +78,29 @@ class PatientReportMapperTest {
             }
         }
         verify(prepared).setInt(parameter++, request.size());
-        verify(prepared).setLong(parameter, 20L);
+        verify(prepared).setInt(parameter++, request.page());
+        verify(prepared).setInt(parameter, request.size());
         assertThat(bound.getParameterMappings()).hasSize(parameter);
         assertStatisticsBindings(count, request);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, Integer.MAX_VALUE})
+    void bindsPageAndSizeForBigintOffsetCalculation(int page) throws Exception {
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, page, 100).normalized();
+        var statement = configuration().getMappedStatement(PatientReportMapper.class.getName() + ".getPatientList");
+        var bound = statement.getBoundSql(request);
+        var prepared = mock(PreparedStatement.class);
+
+        new DefaultParameterHandler(statement, request, bound).setParameters(prepared);
+
+        assertThat(bound.getSql().replaceAll("\\s+", " ").trim())
+            .endsWith("limit ? offset ((?::bigint - 1) * ?)");
+        assertThat(bound.getParameterMappings()).extracting(ParameterMapping::getProperty)
+            .containsExactly("size", "page", "size");
+        verify(prepared).setInt(1, 100);
+        verify(prepared).setInt(2, page);
+        verify(prepared).setInt(3, 100);
     }
 
     private void assertDateFilters(String filters, String period) {
@@ -141,19 +166,50 @@ class PatientReportMapperTest {
         var bound = statement.getBoundSql(request);
         String sql = bound.getSql().replaceAll("\\s+", " ").trim();
         assertThat(sql).contains("generate_series(231, 244)", "count(distinct a.sample_id)",
-                "not exists", "y.sample_id = x.sample_id", "as no_results_count", "as not_found_count")
+                "not exists", "y.sample_id = x.sample_id", "as no_results_count", "as not_found_count",
+                "from cte_input_samples as x where not exists ( select 1 from cte_samples as y")
+            .containsOnlyOnce("cte_input_samples as (").containsOnlyOnce("unnest(array[ ? , ? , ? ]::text[])")
             .doesNotContain("limit", "offset", "S26-1015-9999");
         assertThat(statement.getResultMaps()).singleElement()
             .satisfies(result -> assertThat(result.getType()).isEqualTo(PatientListStatistics.class));
-        assertThat(bound.getParameterMappings()).hasSize(10);
+        assertThat(bound.getParameterMappings()).hasSize(3).extracting(ParameterMapping::getProperty)
+            .doesNotContain("enteredCount");
         var prepared = mock(PreparedStatement.class);
         new DefaultParameterHandler(statement, request, bound).setParameters(prepared);
         for (int index = 0; index < 3; index++) {
             verify(prepared).setString(index + 1, request.sampleIds().get(index));
-            verify(prepared).setString(index + 4, request.sampleIds().get(index));
-            verify(prepared).setString(index + 8, request.sampleIds().get(index));
         }
-        verify(prepared).setInt(7, 3);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 100, 500})
+    void bindsEachInputIdOncePerQueryAndReusesInputCte(int count) throws Exception {
+        var ids = IntStream.range(0, count).mapToObj(index -> "S" + index).toList();
+        var request = new PatientListSearchRequest("SAMPLE_ID", ids, null, null, null, 1, 10).normalized();
+        var configuration = configuration();
+        for (String method : List.of("getPatientList", "getPatientListStatistics")) {
+            var statement = configuration.getMappedStatement(PatientReportMapper.class.getName() + "." + method);
+            var bound = statement.getBoundSql(request);
+            String sql = bound.getSql().replaceAll("\\s+", " ").trim();
+            var prepared = mock(PreparedStatement.class);
+
+            new DefaultParameterHandler(statement, request, bound).setParameters(prepared);
+
+            assertThat(sql).containsOnlyOnce("cte_input_samples as (").containsOnlyOnce("unnest(array[")
+                .contains("from cte_input_samples as z");
+            int paginationParameters = "getPatientList".equals(method) ? 3 : 0;
+            assertThat(bound.getParameterMappings()).hasSize(count + paginationParameters);
+            for (int index = 0; index < count; index++) {
+                verify(prepared).setString(index + 1, ids.get(index));
+            }
+            if ("getPatientListStatistics".equals(method)) {
+                assertThat(sql).contains("from cte_input_samples as x where not exists (");
+            } else {
+                verify(prepared).setInt(count + 1, 10);
+                verify(prepared).setInt(count + 2, 1);
+                verify(prepared).setInt(count + 3, 10);
+            }
+        }
     }
 
     private static Stream<Arguments> searchConditions() {

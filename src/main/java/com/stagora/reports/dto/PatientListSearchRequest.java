@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record PatientListSearchRequest(
     @Schema(description = "검색 탭", defaultValue = "SAMPLE_ID", allowableValues = {"SAMPLE_ID", "TEST_CLASSIFICATION"})
     String searchType,
-    @Schema(description = "Sample ID 탭에서 필수. 구분자 분리·중복 제거 후 1~50건", example = "[\"S26-1015-0231\"]")
+    @Schema(description = "Sample ID 탭에서 필수. 구분자 분리·중복 제거 후 1건 이상", example = "[\"S26-1015-0231\"]")
     List<String> sampleIds,
     @Schema(description = "검사 분류", defaultValue = "ALL",
         allowableValues = {"ALL", "COMPREHENSIVE_PANEL", "OTHER_PANELS"})
@@ -29,6 +29,13 @@ public record PatientListSearchRequest(
     @Schema(description = "페이지당 건수 (1~100)", defaultValue = "10", minimum = "1", maximum = "100")
     Integer size
 ) {
+    private static final Set<String> SEARCH_TYPES = Set.of("SAMPLE_ID", "TEST_CLASSIFICATION");
+    private static final Set<String> TEST_CLASSIFICATIONS = Set.of("ALL", "COMPREHENSIVE_PANEL", "OTHER_PANELS");
+    private static final Set<String> TEST_DATE_PERIODS = Set.of("ALL_TIME", "TODAY", "LAST_7_DAYS", "LAST_1_MONTH");
+    private static final Set<String> COMPREHENSIVE_PANEL_DISEASES = Set.of("ALL", "HPV_STI", "RP", "GI");
+    private static final Set<String> OTHER_PANEL_DISEASES = Set.of("ALL", "HPV", "STI", "RP", "GI", "OTHERS");
+    private static final Set<String> ALL_CLASSIFICATION_DISEASES = Set.of("ALL");
+
     /**
      * 탭별 조건을 검증한다. 다른 탭의 조건이 섞이거나 분류에 맞지 않는 질환이면 거절한다.
      * Sample ID는 최초 입력 순서를 유지해 중복을 제거하며 기본 기간은 전체 기간이다.
@@ -40,9 +47,8 @@ public record PatientListSearchRequest(
         String date = code(testDate, "ALL_TIME");
         int number = page == null ? 1 : page;
         int limit = size == null ? 10 : size;
-        if (!Set.of("SAMPLE_ID", "TEST_CLASSIFICATION").contains(type)
-            || !Set.of("ALL", "COMPREHENSIVE_PANEL", "OTHER_PANELS").contains(classification)
-            || !Set.of("ALL_TIME", "TODAY", "LAST_7_DAYS", "LAST_1_MONTH").contains(date)
+        if (!SEARCH_TYPES.contains(type) || !TEST_CLASSIFICATIONS.contains(classification)
+            || !TEST_DATE_PERIODS.contains(date)
             || number < 1 || limit < 1 || limit > 100) {
             throw new ApiException(ApiResponseCode.E40001);
         }
@@ -58,21 +64,14 @@ public record PatientListSearchRequest(
         return new PatientListSearchRequest(type, ids, classification, diseaseCode, date, number, limit);
     }
 
-    /**
-     * 큰 페이지 번호에서도 정수 오버플로가 발생하지 않도록 long으로 계산한다.
-     */
-    public long offset() {
-        return ((long)page - 1) * size;
-    }
-
     private void validateClassification(String classification, String diseaseCode) {
         if (sampleIds != null && !sampleIds.isEmpty()) {
             throw new ApiException(ApiResponseCode.E40001);
         }
         Set<String> diseases = switch (classification) {
-            case "COMPREHENSIVE_PANEL" -> Set.of("ALL", "HPV_STI", "RP", "GI");
-            case "OTHER_PANELS" -> Set.of("ALL", "HPV", "STI", "RP", "GI", "OTHERS");
-            default -> Set.of("ALL");
+            case "COMPREHENSIVE_PANEL" -> COMPREHENSIVE_PANEL_DISEASES;
+            case "OTHER_PANELS" -> OTHER_PANEL_DISEASES;
+            default -> ALL_CLASSIFICATION_DISEASES;
         };
         if (!diseases.contains(diseaseCode)) {
             throw new ApiException(ApiResponseCode.E40001);
@@ -106,9 +105,6 @@ public record PatientListSearchRequest(
                 throw new ApiException(ApiResponseCode.E40001);
             }
             ids.add(id);
-            if (ids.size() > 50) {
-                throw new ApiException(ApiResponseCode.E40001);
-            }
         }
     }
 

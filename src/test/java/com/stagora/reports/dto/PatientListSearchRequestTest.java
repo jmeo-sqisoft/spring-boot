@@ -29,7 +29,6 @@ class PatientListSearchRequestTest {
         assertThat(request.testDate()).isEqualTo("ALL_TIME");
         assertThat(request.page()).isEqualTo(1);
         assertThat(request.size()).isEqualTo(10);
-        assertThat(request.offset()).isZero();
     }
 
     @ParameterizedTest
@@ -43,7 +42,8 @@ class PatientListSearchRequestTest {
         assertThat(request.sampleIds()).isEmpty();
         assertThat(request.testClassification()).isEqualTo(classification);
         assertThat(request.disease()).isEqualTo(disease);
-        assertThat(request.offset()).isEqualTo(10);
+        assertThat(request.page()).isEqualTo(2);
+        assertThat(request.size()).isEqualTo(10);
     }
 
     @ParameterizedTest
@@ -69,27 +69,19 @@ class PatientListSearchRequestTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 50})
-    void acceptsUniqueIdCountBoundaries(int count) {
+    @ValueSource(ints = {1, 50, 51, 1000})
+    void acceptsSampleIdsWithoutCountLimit(int count) {
         var ids = IntStream.range(0, count).mapToObj(index -> "S" + index).toList();
         var input = new PatientListSearchRequest(null, ids, null, null, null, null, null);
         assertThat(input.normalized().sampleIds()).hasSize(count).containsExactlyElementsOf(ids);
     }
 
     @Test
-    void rejectsMoreThanFiftyUniqueIdsButAllowsDuplicatesBeforeCounting() {
-        var ids = IntStream.range(0, 51).mapToObj(index -> "S" + index).toList();
-        var input = new PatientListSearchRequest(null, ids, null, null, null, null, null);
-        assertThatThrownBy(input::normalized).isInstanceOf(ApiException.class);
+    void removesDuplicatesWithoutLimitingUniqueIdCount() {
+        var ids = IntStream.range(0, 100).mapToObj(index -> "S" + index).toList();
         var duplicates = new PatientListSearchRequest(null,
-            IntStream.range(0, 100).mapToObj(index -> "S" + index % 50).toList(), null, null, null, null, null);
-        assertThat(duplicates.normalized().sampleIds()).containsExactlyElementsOf(ids.subList(0, 50));
-    }
-
-    @Test
-    void largePageOffsetDoesNotOverflowInteger() {
-        var input = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, Integer.MAX_VALUE, 100);
-        assertThat(input.normalized().offset()).isEqualTo(214748364600L);
+            IntStream.range(0, 200).mapToObj(index -> "S" + index % 100).toList(), null, null, null, null, null);
+        assertThat(duplicates.normalized().sampleIds()).containsExactlyElementsOf(ids);
     }
 
     @ParameterizedTest

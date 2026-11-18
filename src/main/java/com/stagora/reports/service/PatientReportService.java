@@ -28,6 +28,22 @@ public class PatientReportService {
     private final PatientSearchConverter patientSearchConverter;
 
     /**
+     * 탭별 검색 조건으로 전체 건수와 현재 페이지를 조회한다.
+     * 같은 Sample ID의 여러 리포트를 각각 반환하며 미조회 ID의 빈 행은 추가하지 않는다.
+     */
+    public PatientListResponse getPatientList(PatientListSearchRequest request) {
+        var statistics = patientReportMapper.getPatientListStatistics(request);
+        long total = statistics.reportCount();
+        List<PatientItemResponse> items = total == 0 ? List.of() : patientReportMapper.getPatientList(request).stream()
+                .map(patientSearchConverter::toItemResponse).toList();
+        long pages = total / request.size() + (total % request.size() == 0 ? 0 : 1);
+        PatientListSummaryResponse summary = "SAMPLE_ID".equals(request.searchType())
+            ? new PatientListSummaryResponse(request.sampleIds().size(), statistics.foundSampleIdCount(), total,
+                statistics.noResultsCount(), statistics.notFoundCount()) : null;
+        return new PatientListResponse(total, request.page(), request.size(), pages, summary, items);
+    }
+
+    /**
      * 목록과 동일한 검사 정보와 전체 PNG를 단건 응답으로 묶는다.
      * 검사 정보 또는 이미지가 없으면 HTTP 404이며, 조회로 출력 이력을 변경하지 않는다.
      */
@@ -45,19 +61,4 @@ public class PatientReportService {
         return new PatientDetailResponse(patientSearchConverter.toResponse(report), pages);
     }
 
-    /**
-     * 탭별 검색 조건으로 전체 건수와 현재 페이지를 조회한다.
-     * 같은 Sample ID의 여러 리포트를 각각 반환하며 미조회 ID의 빈 행은 추가하지 않는다.
-     */
-    public PatientListResponse getPatientList(PatientListSearchRequest request) {
-        var statistics = patientReportMapper.getPatientListStatistics(request);
-        long total = statistics.reportCount();
-        List<PatientItemResponse> items = total == 0 ? List.of() : patientReportMapper.getPatientList(request).stream()
-                .map(patientSearchConverter::toItemResponse).toList();
-        long pages = total / request.size() + (total % request.size() == 0 ? 0 : 1);
-        PatientListSummaryResponse summary = "SAMPLE_ID".equals(request.searchType())
-            ? new PatientListSummaryResponse(request.sampleIds().size(), statistics.foundSampleIdCount(), total,
-                statistics.noResultsCount(), statistics.notFoundCount()) : null;
-        return new PatientListResponse(total, request.page(), request.size(), pages, summary, items);
-    }
 }

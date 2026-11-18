@@ -448,7 +448,24 @@ where a.test_date <![CDATA[ <= ]]> current_date
             </when>
         </choose>
 order by a.test_date desc
-       , a.sample_id
+       , a.sample_id desc
+       , case a.test_classification
+             when 'COMPREHENSIVE_PANEL' then 0
+             when 'OTHER_PANELS' then 1
+             else 2
+         end
+       , case
+             when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'RTI' then 0
+             when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'ABI' then 1
+             when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'GTI' then 2
+             else 3
+         end
+       , case
+             when a.test_classification = 'OTHER_PANELS' and a.disease = 'OTHERS' then 1
+             else 0
+         end
+       , a.disease
+       , a.panel_code
        , a.report_id
 limit #{size}
 offset ((#{page}::bigint - 1) * #{size})

@@ -31,6 +31,29 @@ import com.stagora.reports.model.PatientSearch;
 
 class PatientReportMapperTest {
     private static final String FIRST_SAMPLE_ID = "d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad";
+    private static final String LIST_SORT_ORDER = """
+        order by a.test_date desc
+            , a.sample_id desc
+            , case a.test_classification
+                  when 'COMPREHENSIVE_PANEL' then 0
+                  when 'OTHER_PANELS' then 1
+                  else 2
+              end
+            , case
+                  when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'RTI' then 0
+                  when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'ABI' then 1
+                  when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'GTI' then 2
+                  else 3
+              end
+            , case
+                  when a.test_classification = 'OTHER_PANELS' and a.disease = 'OTHERS' then 1
+                  else 0
+              end
+            , a.disease
+            , a.panel_code
+            , a.report_id
+        """.replaceAll("\\s+", " ").trim();
+
     @ParameterizedTest
     @MethodSource("searchConditions")
     void listAndCountShareTabAndDateFiltersAndBindPagination(PatientListSearchRequest request) throws Exception {
@@ -50,7 +73,7 @@ class PatientReportMapperTest {
             .contains("count(1) as report_count", "count(distinct a.sample_id) as found_sample_id_count");
         assertThat(sql).containsOnlyOnce("/* PatientReportMapper.getPatientList */")
             .contains("a.detected_analytes_count")
-            .endsWith("order by a.test_date desc , a.sample_id , a.report_id limit ? offset ((?::bigint - 1) * ?)");
+            .endsWith(LIST_SORT_ORDER + " limit ? offset ((?::bigint - 1) * ?)");
         assertThat(statement.getResultMaps()).singleElement().satisfies(result ->
             assertThat(result.getType()).isEqualTo(PatientListItem.class));
         assertDateFilters(filters, request.testDate());

@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -29,6 +30,7 @@ import com.stagora.reports.model.PatientListStatistics;
 import com.stagora.reports.model.PatientSearch;
 
 class PatientReportMapperTest {
+    private static final String FIRST_SAMPLE_ID = "d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad";
     @ParameterizedTest
     @MethodSource("searchConditions")
     void listAndCountShareTabAndDateFiltersAndBindPagination(PatientListSearchRequest request) throws Exception {
@@ -39,15 +41,15 @@ class PatientReportMapperTest {
         String sql = bound.getSql().replaceAll("\\s+", " ").trim();
         String countSql = count.getBoundSql(request).getSql().replaceAll("\\s+", " ").trim();
         String filters = sql.substring(sql.lastIndexOf("where a.test_date"), sql.indexOf("order by a.test_date"));
-        String listSource = sql.substring(sql.indexOf("with cte_panels"), sql.indexOf("select a.report_id")).trim();
-        String statisticsSource = countSql.substring(countSql.indexOf("with cte_panels"),
-            countSql.indexOf(", cte_samples")).trim();
+        String listSource = sql.substring(sql.indexOf("with cte_reports"), sql.indexOf("select a.report_id")).trim();
+        String statisticsSource = countSql.substring(countSql.indexOf("with cte_reports"),
+            countSql.indexOf(", cte_filtered")).trim();
 
         assertThat(statisticsSource).isEqualTo(listSource);
         assertThat(countSql).contains(filters.trim()).doesNotContain("limit", "offset")
             .contains("count(1) as report_count", "count(distinct a.sample_id) as found_sample_id_count");
         assertThat(sql).containsOnlyOnce("/* PatientReportMapper.getPatientList */")
-            .contains("generate_series(0, 12)", "a.detected_analytes_count")
+            .contains("a.detected_analytes_count")
             .endsWith("order by a.test_date desc , a.sample_id , a.report_id limit ? offset ((?::bigint - 1) * ?)");
         assertThat(statement.getResultMaps()).singleElement().satisfies(result ->
             assertThat(result.getType()).isEqualTo(PatientListItem.class));
@@ -87,7 +89,8 @@ class PatientReportMapperTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, Integer.MAX_VALUE})
     void bindsPageAndSizeForBigintOffsetCalculation(int page) throws Exception {
-        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, page, 100).normalized();
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, page, 100)
+            .normalized();
         var statement = configuration().getMappedStatement(PatientReportMapper.class.getName() + ".getPatientList");
         var bound = statement.getBoundSql(request);
         var prepared = mock(PreparedStatement.class);
@@ -159,15 +162,16 @@ class PatientReportMapperTest {
     @Test
     void statisticsSeparatesExistingSamplesWithoutReportsFromUnknownIdsAndBindsAllInput() throws Exception {
         var request = new PatientListSearchRequest("SAMPLE_ID",
-            List.of("S26-1015-0231", "S26-1015-0244", "S26-1015-9999"),
-            null, null, null, 2, 10).normalized();
+            List.of(FIRST_SAMPLE_ID, "e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2",
+                "S26-1015-9999"), null, null, "TODAY", 2, 10).normalized();
         var statement = configuration().getMappedStatement(
             PatientReportMapper.class.getName() + ".getPatientListStatistics");
         var bound = statement.getBoundSql(request);
         String sql = bound.getSql().replaceAll("\\s+", " ").trim();
-        assertThat(sql).contains("generate_series(231, 244)", "count(distinct a.sample_id)",
+        assertThat(sql).contains("count(distinct x.sample_id) from cte_reports as x",
+                "count(distinct a.sample_id)",
                 "not exists", "y.sample_id = x.sample_id", "as no_results_count", "as not_found_count",
-                "from cte_input_samples as x where not exists ( select 1 from cte_samples as y")
+                "from cte_input_samples as x where not exists ( select 1 from cte_reports as y")
             .containsOnlyOnce("cte_input_samples as (").containsOnlyOnce("unnest(array[ ? , ? , ? ]::text[])")
             .doesNotContain("limit", "offset", "S26-1015-9999");
         assertThat(statement.getResultMaps()).singleElement()
@@ -209,6 +213,47 @@ class PatientReportMapperTest {
                 verify(prepared).setInt(count + 2, 1);
                 verify(prepared).setInt(count + 3, 10);
             }
+        }
+    }
+
+    @Test
+    void reportRowsUseProvidedSampleIdsInOrderIncludingDuplicate() throws Exception {
+        var expected = List.of(
+            FIRST_SAMPLE_ID,
+            "e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2",
+            "0b83f2fc4bf07a1cb34ff69c96758aec9e6d0d168d8e069db2e69d4872068909",
+            "b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953",
+            "b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953",
+            "dfae5c9fe9508c46fb5ced6bc5c885594dcf9f1670664abb3359ab6e48c5b0fb",
+            "e72f66026b3e166321f10c17c21b5cd57145dab3943e67d093627035020cf800",
+            "6796a717a4a617c8c639ba595e331dec135b6121e28ec23a0f8b517b779fbe51",
+            "4e2b85248d473cf46d9a684c5d4a2d7260d81e5bf0b6b656b43754b206a9bef1",
+            "617a79c70e5449b52404a764d6b72f1d5c0622e6ab07c06a6b25df923e25cc20");
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, 1, 10).normalized();
+        var configuration = configuration();
+        for (String method : List.of("getPatientList", "getPatientListStatistics")) {
+            var statement = configuration.getMappedStatement(PatientReportMapper.class.getName() + "." + method);
+            String sql = statement.getBoundSql(request).getSql();
+            int end = "getPatientList".equals(method) ? sql.indexOf("select\n      a.report_id")
+                : sql.indexOf(", cte_filtered");
+            String panels = sql.substring(sql.indexOf("with cte_reports"), end);
+            var sampleIds = Pattern.compile("'([^']+)' as sample_id").matcher(panels).results()
+                .map(match -> match.group(1)).toList();
+
+            assertThat(sampleIds).hasSize(10).containsExactlyElementsOf(expected);
+            assertThat(sampleIds.stream().distinct().toList()).hasSize(9);
+            assertThat(sql).contains("from cte_reports as a", "'c2eb2821-5623-3b5d-8272-19971c8b04c2' as report_id")
+                .doesNotContain("generate_series", "cross join", "batch_no", "cte_panels", "cte_samples", "S26-1015-0244");
+            var rows = List.of(panels.split("union all"));
+            assertThat(rows).hasSize(10);
+            for (String row : rows) {
+                if (row.contains("0 as print_count")) {
+                    assertThat(row).contains("null::timestamp as last_printed_at");
+                } else {
+                    assertThat(row).contains("(current_date - 1)::timestamp as last_printed_at");
+                }
+            }
+            assertThat(panels).contains("0 as print_count", "1 as print_count", "2 as print_count");
         }
     }
 

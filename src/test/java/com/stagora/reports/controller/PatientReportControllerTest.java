@@ -31,6 +31,7 @@ import com.stagora.reports.dto.PatientListSummaryResponse;
 import com.stagora.reports.service.PatientReportService;
 
 class PatientReportControllerTest {
+    private static final String FIRST_SAMPLE_ID = "d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad";
     private final PatientReportService service = mock(PatientReportService.class);
     private final MockMvc mvc = createMvc();
 
@@ -38,30 +39,31 @@ class PatientReportControllerTest {
     @CsvSource({"ko-KR, 정상적으로 처리 되었습니다.", "en-US, Processed successfully."})
     void sampleTabDefaultsToAllTimeAndReturnsScreenFields(String language, String message) throws Exception {
         var request = new PatientListSearchRequest("SAMPLE_ID",
-            List.of("S26-1015-0231", "S26-1015-0244", "S26-1015-9999"),
+            List.of(FIRST_SAMPLE_ID, "S26-1015-9999"),
             "ALL", "ALL", "ALL_TIME", 1, 1);
         var date = LocalDate.of(2026, 11, 16);
-        var item = new PatientItemResponse("c2eb2821-5623-3b5d-8272-19971c8b04c2", "S26-1015-0231",
+        var item = new PatientItemResponse("c2eb2821-5623-3b5d-8272-19971c8b04c2", FIRST_SAMPLE_ID,
             "COMPREHENSIVE_PANEL", "HPV_STI", "Human Papillomavirus Infections + Sexually Transmitted Infections",
             "RTI", "HPV + STI Comprehensive Panel", date, 10, date, 0, null);
-        var summary = new PatientListSummaryResponse(3, 1, 10, 1, 1);
-        when(service.getPatientList(request)).thenReturn(new PatientListResponse(10, 1, 1, 10, summary, List.of(item)));
+        var summary = new PatientListSummaryResponse(2, 1, 1, 0, 1);
+        when(service.getPatientList(request)).thenReturn(new PatientListResponse(1, 1, 1, 1, summary, List.of(item)));
 
         mvc.perform(post("/apis/reports/v1/patient/list")
                 .header("Accept-Language", language).contentType(MediaType.APPLICATION_JSON).content("""
-                    {"sampleIds":[" S26-1015-0231, S26-1015-0231 ",
-                      "S26-1015-0244", "S26-1015-9999"],"size":1}
-                    """)).andExpect(status().isOk()).andExpect(jsonPath("$.code").value("S0000"))
-            .andExpect(jsonPath("$.message").value(message)).andExpect(jsonPath("$.data.totalCount").value(10))
-            .andExpect(jsonPath("$.data.totalPages").value(10)).andExpect(jsonPath("$.data.page").value(1))
+                    {"sampleIds":[" %s, %s ",
+                      "S26-1015-9999"],"size":1}
+                    """.formatted(FIRST_SAMPLE_ID, FIRST_SAMPLE_ID)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.code").value("S0000"))
+            .andExpect(jsonPath("$.message").value(message)).andExpect(jsonPath("$.data.totalCount").value(1))
+            .andExpect(jsonPath("$.data.totalPages").value(1)).andExpect(jsonPath("$.data.page").value(1))
             .andExpect(jsonPath("$.data.size").value(1)).andExpect(jsonPath("$.data.items.length()").value(1))
-            .andExpect(jsonPath("$.data.summary.enteredSampleIdCount").value(3))
+            .andExpect(jsonPath("$.data.summary.enteredSampleIdCount").value(2))
             .andExpect(jsonPath("$.data.summary.foundSampleIdCount").value(1))
-            .andExpect(jsonPath("$.data.summary.reportCount").value(10))
-            .andExpect(jsonPath("$.data.summary.noResultsCount").value(1))
+            .andExpect(jsonPath("$.data.summary.reportCount").value(1))
+            .andExpect(jsonPath("$.data.summary.noResultsCount").value(0))
             .andExpect(jsonPath("$.data.summary.notFoundCount").value(1))
             .andExpect(jsonPath("$.data.items[0].reportId").value("c2eb2821-5623-3b5d-8272-19971c8b04c2"))
-            .andExpect(jsonPath("$.data.items[0].sampleId").value("S26-1015-0231"))
+            .andExpect(jsonPath("$.data.items[0].sampleId").value(FIRST_SAMPLE_ID))
             .andExpect(jsonPath("$.data.items[0].testClassification").value("COMPREHENSIVE_PANEL"))
             .andExpect(jsonPath("$.data.items[0].disease").value("HPV_STI"))
             .andExpect(jsonPath("$.data.items[0].diseaseName")

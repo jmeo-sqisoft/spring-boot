@@ -70,7 +70,7 @@ class ApplicationConfigurationTest {
             String baseUrl = "http://localhost:" + context.getEnvironment().getProperty("local.server.port");
             try (HttpClient client = HttpClient.newHttpClient()) {
                 HttpResponse<String> invalidPatientDetail = client.send(HttpRequest.newBuilder(URI.create(baseUrl
-                        + "/apis/reports/v1/patient/detail?sampleId=invalid"))
+                        + "/apis/reports/v1/patient/detail?sampleId=bad%20id"))
                         .header("Accept-Language", "en").GET().build(),
                     HttpResponse.BodyHandlers.ofString());
                 assertThat(invalidPatientDetail.statusCode()).isEqualTo(400);

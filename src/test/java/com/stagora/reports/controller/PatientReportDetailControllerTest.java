@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -48,7 +47,7 @@ import com.stagora.reports.model.PatientSearch;
 import com.stagora.reports.service.PatientReportService;
 
 class PatientReportDetailControllerTest {
-    private static final String ID = "01a01ce1-5a44-7416-943e-598621a158a2";
+    private static final String ID = "e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2";
     private final PatientReportMapper resultMapper = mock(PatientReportMapper.class);
     private final MockMvc mvc = createMvc();
 
@@ -66,19 +65,19 @@ class PatientReportDetailControllerTest {
         when(resultMapper.getPatientPageContents(ID)).thenReturn(pages);
 
         var result = mvc.perform(get("/apis/reports/v1/patient/detail")
-                .param("sampleId", " " + ID.toUpperCase(Locale.ROOT) + " ").header("Accept-Language", language))
+                .param("sampleId", " " + ID + " ").header("Accept-Language", language))
             .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
             .andExpect(header().string("X-Content-Type-Options", "nosniff"))
             .andExpect(jsonPath("$.code").value("S0000")).andExpect(jsonPath("$.message").value(message))
             .andExpect(jsonPath("$.data.report.sampleId").value(ID))
             .andExpect(jsonPath("$.data.report.panelCode").value("ABI"))
-            .andExpect(jsonPath("$.data.report.panelName").value("호흡기 감염 종합"))
-            .andExpect(jsonPath("$.data.report.testDate").value("2026-10-15"))
-            .andExpect(jsonPath("$.data.report.positiveCount").value(5))
-            .andExpect(jsonPath("$.data.report.reportCreatedDate").value("2026-10-15"))
-            .andExpect(jsonPath("$.data.report.printCount").value(1))
-            .andExpect(jsonPath("$.data.report.lastPrintedAt").value("2026-10-16T00:00:00"))
+            .andExpect(jsonPath("$.data.report.panelName").value("Respiratory Comprehensive Panel"))
+            .andExpect(jsonPath("$.data.report.testDate").value("2026-11-15"))
+            .andExpect(jsonPath("$.data.report.positiveCount").value(4))
+            .andExpect(jsonPath("$.data.report.reportCreatedDate").value("2026-11-15"))
+            .andExpect(jsonPath("$.data.report.printCount").value(2))
+            .andExpect(jsonPath("$.data.report.lastPrintedAt").value("2026-11-15T00:00:00"))
             .andExpect(jsonPath("$.data.pages.length()").value(pageCount))
             .andExpect(jsonPath("$.data.pages[0].page").value(1))
             .andExpect(jsonPath("$.data.pages[0].contentType").value("image/png"))
@@ -115,8 +114,8 @@ class PatientReportDetailControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "not-a-uuid", "S26-1015-0232", "1-1-1-1-1"})
-    void rejectsInvalidUuidBeforeQuerying(String id) throws Exception {
+    @ValueSource(strings = {"", " ", "bad id", "id_1", "-id", "id,other"})
+    void rejectsInvalidSampleIdBeforeQuerying(String id) throws Exception {
         mvc.perform(get("/apis/reports/v1/patient/detail").param("sampleId", id).header("Accept-Language", "en-US"))
             .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("E40001"))
             .andExpect(jsonPath("$.message").value("Validation failed."));
@@ -143,8 +142,8 @@ class PatientReportDetailControllerTest {
     }
 
     private static PatientSearch report() {
-        return new PatientSearch(ID, "ABI", "호흡기 감염 종합", LocalDate.of(2026, 10, 15),
-            5, LocalDate.of(2026, 10, 15), 1, LocalDateTime.of(2026, 10, 16, 0, 0));
+        return new PatientSearch(ID, "ABI", "Respiratory Comprehensive Panel", LocalDate.of(2026, 11, 15),
+            4, LocalDate.of(2026, 11, 15), 2, LocalDateTime.of(2026, 11, 15, 0, 0));
     }
 
     private static byte[] png(int color) throws Exception {

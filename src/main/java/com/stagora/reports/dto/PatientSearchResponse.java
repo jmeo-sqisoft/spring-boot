@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "개별 리포트의 검사 정보와 기존 출력 이력")
 public record PatientSearchResponse(
-    @Schema(description = "검체 일련번호", example = "01a01ce1-5a44-7416-943e-598621a158a2")
+    @Schema(description = "검체 일련번호", example = "e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2")
     String sampleId,
     @Schema(description = "검사 패널 코드", example = "ABI")
     String panelCode,

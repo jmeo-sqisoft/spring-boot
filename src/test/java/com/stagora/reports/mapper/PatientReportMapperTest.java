@@ -136,18 +136,40 @@ class PatientReportMapperTest {
     @Test
     void loadsDetailAndBindsSingleIdWithoutListFilters() throws Exception {
         var configuration = configuration();
-        String id = "01a01ce1-5a44-7416-943e-598621a158a2";
+        String id = "e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2";
         var statement = configuration.getMappedStatement(PatientReportMapper.class.getName() + ".getPatientDetail");
         var parameters = new PatientDetailSearchRequest(id);
         var sql = statement.getBoundSql(parameters);
         var prepared = mock(PreparedStatement.class);
         new DefaultParameterHandler(statement, parameters, sql).setParameters(prepared);
         assertThat(sql.getSql()).contains("'" + id + "'", "a.panel_name", "a.sample_id = ?")
-            .containsOnlyOnce("/* PatientReportMapper.getPatientDetail */").doesNotContain("current_date", "limit");
+            .containsOnlyOnce("/* PatientReportMapper.getPatientDetail */")
+            .contains("current_date - 1 as test_date", "a.detected_analytes_count as positive_count")
+            .doesNotContain("limit", "?::uuid");
         assertThat(sql.getParameterMappings()).hasSize(1);
         assertThat(statement.getResultMaps()).singleElement()
             .satisfies(mapping -> assertThat(mapping.getType()).isEqualTo(PatientSearch.class));
         verify(prepared).setString(1, id);
+    }
+
+    @Test
+    void detailUsesExactlyTheSameTenReportsAsList() throws Exception {
+        var configuration = configuration();
+        String namespace = PatientReportMapper.class.getName();
+        var listRequest = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, 1, 10)
+            .normalized();
+        String listSql = configuration.getMappedStatement(namespace + ".getPatientList").getBoundSql(listRequest)
+            .getSql().replaceAll("\\s+", " ").trim();
+        var detailRequest = new PatientDetailSearchRequest(FIRST_SAMPLE_ID).normalized();
+        String detailSql = configuration.getMappedStatement(namespace + ".getPatientDetail").getBoundSql(detailRequest)
+            .getSql().replaceAll("\\s+", " ").trim();
+        String listSource = listSql.substring(listSql.indexOf("with cte_reports"),
+            listSql.indexOf("select a.report_id"));
+        String detailSource = detailSql.substring(detailSql.indexOf("with cte_reports"),
+            detailSql.indexOf("select a.sample_id"));
+
+        assertThat(detailSource).isEqualTo(listSource);
+        assertThat(detailSql).endsWith("from cte_reports as a where a.sample_id = ?");
     }
 
     private Configuration configuration() throws Exception {
@@ -243,7 +265,8 @@ class PatientReportMapperTest {
             assertThat(sampleIds).hasSize(10).containsExactlyElementsOf(expected);
             assertThat(sampleIds.stream().distinct().toList()).hasSize(9);
             assertThat(sql).contains("from cte_reports as a", "'c2eb2821-5623-3b5d-8272-19971c8b04c2' as report_id")
-                .doesNotContain("generate_series", "cross join", "batch_no", "cte_panels", "cte_samples", "S26-1015-0244");
+                .doesNotContain("generate_series", "cross join", "batch_no", "cte_panels", "cte_samples",
+                    "S26-1015-0244");
             var rows = List.of(panels.split("union all"));
             assertThat(rows).hasSize(10);
             for (String row : rows) {

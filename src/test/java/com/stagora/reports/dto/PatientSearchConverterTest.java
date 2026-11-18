@@ -10,18 +10,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.stagora.reports.model.PatientSearch;
 
 class PatientSearchConverterTest {
+    private static final String SAMPLE_ID = "e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2";
     private final PatientSearchConverter converter = Mappers.getMapper(PatientSearchConverter.class);
 
     @Test
     void preservesAllReportFieldsAndPrintHistory() {
-        var report = new PatientSearch("01a01ce1-5a44-7416-943e-598621a158a2", "ABI", "호흡기 감염 종합",
-            LocalDate.of(2026, 10, 15), 5, LocalDate.of(2026, 10, 15), 1, LocalDateTime.of(2026, 10, 16, 0, 0));
+        var report = new PatientSearch(SAMPLE_ID, "ABI", "Respiratory Comprehensive Panel",
+            LocalDate.of(2026, 11, 15), 4, LocalDate.of(2026, 11, 15), 2, LocalDateTime.of(2026, 11, 15, 0, 0));
 
         var response = converter.toResponse(report);
 
         assertThat(response).isEqualTo(new PatientSearchResponse(
-            "01a01ce1-5a44-7416-943e-598621a158a2", "ABI", "호흡기 감염 종합",
-            LocalDate.of(2026, 10, 15), 5, LocalDate.of(2026, 10, 15), 1, LocalDateTime.of(2026, 10, 16, 0, 0)));
+            SAMPLE_ID, "ABI", "Respiratory Comprehensive Panel", LocalDate.of(2026, 11, 15),
+            4, LocalDate.of(2026, 11, 15), 2, LocalDateTime.of(2026, 11, 15, 0, 0)));
     }
 
     @Test

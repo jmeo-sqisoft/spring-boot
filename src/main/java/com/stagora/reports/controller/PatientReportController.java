@@ -43,10 +43,10 @@ public class PatientReportController extends AbstractApiController {
         return success(patientReportService.getPatientList(request.normalized()));
     }
 
-    @Operation(summary = "환자 리포트 상세 조회", description = "UUID로 목록과 동일한 검사 정보 및 1장 이상의 PNG를 한 번에 조회합니다.")
+    @Operation(summary = "환자 리포트 상세 조회", description = "Sample ID로 목록과 동일한 검사 정보 및 1장 이상의 PNG를 한 번에 조회합니다.")
     @GetMapping("/detail")
     public ResponseEntity<StaResponse<PatientDetailResponse>> getPatientDetail(
-        @Parameter(description = "환자 리포트 Sample ID (UUID)") @RequestParam String sampleId) {
+        @Parameter(description = "환자 리포트 Sample ID") @RequestParam String sampleId) {
         var request = new PatientDetailSearchRequest(sampleId).normalized();
         var response = success(patientReportService.getPatientDetail(request));
         return ResponseEntity.status(response.getStatusCode()).cacheControl(CacheControl.noStore())

@@ -43,8 +43,8 @@ class ReportDetailMapperTest {
     }
 
     @Test
-    void bindsOnlyUuidForAllImagesAndKeepsPageOrdering() throws Exception {
-        String id = "01a01ce1-5a44-7416-943e-598621a158a2";
+    void bindsSampleIdForMappedFileUuidsAndKeepsPageOrdering() throws Exception {
+        String id = "e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2";
         var statement = pageStatement();
         var parameters = Map.of("sampleId", id);
         var sql = statement.getBoundSql(parameters);
@@ -52,8 +52,10 @@ class ReportDetailMapperTest {
 
         new DefaultParameterHandler(statement, parameters, sql).setParameters(prepared);
 
-        assertThat(sql.getSql()).contains("from comm_files", "a.id = ?::uuid", "order by a.page")
-            .contains("a.page > 0", "octet_length(a.contents) > 0").doesNotContain("a.page = ?");
+        assertThat(sql.getSql()).contains("from comm_files", "a.id in (", "from cte_file_mapping as x",
+                "x.sample_id = ?", "order by a.page", "'" + id + "' as sample_id",
+                "'01a01ce1-5a44-7416-943e-598621a158a2'::uuid as file_id")
+            .contains("a.page > 0", "octet_length(a.contents) > 0").doesNotContain("a.page = ?", "?::uuid");
         assertThat(sql.getParameterMappings()).hasSize(1);
         assertThat(statement.getResultMaps()).singleElement()
             .satisfies(mapping -> assertThat(mapping.getType()).isEqualTo(PatientPageContent.class));

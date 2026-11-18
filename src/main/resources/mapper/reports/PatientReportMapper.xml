@@ -458,33 +458,153 @@ offset ((#{page}::bigint - 1) * #{size})
 /* PatientReportMapper.getPatientDetail */
 with cte_reports as (
     select
-          '01a01ce1-5d69-7d03-99c9-669409908df7' as sample_id
+          1 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'HPV_STI' as disease
+        , 'Human Papillomavirus Infections + Sexually Transmitted Infections' as disease_name
         , 'RTI' as panel_code
-        , '생식기 감염 종합' as panel_name
-        , date '2026-10-15' as test_date
-        , 5 as positive_count
-        , date '2026-10-15' as report_created_date
+        , 'HPV + STI Comprehensive Panel' as panel_name
+        , 10 as detected_analytes_count
         , 0 as print_count
+        , 'd1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad' as sample_id
+        , 'c2eb2821-5623-3b5d-8272-19971c8b04c2' as report_id
+        , current_date as test_date
+        , current_date as report_created_date
         , null::timestamp as last_printed_at
     union all
     select
-          '01a01ce1-5a44-7416-943e-598621a158a2' as sample_id
+          2 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'RP' as disease
+        , 'Respiratory Tract Infections' as disease_name
         , 'ABI' as panel_code
-        , '호흡기 감염 종합' as panel_name
-        , date '2026-10-15' as test_date
-        , 5 as positive_count
-        , date '2026-10-15' as report_created_date
-        , 1 as print_count
-        , timestamp '2026-10-16 00:00:00' as last_printed_at
+        , 'Respiratory Comprehensive Panel' as panel_name
+        , 4 as detected_analytes_count
+        , 2 as print_count
+        , 'e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2' as sample_id
+        , 'dfbffab0-8ce6-2ec4-57a6-c2cf7f55e76c' as report_id
+        , current_date - 1 as test_date
+        , current_date - 1 as report_created_date
+        , (current_date - 1)::timestamp as last_printed_at
     union all
     select
-          '01a01ce1-5f82-7099-bc35-0a139bc766b2' as sample_id
+          3 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'GI' as disease
+        , 'Gastrointestinal Infections' as disease_name
         , 'GTI' as panel_code
-        , '소화기 감염 종합' as panel_name
-        , date '2026-10-15' as test_date
-        , 4 as positive_count
-        , date '2026-10-15' as report_created_date
+        , 'Gastrointestinal Comprehensive Panel' as panel_name
+        , 10 as detected_analytes_count
         , 0 as print_count
+        , '0b83f2fc4bf07a1cb34ff69c96758aec9e6d0d168d8e069db2e69d4872068909' as sample_id
+        , '6085db41-848b-e6eb-82c2-6abd7b0d0c03' as report_id
+        , current_date - 2 as test_date
+        , current_date - 2 as report_created_date
+        , null::timestamp as last_printed_at
+    union all
+    select
+          4 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'HPV_STI' as disease
+        , 'Human Papillomavirus Infections + Sexually Transmitted Infections' as disease_name
+        , 'RTI' as panel_code
+        , 'HPV + STI Comprehensive Panel' as panel_name
+        , 4 as detected_analytes_count
+        , 2 as print_count
+        , 'b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953' as sample_id
+        , 'cb4ececd-dcb4-517c-a0bc-ddafd23813b9' as report_id
+        , current_date - 3 as test_date
+        , current_date - 3 as report_created_date
+        , (current_date - 1)::timestamp as last_printed_at
+    union all
+    select
+          5 as row_no
+        , 'COMPREHENSIVE_PANEL' as test_classification
+        , 'RP' as disease
+        , 'Respiratory Tract Infections' as disease_name
+        , 'ABI' as panel_code
+        , 'Respiratory Comprehensive Panel' as panel_name
+        , 10 as detected_analytes_count
+        , 1 as print_count
+        , 'b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953' as sample_id
+        , 'e5925354-8ffc-b090-ecc0-cd0944afd27f' as report_id
+        , current_date - 4 as test_date
+        , current_date - 4 as report_created_date
+        , (current_date - 1)::timestamp as last_printed_at
+    union all
+    select
+          6 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'OTHERS' as disease
+        , 'Other Diseases' as disease_name
+        , 'N_TEV' as panel_code
+        , 'Other Pathogens Detection' as panel_name
+        , 4 as detected_analytes_count
+        , 0 as print_count
+        , 'dfae5c9fe9508c46fb5ced6bc5c885594dcf9f1670664abb3359ab6e48c5b0fb' as sample_id
+        , 'd9031cb6-e11a-8245-e824-5c9ed74ea9ea' as report_id
+        , current_date - 5 as test_date
+        , current_date - 5 as report_created_date
+        , null::timestamp as last_printed_at
+    union all
+    select
+          7 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'HPV' as disease
+        , 'Human Papillomavirus Infections' as disease_name
+        , 'N2_HR' as panel_code
+        , 'Novaplex II HPV28 Detection' as panel_name
+        , 10 as detected_analytes_count
+        , 0 as print_count
+        , 'e72f66026b3e166321f10c17c21b5cd57145dab3943e67d093627035020cf800' as sample_id
+        , '9905507f-a179-9d38-269b-ff7a2589a685' as report_id
+        , current_date - 6 as test_date
+        , current_date - 6 as report_created_date
+        , null::timestamp as last_printed_at
+    union all
+    select
+          8 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'HPV' as disease
+        , 'Human Papillomavirus Infections' as disease_name
+        , 'N2_HPV28' as panel_code
+        , 'Novaplex II HPV28 Detection' as panel_name
+        , 4 as detected_analytes_count
+        , 1 as print_count
+        , '6796a717a4a617c8c639ba595e331dec135b6121e28ec23a0f8b517b779fbe51' as sample_id
+        , 'b25a457f-a8da-a4fe-2ff0-4cb47f79a59c' as report_id
+        , current_date - 7 as test_date
+        , current_date - 7 as report_created_date
+        , (current_date - 1)::timestamp as last_printed_at
+    union all
+    select
+          9 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'RP' as disease
+        , 'Respiratory Tract Infections' as disease_name
+        , 'RP1+RP2' as panel_code
+        , 'Respiratory Panel 1 + 2' as panel_name
+        , 10 as detected_analytes_count
+        , 0 as print_count
+        , '4e2b85248d473cf46d9a684c5d4a2d7260d81e5bf0b6b656b43754b206a9bef1' as sample_id
+        , '415d0160-7bfb-64fa-0b7e-faf0fe064e86' as report_id
+        , current_date - 8 as test_date
+        , current_date - 8 as report_created_date
+        , null::timestamp as last_printed_at
+    union all
+    select
+          10 as row_no
+        , 'OTHER_PANELS' as test_classification
+        , 'RP' as disease
+        , 'Respiratory Tract Infections' as disease_name
+        , 'RP1+RP2+RP3+RP4' as panel_code
+        , 'Respiratory Panel 1 + 2 + 3 + 4' as panel_name
+        , 4 as detected_analytes_count
+        , 0 as print_count
+        , '617a79c70e5449b52404a764d6b72f1d5c0622e6ab07c06a6b25df923e25cc20' as sample_id
+        , '02812b6b-6db0-fa4a-3865-82985bd645cf' as report_id
+        , current_date - 9 as test_date
+        , current_date - 9 as report_created_date
         , null::timestamp as last_printed_at
 )
 select
@@ -492,7 +612,7 @@ select
     , a.panel_code
     , a.panel_name
     , a.test_date
-    , a.positive_count
+    , a.detected_analytes_count as positive_count
     , a.report_created_date
     , a.print_count
     , a.last_printed_at
@@ -500,13 +620,60 @@ from cte_reports as a
 where a.sample_id = #{sampleId}
     </select>
 
+    <!-- 임시 매핑 데이터. 실제 매핑 테이블 확정 후 Sample ID와 comm_files.id 연결을 대체한다. -->
     <select id="getPatientPageContents" resultType="com.stagora.reports.model.PatientPageContent">
 /* PatientReportMapper.getPatientPageContents */
+with cte_file_mapping as (
+    select
+          'd1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad' as sample_id
+        , '01a01ce1-5d69-7d03-99c9-669409908df7'::uuid as file_id
+    union all
+    select
+          'e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2' as sample_id
+        , '01a01ce1-5a44-7416-943e-598621a158a2'::uuid as file_id
+    union all
+    select
+          '0b83f2fc4bf07a1cb34ff69c96758aec9e6d0d168d8e069db2e69d4872068909' as sample_id
+        , '01a01ce1-5f82-7099-bc35-0a139bc766b2'::uuid as file_id
+    union all
+    select
+          'b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953' as sample_id
+        , 'cb4ececd-dcb4-517c-a0bc-ddafd23813b9'::uuid as file_id
+    union all
+    select
+          'b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953' as sample_id
+        , 'e5925354-8ffc-b090-ecc0-cd0944afd27f'::uuid as file_id
+    union all
+    select
+          'dfae5c9fe9508c46fb5ced6bc5c885594dcf9f1670664abb3359ab6e48c5b0fb' as sample_id
+        , 'd9031cb6-e11a-8245-e824-5c9ed74ea9ea'::uuid as file_id
+    union all
+    select
+          'e72f66026b3e166321f10c17c21b5cd57145dab3943e67d093627035020cf800' as sample_id
+        , '9905507f-a179-9d38-269b-ff7a2589a685'::uuid as file_id
+    union all
+    select
+          '6796a717a4a617c8c639ba595e331dec135b6121e28ec23a0f8b517b779fbe51' as sample_id
+        , 'b25a457f-a8da-a4fe-2ff0-4cb47f79a59c'::uuid as file_id
+    union all
+    select
+          '4e2b85248d473cf46d9a684c5d4a2d7260d81e5bf0b6b656b43754b206a9bef1' as sample_id
+        , '415d0160-7bfb-64fa-0b7e-faf0fe064e86'::uuid as file_id
+    union all
+    select
+          '617a79c70e5449b52404a764d6b72f1d5c0622e6ab07c06a6b25df923e25cc20' as sample_id
+        , '02812b6b-6db0-fa4a-3865-82985bd645cf'::uuid as file_id
+)
 select
       a.page
     , a.contents
 from comm_files as a
-where a.id = #{sampleId}::uuid
+where a.id in (
+        select
+              x.file_id
+        from cte_file_mapping as x
+        where x.sample_id = #{sampleId}
+  )
   and a.page > 0
   and octet_length(a.contents) > 0
 order by a.page

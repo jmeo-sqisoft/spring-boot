@@ -33,7 +33,7 @@ public class PatientReportController extends AbstractApiController {
     private final MessageSource messageSource;
     private final PatientReportService patientReportService;
 
-    @Operation(summary = "환자 리포트 목록 조회", description = "Sample ID 또는 검사 분류·질환 탭의 조건과 검사일로 페이지별 리포트를 조회합니다.")
+    @Operation(summary = "환자 리포트 목록 조회", description = "Sample ID 또는 종합 패널의 질환 조건과 검사일로 페이지별 리포트를 조회합니다.")
     @PostMapping("/list")
     public ResponseEntity<StaResponse<PatientListResponse>> getPatientList(
         @RequestBody(required = false) PatientListSearchRequest request) {

@@ -41,13 +41,13 @@ class PatientReportServiceTest {
         var second = new PatientListItem("dfbffab0-8ce6-2ec4-57a6-c2cf7f55e76c", SECOND_SAMPLE_ID,
             "COMPREHENSIVE_PANEL", "RP", "Respiratory Tract Infections", "ABI", "Respiratory Comprehensive Panel",
             date.minusDays(1), 4, date.minusDays(1), 2, LocalDateTime.of(2026, 11, 15, 0, 0));
-        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(10, 9, 0, 0));
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(5, 4, 0, 0));
         when(mapper.getPatientList(request)).thenReturn(List.of(first, second));
 
         var response = service.getPatientList(request);
 
-        assertThat(response.totalCount()).isEqualTo(10);
-        assertThat(response.totalPages()).isEqualTo(5);
+        assertThat(response.totalCount()).isEqualTo(5);
+        assertThat(response.totalPages()).isEqualTo(3);
         assertThat(response.page()).isEqualTo(1);
         assertThat(response.size()).isEqualTo(2);
         assertThat(response.summary()).isNull();
@@ -64,8 +64,8 @@ class PatientReportServiceTest {
 
     @Test
     void returnsZeroPagesAndSkipsRowsQueryWhenNoReportsMatch() {
-        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, "OTHER_PANELS", "GI",
-            null, 1, 10).normalized();
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, "COMPREHENSIVE_PANEL", "GI",
+            "TODAY", 1, 10).normalized();
         when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(0, 0, 0, 0));
         var response = service.getPatientList(request);
         assertThat(response.totalCount()).isZero();
@@ -79,11 +79,11 @@ class PatientReportServiceTest {
     void preservesTotalForOutOfRangePageAndRoundsPartialLastPageUp() {
         var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null,
             null, 15, 3).normalized();
-        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(10, 9, 0, 0));
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(5, 4, 0, 0));
         when(mapper.getPatientList(request)).thenReturn(List.of());
         var response = service.getPatientList(request);
-        assertThat(response.totalCount()).isEqualTo(10);
-        assertThat(response.totalPages()).isEqualTo(4);
+        assertThat(response.totalCount()).isEqualTo(5);
+        assertThat(response.totalPages()).isEqualTo(2);
         assertThat(response.page()).isEqualTo(15);
         assertThat(response.items()).isEmpty();
         verify(mapper).getPatientList(request);

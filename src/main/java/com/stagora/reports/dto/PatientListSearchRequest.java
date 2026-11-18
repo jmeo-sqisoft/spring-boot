@@ -16,10 +16,9 @@ public record PatientListSearchRequest(
     String searchType,
     @Schema(description = "Sample ID 탭에서 필수. 구분자 분리·중복 제거 후 1건 이상", example = "[\"S26-1015-0231\"]")
     List<String> sampleIds,
-    @Schema(description = "검사 분류", defaultValue = "ALL",
-        allowableValues = {"ALL", "COMPREHENSIVE_PANEL", "OTHER_PANELS"})
+    @Schema(description = "검사 분류", defaultValue = "COMPREHENSIVE_PANEL", allowableValues = {"COMPREHENSIVE_PANEL"})
     String testClassification,
-    @Schema(description = "질환. 종합 패널은 HPV_STI·RP·GI, 기타 패널은 HPV·STI·RP·GI·OTHERS", defaultValue = "ALL")
+    @Schema(description = "종합 패널 내 질환", defaultValue = "ALL", allowableValues = {"ALL", "HPV_STI", "RP", "GI"})
     String disease,
     @Schema(description = "검사일 기간. 오늘 포함, 최근 7일은 오늘부터 6일 전까지", defaultValue = "ALL_TIME",
         allowableValues = {"ALL_TIME", "TODAY", "LAST_7_DAYS", "LAST_1_MONTH"})
@@ -30,52 +29,33 @@ public record PatientListSearchRequest(
     Integer size
 ) {
     private static final Set<String> SEARCH_TYPES = Set.of("SAMPLE_ID", "TEST_CLASSIFICATION");
-    private static final Set<String> TEST_CLASSIFICATIONS = Set.of("ALL", "COMPREHENSIVE_PANEL", "OTHER_PANELS");
+    private static final Set<String> TEST_CLASSIFICATIONS = Set.of("COMPREHENSIVE_PANEL");
     private static final Set<String> TEST_DATE_PERIODS = Set.of("ALL_TIME", "TODAY", "LAST_7_DAYS", "LAST_1_MONTH");
-    private static final Set<String> COMPREHENSIVE_PANEL_DISEASES = Set.of("ALL", "HPV_STI", "RP", "GI");
-    private static final Set<String> OTHER_PANEL_DISEASES = Set.of("ALL", "HPV", "STI", "RP", "GI", "OTHERS");
-    private static final Set<String> ALL_CLASSIFICATION_DISEASES = Set.of("ALL");
+    private static final Set<String> DISEASES = Set.of("ALL", "HPV_STI", "RP", "GI");
 
     /**
-     * 탭별 조건을 검증한다. 다른 탭의 조건이 섞이거나 분류에 맞지 않는 질환이면 거절한다.
+     * 종합 패널 고정 조건과 질환·탭별 입력을 검증한다.
      * Sample ID는 최초 입력 순서를 유지해 중복을 제거하며 기본 기간은 전체 기간이다.
      */
     public PatientListSearchRequest normalized() {
         String type = code(searchType, "SAMPLE_ID");
-        String classification = code(testClassification, "ALL");
+        String classification = code(testClassification, "COMPREHENSIVE_PANEL");
         String diseaseCode = code(disease, "ALL");
         String date = code(testDate, "ALL_TIME");
         int number = page == null ? 1 : page;
         int limit = size == null ? 10 : size;
         if (!SEARCH_TYPES.contains(type) || !TEST_CLASSIFICATIONS.contains(classification)
-            || !TEST_DATE_PERIODS.contains(date)
+            || !DISEASES.contains(diseaseCode) || !TEST_DATE_PERIODS.contains(date)
             || number < 1 || limit < 1 || limit > 100) {
             throw new ApiException(ApiResponseCode.E40001);
         }
         List<String> ids = List.of();
         if ("SAMPLE_ID".equals(type)) {
-            if (!"ALL".equals(classification) || !"ALL".equals(diseaseCode)) {
-                throw new ApiException(ApiResponseCode.E40001);
-            }
             ids = normalizedIds();
-        } else {
-            validateClassification(classification, diseaseCode);
+        } else if (sampleIds != null && !sampleIds.isEmpty()) {
+            throw new ApiException(ApiResponseCode.E40001);
         }
         return new PatientListSearchRequest(type, ids, classification, diseaseCode, date, number, limit);
-    }
-
-    private void validateClassification(String classification, String diseaseCode) {
-        if (sampleIds != null && !sampleIds.isEmpty()) {
-            throw new ApiException(ApiResponseCode.E40001);
-        }
-        Set<String> diseases = switch (classification) {
-            case "COMPREHENSIVE_PANEL" -> COMPREHENSIVE_PANEL_DISEASES;
-            case "OTHER_PANELS" -> OTHER_PANEL_DISEASES;
-            default -> ALL_CLASSIFICATION_DISEASES;
-        };
-        if (!diseases.contains(diseaseCode)) {
-            throw new ApiException(ApiResponseCode.E40001);
-        }
     }
 
     private List<String> normalizedIds() {

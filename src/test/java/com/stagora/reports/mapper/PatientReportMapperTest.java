@@ -81,7 +81,7 @@ class PatientReportMapperTest {
         new DefaultParameterHandler(statement, request, bound).setParameters(prepared);
         int parameter = 1;
         if ("SAMPLE_ID".equals(request.searchType())) {
-            assertThat(filters).contains("a.sample_id in").doesNotContain("a.disease =");
+            assertThat(filters).contains("a.sample_id in").doesNotContain("a.test_classification =", "a.disease =");
             for (String id : request.sampleIds()) {
                 verify(prepared).setString(parameter++, id);
             }
@@ -89,12 +89,8 @@ class PatientReportMapperTest {
             assertThat(sql).doesNotContain("cte_input_samples", "unnest(array[");
             assertThat(countSql).doesNotContain("cte_input_samples", "unnest(array[");
             assertThat(filters).doesNotContain("a.sample_id in");
-            if (!"ALL".equals(request.testClassification())) {
-                assertThat(filters).contains("a.test_classification = ?");
-                verify(prepared).setString(parameter++, request.testClassification());
-            } else {
-                assertThat(filters).doesNotContain("a.test_classification =");
-            }
+            assertThat(filters).containsOnlyOnce("a.test_classification = ?");
+            verify(prepared).setString(parameter++, request.testClassification());
             if (!"ALL".equals(request.disease())) {
                 assertThat(filters).contains("a.disease = ?");
                 verify(prepared).setString(parameter++, request.disease());
@@ -123,10 +119,38 @@ class PatientReportMapperTest {
         assertThat(bound.getSql().replaceAll("\\s+", " ").trim())
             .endsWith("limit ? offset ((?::bigint - 1) * ?)");
         assertThat(bound.getParameterMappings()).extracting(ParameterMapping::getProperty)
-            .containsExactly("size", "page", "size");
-        verify(prepared).setInt(1, 100);
-        verify(prepared).setInt(2, page);
-        verify(prepared).setInt(3, 100);
+            .containsExactly("testClassification", "size", "page", "size");
+        verify(prepared).setString(1, "COMPREHENSIVE_PANEL");
+        verify(prepared).setInt(2, 100);
+        verify(prepared).setInt(3, page);
+        verify(prepared).setInt(4, 100);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ALL", "COMPREHENSIVE_PANEL", "OTHER_PANELS"})
+    void mapperBindsClassificationOrOmitsFilterForAll(String classification) throws Exception {
+        // API의 현재 허용값과 별개로 Mapper의 분류 조건 확장 경로를 검증한다.
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", List.of(), classification,
+            "ALL", "ALL_TIME", 1, 10);
+        var configuration = configuration();
+        for (String method : List.of("getPatientList", "getPatientListStatistics")) {
+            var statement = configuration.getMappedStatement(PatientReportMapper.class.getName() + "." + method);
+            var bound = statement.getBoundSql(request);
+            var prepared = mock(PreparedStatement.class);
+            String sql = bound.getSql().replaceAll("\\s+", " ").trim();
+
+            new DefaultParameterHandler(statement, request, bound).setParameters(prepared);
+
+            var properties = bound.getParameterMappings().stream().map(ParameterMapping::getProperty).toList();
+            if ("ALL".equals(classification)) {
+                assertThat(sql).doesNotContain("a.test_classification = ?");
+                assertThat(properties).doesNotContain("testClassification");
+            } else {
+                assertThat(sql).containsOnlyOnce("a.test_classification = ?");
+                assertThat(properties).containsOnlyOnce("testClassification");
+                verify(prepared).setString(1, classification);
+            }
+        }
     }
 
     private void assertDateFilters(String filters, String period) {
@@ -141,19 +165,21 @@ class PatientReportMapperTest {
 
     private void assertStatisticsBindings(MappedStatement count, PatientListSearchRequest request)
         throws SQLException {
-        if (!"SAMPLE_ID".equals(request.searchType())) {
-            var statisticsSql = count.getBoundSql(request);
-            var statisticsParameters = mock(PreparedStatement.class);
-            new DefaultParameterHandler(count, request, statisticsSql).setParameters(statisticsParameters);
-            int index = 1;
-            if (!"ALL".equals(request.testClassification())) {
-                verify(statisticsParameters).setString(index++, request.testClassification());
+        var statisticsSql = count.getBoundSql(request);
+        var prepared = mock(PreparedStatement.class);
+        new DefaultParameterHandler(count, request, statisticsSql).setParameters(prepared);
+        int index = 1;
+        if ("SAMPLE_ID".equals(request.searchType())) {
+            for (String id : request.sampleIds()) {
+                verify(prepared).setString(index++, id);
             }
+        } else {
+            verify(prepared).setString(index++, request.testClassification());
             if (!"ALL".equals(request.disease())) {
-                verify(statisticsParameters).setString(index++, request.disease());
+                verify(prepared).setString(index++, request.disease());
             }
-            assertThat(statisticsSql.getParameterMappings()).hasSize(index - 1);
         }
+        assertThat(statisticsSql.getParameterMappings()).hasSize(index - 1);
     }
 
     @Test
@@ -247,7 +273,8 @@ class PatientReportMapperTest {
             assertThat(sql).containsOnlyOnce("cte_input_samples as (").containsOnlyOnce("unnest(array[")
                 .contains("from cte_input_samples as z");
             int paginationParameters = "getPatientList".equals(method) ? 3 : 0;
-            assertThat(bound.getParameterMappings()).hasSize(count + paginationParameters);
+            assertThat(bound.getParameterMappings()).hasSize(count + paginationParameters)
+                .extracting(ParameterMapping::getProperty).doesNotContain("testClassification", "disease");
             for (int index = 0; index < count; index++) {
                 verify(prepared).setString(index + 1, ids.get(index));
             }
@@ -304,13 +331,10 @@ class PatientReportMapperTest {
     }
 
     private static Stream<Arguments> searchConditions() {
-        return Stream.of("ALL_TIME", "TODAY", "LAST_7_DAYS", "LAST_1_MONTH").flatMap(period -> Stream.of(
-                new PatientListSearchRequest("SAMPLE_ID", List.of("S1", "S2"), null, null, period, 3, 10),
-                new PatientListSearchRequest("TEST_CLASSIFICATION", null, "ALL", "ALL", period, 3, 10),
-                new PatientListSearchRequest("TEST_CLASSIFICATION", null, "COMPREHENSIVE_PANEL", "ALL", period, 3, 10),
-                new PatientListSearchRequest("TEST_CLASSIFICATION", null, "OTHER_PANELS", "ALL", period, 3, 10),
-                new PatientListSearchRequest("TEST_CLASSIFICATION", null, "COMPREHENSIVE_PANEL", "RP", period, 3, 10),
-                new PatientListSearchRequest("TEST_CLASSIFICATION", null, "OTHER_PANELS", "HPV", period, 3, 10))
-                .map(request -> Arguments.of(request.normalized())));
+        return Stream.of("ALL_TIME", "TODAY", "LAST_7_DAYS", "LAST_1_MONTH").flatMap(period ->
+            Stream.of("ALL", "HPV_STI", "RP", "GI").flatMap(disease -> Stream.of(
+                new PatientListSearchRequest("SAMPLE_ID", List.of("S1", "S2"), null, disease, period, 3, 10),
+                new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, disease, period, 3, 10))
+                .map(request -> Arguments.of(request.normalized()))));
     }
 }

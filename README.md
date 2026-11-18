@@ -70,7 +70,7 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 
 | Method | Path | 설명 | 요청 값 |
 | --- | --- | --- | --- |
-| POST | `/apis/reports/v1/patient/list` | 환자 리포트 목록 조회 | JSON 본문: 검색 탭, Sample ID 또는 분류·질환, 검사일 기간, 페이지 |
+| POST | `/apis/reports/v1/patient/list` | 환자 리포트 목록 조회 | JSON 본문: 검색 탭, Sample ID 또는 검사 분류·질환, 검사일 기간, 페이지 |
 | GET | `/apis/reports/v1/patient/detail` | 목록과 동일한 검사 정보·전체 PNG 단건 조회 | 필수 쿼리 파라미터 `sampleId` (문자열) |
 
 성공 응답은 `StaResponse<T>` 형태의 `code`, `message`, `data`를 사용하며 성공 코드는 `S0000`입니다.

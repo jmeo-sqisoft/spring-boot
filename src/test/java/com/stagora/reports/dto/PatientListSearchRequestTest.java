@@ -24,7 +24,7 @@ class PatientListSearchRequestTest {
 
         assertThat(request.sampleIds()).containsExactly("S2", "S1", "S3");
         assertThat(request.searchType()).isEqualTo("SAMPLE_ID");
-        assertThat(request.testClassification()).isEqualTo("ALL");
+        assertThat(request.testClassification()).isEqualTo("COMPREHENSIVE_PANEL");
         assertThat(request.disease()).isEqualTo("ALL");
         assertThat(request.testDate()).isEqualTo("ALL_TIME");
         assertThat(request.page()).isEqualTo(1);
@@ -32,30 +32,48 @@ class PatientListSearchRequestTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"ALL,ALL", "COMPREHENSIVE_PANEL,ALL", "COMPREHENSIVE_PANEL,HPV_STI",
-        "COMPREHENSIVE_PANEL,RP", "COMPREHENSIVE_PANEL,GI", "OTHER_PANELS,ALL",
-        "OTHER_PANELS,HPV", "OTHER_PANELS,STI", "OTHER_PANELS,RP", "OTHER_PANELS,GI", "OTHER_PANELS,OTHERS"})
-    void acceptsClassificationSpecificDiseasesWithoutSampleIds(String classification, String disease) {
-        var input = new PatientListSearchRequest(" test_classification ", null,
-            classification.toLowerCase(Locale.ROOT), disease, null, 2, 10);
-        var request = input.normalized();
-        assertThat(request.sampleIds()).isEmpty();
-        assertThat(request.testClassification()).isEqualTo(classification);
-        assertThat(request.disease()).isEqualTo(disease);
-        assertThat(request.page()).isEqualTo(2);
-        assertThat(request.size()).isEqualTo(10);
+    @ValueSource(strings = {"ALL", "HPV_STI", "RP", "GI"})
+    void acceptsComprehensiveDiseasesForBothSearchTabs(String disease) {
+        for (String type : List.of("SAMPLE_ID", "TEST_CLASSIFICATION")) {
+            var input = new PatientListSearchRequest(type, "SAMPLE_ID".equals(type) ? List.of("S1") : null,
+                " comprehensive_panel ", disease.toLowerCase(Locale.ROOT), null, 2, 10);
+            var request = input.normalized();
+            assertThat(request.testClassification()).isEqualTo("COMPREHENSIVE_PANEL");
+            assertThat(request.disease()).isEqualTo(disease);
+            assertThat(request.page()).isEqualTo(2);
+            assertThat(request.size()).isEqualTo(10);
+            if ("TEST_CLASSIFICATION".equals(type)) {
+                assertThat(request.sampleIds()).isEmpty();
+            } else {
+                assertThat(request.sampleIds()).containsExactly("S1");
+            }
+        }
     }
 
     @ParameterizedTest
-    @CsvSource({"ALL,HPV", "COMPREHENSIVE_PANEL,HPV", "COMPREHENSIVE_PANEL,OTHERS",
-        "OTHER_PANELS,HPV_STI", "OTHER_PANELS,UNKNOWN"})
-    void rejectsDiseaseOutsideSelectedClassification(String classification, String disease) {
-        var input = new PatientListSearchRequest("TEST_CLASSIFICATION", null,
-            classification, disease, null, null, null);
-        assertThatThrownBy(input::normalized).isInstanceOfSatisfying(ApiException.class, exception -> {
-            assertThat(exception.getStatusCode()).isEqualTo(400);
-            assertThat(exception.getErrorCode()).isEqualTo("E40001");
-        });
+    @ValueSource(strings = {"ALL", "OTHER_PANELS", "UNKNOWN", ""})
+    void rejectsNonComprehensiveClassificationForBothTabs(String classification) {
+        for (String type : List.of("SAMPLE_ID", "TEST_CLASSIFICATION")) {
+            var input = new PatientListSearchRequest(type, "SAMPLE_ID".equals(type) ? List.of("S1") : null,
+                classification, "ALL", null, null, null);
+            assertThatThrownBy(input::normalized).isInstanceOfSatisfying(ApiException.class, exception -> {
+                assertThat(exception.getStatusCode()).isEqualTo(400);
+                assertThat(exception.getErrorCode()).isEqualTo("E40001");
+            });
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"HPV", "STI", "OTHERS", "UNKNOWN", ""})
+    void rejectsUnsupportedDiseaseForBothTabs(String disease) {
+        for (String type : List.of("SAMPLE_ID", "TEST_CLASSIFICATION")) {
+            var input = new PatientListSearchRequest(type, "SAMPLE_ID".equals(type) ? List.of("S1") : null,
+                null, disease, null, null, null);
+            assertThatThrownBy(input::normalized).isInstanceOfSatisfying(ApiException.class, exception -> {
+                assertThat(exception.getStatusCode()).isEqualTo(400);
+                assertThat(exception.getErrorCode()).isEqualTo("E40001");
+            });
+        }
     }
 
     @ParameterizedTest
@@ -104,12 +122,10 @@ class PatientListSearchRequestTest {
     }
 
     @Test
-    void rejectsOverlongIdAndDiseaseFilterInSampleTab() {
+    void rejectsOverlongId() {
         var overlong = new PatientListSearchRequest(null, List.of("A".repeat(65)),
             null, null, null, null, null);
-        var mixed = new PatientListSearchRequest(null, List.of("S1"), null, "RP", null, null, null);
         assertThatThrownBy(overlong::normalized).isInstanceOf(ApiException.class);
-        assertThatThrownBy(mixed::normalized).isInstanceOf(ApiException.class);
     }
 
     @Test
@@ -118,7 +134,7 @@ class PatientListSearchRequestTest {
         var normalized = input.normalized();
         assertThat(normalized.sampleIds()).isEmpty();
         assertThat(normalized.searchType()).isEqualTo("TEST_CLASSIFICATION");
-        assertThat(normalized.testClassification()).isEqualTo("ALL");
+        assertThat(normalized.testClassification()).isEqualTo("COMPREHENSIVE_PANEL");
         assertThat(normalized.disease()).isEqualTo("ALL");
     }
 

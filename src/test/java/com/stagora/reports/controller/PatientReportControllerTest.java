@@ -40,7 +40,7 @@ class PatientReportControllerTest {
     void sampleTabDefaultsToAllTimeAndReturnsScreenFields(String language, String message) throws Exception {
         var request = new PatientListSearchRequest("SAMPLE_ID",
             List.of(FIRST_SAMPLE_ID, "S26-1015-9999"),
-            "ALL", "ALL", "ALL_TIME", 1, 1);
+            "COMPREHENSIVE_PANEL", "ALL", "ALL_TIME", 1, 1);
         var date = LocalDate.of(2026, 11, 16);
         var item = new PatientItemResponse("c2eb2821-5623-3b5d-8272-19971c8b04c2", FIRST_SAMPLE_ID,
             "COMPREHENSIVE_PANEL", "HPV_STI", "Human Papillomavirus Infections + Sexually Transmitted Infections",
@@ -82,20 +82,52 @@ class PatientReportControllerTest {
     @CsvSource({"ALL_TIME,1,10", "TODAY,2,20", "LAST_7_DAYS,3,50", "LAST_1_MONTH,4,100"})
     void classificationTabForwardsClassificationDiseasePeriodAndPage(String date, int page, int size) throws Exception {
         var request = new PatientListSearchRequest("TEST_CLASSIFICATION", List.of(),
-            "OTHER_PANELS", "GI", date, page, size);
-        when(service.getPatientList(request)).thenReturn(new PatientListResponse(0, page, size, 0, null, List.of()));
+            "COMPREHENSIVE_PANEL", "GI", date, page, size);
+        long total = "TODAY".equals(date) ? 0 : 1;
+        var reportDate = LocalDate.of(2026, 11, 14);
+        var item = new PatientItemResponse("6085db41-848b-e6eb-82c2-6abd7b0d0c03",
+            "0b83f2fc4bf07a1cb34ff69c96758aec9e6d0d168d8e069db2e69d4872068909",
+            "COMPREHENSIVE_PANEL", "GI", "Gastrointestinal Infections", "GTI", "Gastrointestinal Comprehensive Panel",
+            reportDate, 10, reportDate, 0, null);
+        var items = total > 0 && page == 1 ? List.of(item) : List.<PatientItemResponse>of();
+        when(service.getPatientList(request))
+            .thenReturn(new PatientListResponse(total, page, size, total, null, items));
         String body = """
-            {"searchType":"test_classification","testClassification":"other_panels",
+            {"searchType":"test_classification","testClassification":"comprehensive_panel",
              "disease":" gi ","testDate":"%s","page":%d,"size":%d}
             """.formatted(date, page, size);
         mvc.perform(post("/apis/reports/v1/patient/list").contentType(MediaType.APPLICATION_JSON).content(body))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.data.totalCount").value(0))
-            .andExpect(jsonPath("$.data.summary").value(nullValue())).andExpect(jsonPath("$.data.items").isEmpty());
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.totalCount").value(total))
+            .andExpect(jsonPath("$.data.summary").value(nullValue()))
+            .andExpect(jsonPath("$.data.items.length()").value(items.size()));
         verify(service).getPatientList(request);
     }
 
     @ParameterizedTest
-    @MethodSource("invalidRequests")
+    @CsvSource({"SAMPLE_ID,ALL", "SAMPLE_ID,HPV_STI", "SAMPLE_ID,RP", "SAMPLE_ID,GI",
+        "TEST_CLASSIFICATION,ALL", "TEST_CLASSIFICATION,HPV_STI", "TEST_CLASSIFICATION,RP", "TEST_CLASSIFICATION,GI"})
+    void bothTabsAcceptSupportedDiseasesAndDefaultToComprehensivePanel(String type, String disease) throws Exception {
+        boolean sampleTab = "SAMPLE_ID".equals(type);
+        var ids = sampleTab ? List.of("S1") : List.<String>of();
+        var request = new PatientListSearchRequest(type, ids, "COMPREHENSIVE_PANEL", disease, "TODAY", 2, 10);
+        long total = !sampleTab && ("ALL".equals(disease) || "HPV_STI".equals(disease)) ? 1 : 0;
+        var summary = sampleTab ? new PatientListSummaryResponse(1, 0, 0, 0, 1) : null;
+        // 두 번째 페이지이므로 조회 가능한 오늘의 리포트가 있어도 현재 페이지는 비어 있다.
+        when(service.getPatientList(request))
+            .thenReturn(new PatientListResponse(total, 2, 10, total, summary, List.of()));
+        String body = """
+            {"searchType":"%s","sampleIds":%s,"disease":"%s","testDate":"TODAY","page":2}
+            """.formatted(type, sampleTab ? "[\"S1\"]" : "[]", disease);
+
+        mvc.perform(post("/apis/reports/v1/patient/list").contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.code").value("S0000"))
+            .andExpect(jsonPath("$.data.totalCount").value(total))
+            .andExpect(jsonPath("$.data.items").isEmpty());
+        verify(service).getPatientList(request);
+    }
+
+    @ParameterizedTest
+    @MethodSource({"invalidRequests", "fixedFilterViolations"})
     void rejectsInvalidOrMixedTabConditionsBeforeCallingService(String body) throws Exception {
         mvc.perform(post("/apis/reports/v1/patient/list")
                 .header("Accept-Language", "en-US").contentType(MediaType.APPLICATION_JSON).content(body))
@@ -115,6 +147,18 @@ class PatientReportControllerTest {
             "{\"searchType\":\"TEST_CLASSIFICATION\",\"testClassification\":\"UNKNOWN\"}",
             "{\"sampleIds\":[\"S1\"],\"page\":0}", "{\"sampleIds\":[\"S1\"],\"size\":0}",
             "{\"sampleIds\":[\"S1\"],\"size\":101}");
+    }
+
+    private static Stream<String> fixedFilterViolations() {
+        return Stream.of("SAMPLE_ID", "TEST_CLASSIFICATION").flatMap(type -> {
+            String ids = "SAMPLE_ID".equals(type) ? ",\"sampleIds\":[\"S1\"]" : "";
+            String prefix = "{\"searchType\":\"" + type + "\"" + ids;
+            return Stream.concat(
+                Stream.of("ALL", "OTHER_PANELS", "UNKNOWN", "").map(classification ->
+                    prefix + ",\"testClassification\":\"" + classification + "\"}"),
+                Stream.of("HPV", "STI", "OTHERS", "UNKNOWN", "").map(disease ->
+                    prefix + ",\"disease\":\"" + disease + "\"}"));
+        });
     }
 
     private MockMvc createMvc() {

@@ -7,13 +7,14 @@ import org.springframework.stereotype.Service;
 
 import com.stagora.global.api.ApiResponseCode;
 import com.stagora.global.exception.ApiException;
+import com.stagora.reports.dto.PatientClassificationSummaryResponse;
 import com.stagora.reports.dto.PatientDetailResponse;
 import com.stagora.reports.dto.PatientDetailSearchRequest;
 import com.stagora.reports.dto.PatientItemResponse;
 import com.stagora.reports.dto.PatientListResponse;
 import com.stagora.reports.dto.PatientListSearchRequest;
-import com.stagora.reports.dto.PatientListSummaryResponse;
 import com.stagora.reports.dto.PatientPageImageResponse;
+import com.stagora.reports.dto.PatientSampleSummaryResponse;
 import com.stagora.reports.dto.PatientSearchConverter;
 import com.stagora.reports.mapper.PatientReportMapper;
 import com.stagora.reports.model.PatientPageContent;
@@ -37,10 +38,17 @@ public class PatientReportService {
         List<PatientItemResponse> items = total == 0 ? List.of() : patientReportMapper.getPatientList(request).stream()
                 .map(patientSearchConverter::toItemResponse).toList();
         long pages = total / request.size() + (total % request.size() == 0 ? 0 : 1);
-        PatientListSummaryResponse summary = "SAMPLE_ID".equals(request.searchType())
-            ? new PatientListSummaryResponse(request.sampleIds().size(), statistics.foundSampleIdCount(), total,
-                statistics.noResultsCount(), statistics.notFoundCount()) : null;
-        return new PatientListResponse(total, request.page(), request.size(), pages, summary, items);
+        var sampleSummary = PatientSampleSummaryResponse.empty();
+        var classificationSummary = PatientClassificationSummaryResponse.empty();
+        if ("SAMPLE_ID".equals(request.searchType())) {
+            sampleSummary = new PatientSampleSummaryResponse(request.sampleIds().size(),
+                statistics.foundSampleIdCount(), total, statistics.noResultsCount(), statistics.notFoundCount());
+        } else {
+            classificationSummary = new PatientClassificationSummaryResponse(total, statistics.foundSampleIdCount(),
+                statistics.rtiReportCount(), statistics.abiReportCount(), statistics.gtiReportCount());
+        }
+        return new PatientListResponse(total, request.page(), request.size(), pages, sampleSummary,
+            classificationSummary, items);
     }
 
     /**

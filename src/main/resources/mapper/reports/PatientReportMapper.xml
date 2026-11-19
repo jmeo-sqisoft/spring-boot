@@ -237,6 +237,9 @@ select
     , 0::bigint as not_found_count
             </otherwise>
         </choose>
+    , count(1) filter (where a.panel_code = 'RTI') as rti_report_count
+    , count(1) filter (where a.panel_code = 'ABI') as abi_report_count
+    , count(1) filter (where a.panel_code = 'GTI') as gti_report_count
 from cte_filtered as a
     </select>
 

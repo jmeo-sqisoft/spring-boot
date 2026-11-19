@@ -16,9 +16,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.stagora.reports.dto.PatientClassificationSummaryResponse;
 import com.stagora.reports.dto.PatientItemResponse;
 import com.stagora.reports.dto.PatientListSearchRequest;
-import com.stagora.reports.dto.PatientListSummaryResponse;
+import com.stagora.reports.dto.PatientSampleSummaryResponse;
 import com.stagora.reports.dto.PatientSearchConverter;
 import com.stagora.reports.mapper.PatientReportMapper;
 import com.stagora.reports.model.PatientListItem;
@@ -27,6 +28,11 @@ import com.stagora.reports.model.PatientListStatistics;
 class PatientReportServiceTest {
     private static final String FIRST_SAMPLE_ID = "d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad";
     private static final String SECOND_SAMPLE_ID = "e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2";
+    private static final PatientSampleSummaryResponse ZERO_SAMPLE = new PatientSampleSummaryResponse(0, 0, 0, 0, 0);
+    private static final PatientClassificationSummaryResponse ZERO_CLASSIFICATION =
+        new PatientClassificationSummaryResponse(0, 0, 0, 0, 0);
+    private static final PatientClassificationSummaryResponse CLASSIFICATION_SUMMARY =
+        new PatientClassificationSummaryResponse(5, 4, 2, 2, 1);
     private final PatientReportMapper mapper = mock(PatientReportMapper.class);
     private final PatientReportService service = new PatientReportService(mapper,
         Mappers.getMapper(PatientSearchConverter.class));
@@ -41,7 +47,7 @@ class PatientReportServiceTest {
         var second = new PatientListItem("dfbffab0-8ce6-2ec4-57a6-c2cf7f55e76c", SECOND_SAMPLE_ID,
             "COMPREHENSIVE_PANEL", "RP", "Respiratory Tract Infections", "ABI", "Respiratory Comprehensive Panel",
             date.minusDays(1), 4, date.minusDays(1), 2, LocalDateTime.of(2026, 11, 15, 0, 0));
-        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(5, 4, 0, 0));
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(5, 4, 0, 0, 2, 2, 1));
         when(mapper.getPatientList(request)).thenReturn(List.of(first, second));
 
         var response = service.getPatientList(request);
@@ -50,7 +56,8 @@ class PatientReportServiceTest {
         assertThat(response.totalPages()).isEqualTo(3);
         assertThat(response.page()).isEqualTo(1);
         assertThat(response.size()).isEqualTo(2);
-        assertThat(response.summary()).isNull();
+        assertThat(response.sampleSummary()).isEqualTo(ZERO_SAMPLE);
+        assertThat(response.classificationSummary()).isEqualTo(CLASSIFICATION_SUMMARY);
         assertThat(response.items()).hasSize(2).extracting(PatientItemResponse::reportId)
             .containsExactly("c2eb2821-5623-3b5d-8272-19971c8b04c2", "dfbffab0-8ce6-2ec4-57a6-c2cf7f55e76c");
         assertThat(response.items()).extracting(PatientItemResponse::sampleId)
@@ -66,10 +73,12 @@ class PatientReportServiceTest {
     void returnsZeroPagesAndSkipsRowsQueryWhenNoReportsMatch() {
         var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, "COMPREHENSIVE_PANEL", "GI",
             "TODAY", 1, 10).normalized();
-        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(0, 0, 0, 0));
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(0, 0, 0, 0, 0, 0, 0));
         var response = service.getPatientList(request);
         assertThat(response.totalCount()).isZero();
+        assertThat(response.classificationSummary()).isEqualTo(ZERO_CLASSIFICATION);
         assertThat(response.totalPages()).isZero();
+        assertThat(response.sampleSummary()).isEqualTo(ZERO_SAMPLE);
         assertThat(response.items()).isEmpty();
         verify(mapper).getPatientListStatistics(request);
         verifyNoMoreInteractions(mapper);
@@ -79,14 +88,35 @@ class PatientReportServiceTest {
     void preservesTotalForOutOfRangePageAndRoundsPartialLastPageUp() {
         var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null,
             null, 15, 3).normalized();
-        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(5, 4, 0, 0));
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(5, 4, 0, 0, 2, 2, 1));
         when(mapper.getPatientList(request)).thenReturn(List.of());
         var response = service.getPatientList(request);
         assertThat(response.totalCount()).isEqualTo(5);
         assertThat(response.totalPages()).isEqualTo(2);
         assertThat(response.page()).isEqualTo(15);
+        assertThat(response.sampleSummary()).isEqualTo(ZERO_SAMPLE);
+        assertThat(response.classificationSummary()).isEqualTo(CLASSIFICATION_SUMMARY);
         assertThat(response.items()).isEmpty();
         verify(mapper).getPatientList(request);
+    }
+
+    @Test
+    void diseaseFilterSummaryIncludesZeroCountsForOtherPanelsAndInactiveSampleSummary() {
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, "RP", null, 2, 10).normalized();
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(2, 2, 0, 0, 0, 2, 0));
+        when(mapper.getPatientList(request)).thenReturn(List.of());
+
+        var response = service.getPatientList(request);
+
+        assertThat(response.totalCount()).isEqualTo(2);
+        assertThat(response.totalPages()).isEqualTo(1);
+        assertThat(response.items()).isEmpty();
+        assertThat(response.sampleSummary()).isEqualTo(ZERO_SAMPLE);
+        assertThat(response.classificationSummary())
+            .isEqualTo(new PatientClassificationSummaryResponse(2, 2, 0, 2, 0));
+        verify(mapper).getPatientListStatistics(request);
+        verify(mapper).getPatientList(request);
+        verifyNoMoreInteractions(mapper);
     }
 
     private PatientListSearchRequest request(int page) {
@@ -109,7 +139,7 @@ class PatientReportServiceTest {
         var request = new PatientListSearchRequest("SAMPLE_ID",
             List.of(FIRST_SAMPLE_ID, FIRST_SAMPLE_ID, SECOND_SAMPLE_ID, "S26-1015-9999"),
             null, null, "TODAY", 20, 1).normalized();
-        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(1, 1, 1, 1));
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(1, 1, 1, 1, 1, 0, 0));
         when(mapper.getPatientList(request)).thenReturn(List.of());
 
         var response = service.getPatientList(request);
@@ -117,7 +147,8 @@ class PatientReportServiceTest {
         assertThat(response.totalCount()).isEqualTo(1);
         assertThat(response.totalPages()).isEqualTo(1);
         assertThat(response.items()).isEmpty();
-        assertThat(response.summary()).isEqualTo(new PatientListSummaryResponse(3, 1, 1, 1, 1));
+        assertThat(response.sampleSummary()).isEqualTo(new PatientSampleSummaryResponse(3, 1, 1, 1, 1));
+        assertThat(response.classificationSummary()).isEqualTo(ZERO_CLASSIFICATION);
         verify(mapper).getPatientListStatistics(request);
         verify(mapper).getPatientList(request);
         verifyNoMoreInteractions(mapper);
@@ -130,12 +161,13 @@ class PatientReportServiceTest {
         long noResults, long notFound) {
         var request = new PatientListSearchRequest("SAMPLE_ID", List.of(sampleId), null, null,
             period, null, null).normalized();
-        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(0, 0, noResults, notFound));
+        when(mapper.getPatientListStatistics(request))
+            .thenReturn(new PatientListStatistics(0, 0, noResults, notFound, 0, 0, 0));
 
         var response = service.getPatientList(request);
 
         assertThat(response.totalCount()).isZero();
-        assertThat(response.summary()).isEqualTo(new PatientListSummaryResponse(1, 0, 0, noResults, notFound));
+        assertThat(response.sampleSummary()).isEqualTo(new PatientSampleSummaryResponse(1, 0, 0, noResults, notFound));
         assertThat(response.items()).isEmpty();
         verify(mapper).getPatientListStatistics(request);
         verifyNoMoreInteractions(mapper);

@@ -12,6 +12,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.nullValue;
@@ -24,14 +25,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.stagora.global.exception.ApiExceptionHandler;
+import com.stagora.reports.dto.PatientClassificationSummaryResponse;
 import com.stagora.reports.dto.PatientItemResponse;
 import com.stagora.reports.dto.PatientListResponse;
 import com.stagora.reports.dto.PatientListSearchRequest;
-import com.stagora.reports.dto.PatientListSummaryResponse;
+import com.stagora.reports.dto.PatientSampleSummaryResponse;
 import com.stagora.reports.service.PatientReportService;
 
 class PatientReportControllerTest {
     private static final String FIRST_SAMPLE_ID = "d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad";
+    private static final PatientSampleSummaryResponse ZERO_SAMPLE = new PatientSampleSummaryResponse(0, 0, 0, 0, 0);
+    private static final PatientClassificationSummaryResponse ZERO_CLASSIFICATION =
+        new PatientClassificationSummaryResponse(0, 0, 0, 0, 0);
     private final PatientReportService service = mock(PatientReportService.class);
     private final MockMvc mvc = createMvc();
 
@@ -45,10 +50,11 @@ class PatientReportControllerTest {
         var item = new PatientItemResponse("c2eb2821-5623-3b5d-8272-19971c8b04c2", FIRST_SAMPLE_ID,
             "COMPREHENSIVE_PANEL", "HPV_STI", "Human Papillomavirus Infections + Sexually Transmitted Infections",
             "RTI", "HPV + STI Comprehensive Panel", date, 10, date, 0, null);
-        var summary = new PatientListSummaryResponse(2, 1, 1, 0, 1);
-        when(service.getPatientList(request)).thenReturn(new PatientListResponse(1, 1, 1, 1, summary, List.of(item)));
+        var summary = new PatientSampleSummaryResponse(2, 1, 1, 0, 1);
+        when(service.getPatientList(request))
+            .thenReturn(new PatientListResponse(1, 1, 1, 1, summary, ZERO_CLASSIFICATION, List.of(item)));
 
-        mvc.perform(post("/apis/reports/v1/patient/list")
+        var result = mvc.perform(post("/apis/reports/v1/patient/list")
                 .header("Accept-Language", language).contentType(MediaType.APPLICATION_JSON).content("""
                     {"sampleIds":[" %s, %s ",
                       "S26-1015-9999"],"size":1}
@@ -57,11 +63,14 @@ class PatientReportControllerTest {
             .andExpect(jsonPath("$.message").value(message)).andExpect(jsonPath("$.data.totalCount").value(1))
             .andExpect(jsonPath("$.data.totalPages").value(1)).andExpect(jsonPath("$.data.page").value(1))
             .andExpect(jsonPath("$.data.size").value(1)).andExpect(jsonPath("$.data.items.length()").value(1))
-            .andExpect(jsonPath("$.data.summary.enteredSampleIdCount").value(2))
-            .andExpect(jsonPath("$.data.summary.foundSampleIdCount").value(1))
-            .andExpect(jsonPath("$.data.summary.reportCount").value(1))
-            .andExpect(jsonPath("$.data.summary.noResultsCount").value(0))
-            .andExpect(jsonPath("$.data.summary.notFoundCount").value(1))
+            .andExpect(jsonPath("$.data.sampleSummary.enteredSampleIdCount").value(2))
+            .andExpect(jsonPath("$.data.sampleSummary.foundSampleIdCount").value(1))
+            .andExpect(jsonPath("$.data.sampleSummary.reportCount").value(1))
+            .andExpect(jsonPath("$.data.sampleSummary.noResultsCount").value(0))
+            .andExpect(jsonPath("$.data.sampleSummary.notFoundCount").value(1))
+            .andExpect(jsonPath("$.data.summary").doesNotExist())
+            .andExpect(jsonPath("$.data.classificationSummary.reportCount").value(0))
+            .andExpect(jsonPath("$.data.classificationSummary.foundSampleIdCount").value(0))
             .andExpect(jsonPath("$.data.items[0].reportId").value("c2eb2821-5623-3b5d-8272-19971c8b04c2"))
             .andExpect(jsonPath("$.data.items[0].sampleId").value(FIRST_SAMPLE_ID))
             .andExpect(jsonPath("$.data.items[0].testClassification").value("COMPREHENSIVE_PANEL"))
@@ -75,6 +84,7 @@ class PatientReportControllerTest {
             .andExpect(jsonPath("$.data.items[0].reportCreatedDate").value("2026-11-16"))
             .andExpect(jsonPath("$.data.items[0].printCount").value(0))
             .andExpect(jsonPath("$.data.items[0].lastPrintedAt").value(nullValue()));
+        assertPanelCounts(result, 0, 0, 0);
         verify(service).getPatientList(request);
     }
 
@@ -90,16 +100,26 @@ class PatientReportControllerTest {
             "COMPREHENSIVE_PANEL", "GI", "Gastrointestinal Infections", "GTI", "Gastrointestinal Comprehensive Panel",
             reportDate, 10, reportDate, 0, null);
         var items = total > 0 && page == 1 ? List.of(item) : List.<PatientItemResponse>of();
+        var classificationSummary = new PatientClassificationSummaryResponse(total, total, 0, 0, total);
         when(service.getPatientList(request))
-            .thenReturn(new PatientListResponse(total, page, size, total, null, items));
+            .thenReturn(new PatientListResponse(total, page, size, total, ZERO_SAMPLE, classificationSummary, items));
         String body = """
             {"searchType":"test_classification","testClassification":"comprehensive_panel",
              "disease":" gi ","testDate":"%s","page":%d,"size":%d}
             """.formatted(date, page, size);
-        mvc.perform(post("/apis/reports/v1/patient/list").contentType(MediaType.APPLICATION_JSON).content(body))
+        var result = mvc.perform(post("/apis/reports/v1/patient/list")
+                .contentType(MediaType.APPLICATION_JSON).content(body))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.totalCount").value(total))
-            .andExpect(jsonPath("$.data.summary").value(nullValue()))
+            .andExpect(jsonPath("$.data.summary").doesNotExist())
+            .andExpect(jsonPath("$.data.sampleSummary.enteredSampleIdCount").value(0))
+            .andExpect(jsonPath("$.data.sampleSummary.foundSampleIdCount").value(0))
+            .andExpect(jsonPath("$.data.sampleSummary.reportCount").value(0))
+            .andExpect(jsonPath("$.data.sampleSummary.noResultsCount").value(0))
+            .andExpect(jsonPath("$.data.sampleSummary.notFoundCount").value(0))
+            .andExpect(jsonPath("$.data.classificationSummary.reportCount").value(total))
+            .andExpect(jsonPath("$.data.classificationSummary.foundSampleIdCount").value(total))
             .andExpect(jsonPath("$.data.items.length()").value(items.size()));
+        assertPanelCounts(result, 0, 0, total);
         verify(service).getPatientList(request);
     }
 
@@ -111,18 +131,29 @@ class PatientReportControllerTest {
         var ids = sampleTab ? List.of("S1") : List.<String>of();
         var request = new PatientListSearchRequest(type, ids, "COMPREHENSIVE_PANEL", disease, "TODAY", 2, 10);
         long total = !sampleTab && ("ALL".equals(disease) || "HPV_STI".equals(disease)) ? 1 : 0;
-        var summary = sampleTab ? new PatientListSummaryResponse(1, 0, 0, 0, 1) : null;
+        var summary = sampleTab ? new PatientSampleSummaryResponse(1, 0, 0, 0, 1) : ZERO_SAMPLE;
+        var classificationSummary = new PatientClassificationSummaryResponse(total, total, total, 0, 0);
         // 두 번째 페이지이므로 조회 가능한 오늘의 리포트가 있어도 현재 페이지는 비어 있다.
         when(service.getPatientList(request))
-            .thenReturn(new PatientListResponse(total, 2, 10, total, summary, List.of()));
+            .thenReturn(new PatientListResponse(total, 2, 10, total, summary, classificationSummary, List.of()));
         String body = """
             {"searchType":"%s","sampleIds":%s,"disease":"%s","testDate":"TODAY","page":2}
             """.formatted(type, sampleTab ? "[\"S1\"]" : "[]", disease);
 
-        mvc.perform(post("/apis/reports/v1/patient/list").contentType(MediaType.APPLICATION_JSON).content(body))
+        var result = mvc.perform(post("/apis/reports/v1/patient/list")
+                .contentType(MediaType.APPLICATION_JSON).content(body))
             .andExpect(status().isOk()).andExpect(jsonPath("$.code").value("S0000"))
             .andExpect(jsonPath("$.data.totalCount").value(total))
+            .andExpect(jsonPath("$.data.summary").doesNotExist())
+            .andExpect(jsonPath("$.data.sampleSummary.enteredSampleIdCount").value(sampleTab ? 1 : 0))
+            .andExpect(jsonPath("$.data.sampleSummary.foundSampleIdCount").value(0))
+            .andExpect(jsonPath("$.data.sampleSummary.reportCount").value(0))
+            .andExpect(jsonPath("$.data.sampleSummary.noResultsCount").value(0))
+            .andExpect(jsonPath("$.data.sampleSummary.notFoundCount").value(sampleTab ? 1 : 0))
+            .andExpect(jsonPath("$.data.classificationSummary.reportCount").value(total))
+            .andExpect(jsonPath("$.data.classificationSummary.foundSampleIdCount").value(total))
             .andExpect(jsonPath("$.data.items").isEmpty());
+        assertPanelCounts(result, total, 0, 0);
         verify(service).getPatientList(request);
     }
 
@@ -159,6 +190,14 @@ class PatientReportControllerTest {
                 Stream.of("HPV", "STI", "OTHERS", "UNKNOWN", "").map(disease ->
                     prefix + ",\"disease\":\"" + disease + "\"}"));
         });
+    }
+
+    private void assertPanelCounts(ResultActions result, long panelRtiCount, long panelAbiCount,
+        long panelGtiCount) throws Exception {
+        result.andExpect(jsonPath("$.data.classificationSummary.panelCounts").doesNotExist())
+            .andExpect(jsonPath("$.data.classificationSummary.panelRtiCount").value(panelRtiCount))
+            .andExpect(jsonPath("$.data.classificationSummary.panelAbiCount").value(panelAbiCount))
+            .andExpect(jsonPath("$.data.classificationSummary.panelGtiCount").value(panelGtiCount));
     }
 
     private MockMvc createMvc() {

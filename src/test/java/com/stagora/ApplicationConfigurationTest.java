@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Locale;
 
 import javax.sql.DataSource;
@@ -25,6 +26,7 @@ import com.stagora.reports.service.PatientReportService;
 import com.zaxxer.hikari.HikariDataSource;
 
 import jakarta.persistence.EntityManagerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 class ApplicationConfigurationTest {
     @ParameterizedTest
@@ -80,6 +82,22 @@ class ApplicationConfigurationTest {
                     HttpResponse.BodyHandlers.ofString());
                 assertThat(docs.statusCode()).isEqualTo(isSwaggerEnabled ? 200 : 404);
                 if (isSwaggerEnabled) {
+                    var schemas = JsonMapper.builder().build().readTree(docs.body()).path("components").path("schemas");
+                    var schema = schemas.path("PatientListResponse");
+                    var properties = schema.path("properties");
+                    assertThat(properties.has("summary")).isFalse();
+                    assertThat(properties.path("sampleSummary").path("$ref").asString())
+                        .isEqualTo("#/components/schemas/PatientSampleSummaryResponse");
+                    assertThat(properties.path("classificationSummary").path("$ref").asString())
+                        .isEqualTo("#/components/schemas/PatientClassificationSummaryResponse");
+                    assertThat(schema.path("required").toString()).contains("sampleSummary", "classificationSummary");
+                    var classificationProperties = schemas.path("PatientClassificationSummaryResponse")
+                        .path("properties");
+                    assertThat(classificationProperties.has("panelCounts")).isFalse();
+                    for (String panel : List.of("panelRtiCount", "panelAbiCount", "panelGtiCount")) {
+                        assertThat(classificationProperties.path(panel).path("format").asString()).isEqualTo("int64");
+                    }
+                    assertThat(schemas.has("PatientPanelCountResponse")).isFalse();
                     assertThat(docs.body()).contains("Local API", "openapi")
                         .contains("\"sampleIds\"", "\"testClassification\"", "\"testDate\"",
                             "\"totalCount\"", "\"detectedAnalytesCount\"", "\"enteredSampleIdCount\"",

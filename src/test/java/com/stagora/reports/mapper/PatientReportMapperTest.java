@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -71,6 +72,10 @@ class PatientReportMapperTest {
         assertThat(statisticsSource).isEqualTo(listSource);
         assertThat(countSql).contains(filters.trim()).doesNotContain("limit", "offset")
             .contains("count(1) as report_count", "count(distinct a.sample_id) as found_sample_id_count");
+        for (String panel : List.of("RTI", "ABI", "GTI")) {
+            assertThat(countSql).containsOnlyOnce("count(1) filter (where a.panel_code = '" + panel + "') as "
+                + panel.toLowerCase(Locale.ROOT) + "_report_count");
+        }
         assertThat(sql).containsOnlyOnce("/* PatientReportMapper.getPatientList */")
             .contains("a.detected_analytes_count")
             .endsWith(LIST_SORT_ORDER + " limit ? offset ((?::bigint - 1) * ?)");

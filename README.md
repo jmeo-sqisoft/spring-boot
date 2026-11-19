@@ -1,4 +1,4 @@
-# spring-boot
+# stagora-be-reports
 
 Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 
@@ -20,7 +20,7 @@ Spring Boot + MyBatis + JPA + Lombok 기반 Java 프로젝트입니다.
 - SonarQube Gradle Plugin 6.3.1.5724 (서버와 토큰 별도 설정)
 - Gradle 9.8.2 (Kotlin DSL)
 
-group: `com.stagora`, artifact: `spring-boot`
+group: `com.stagora`, artifact: `stagora-be-reports`
 
 ## 실행 전 준비
 
@@ -80,7 +80,7 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 현재 프로젝트의 주요 파일 구조입니다. `global`에는 공통 응답·설정·예외·유틸리티,
 
 ```text
-spring-boot/
+stagora-be-reports/
 ├── config/
 │   └── checkstyle/                       # Java·Mapper XML 스타일 검사 규칙
 ├── docs/
@@ -150,8 +150,8 @@ Checkstyle로 운영 Java 소스(`src/main/java`)와 `src/main/resources` 아래
 
 ### 산출물 및 보고서
 
-- 실행 JAR: `build/libs/spring-boot-0.0.1-SNAPSHOT.jar`
-- 실행 WAR: `build/libs/spring-boot-0.0.1-SNAPSHOT.war`
+- 실행 JAR: `build/libs/stagora-be-reports-0.0.1-SNAPSHOT.jar`
+- 실행 WAR: `build/libs/stagora-be-reports-0.0.1-SNAPSHOT.war`
 - 테스트: `build/reports/tests/test/index.html`
 - Checkstyle: `build/reports/checkstyle/`
 - JaCoCo: `build/reports/jacoco/test/html/index.html`

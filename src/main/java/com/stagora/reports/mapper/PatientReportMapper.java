@@ -18,12 +18,12 @@ import com.stagora.reports.model.PatientSearch;
 @Mapper
 public interface PatientReportMapper {
     /**
-     * 페이지 제한 없이 검색 조건에 맞는 전체 리포트 수와 Sample ID별 조회 현황을 집계한다.
+     * 검색 조건에 맞는 전체 리포트 수와 Sample ID별 조회 현황을 집계한다.
      */
     PatientListStatistics getPatientListStatistics(PatientListSearchRequest request);
 
     /**
-     * 검색 조건에 맞는 리포트를 요청한 페이지 범위로 조회한다.
+     * 검색 조건에 맞는 전체 리포트를 정렬하여 조회한다.
      */
     List<PatientListItem> getPatientList(PatientListSearchRequest request);
 

@@ -10,11 +10,11 @@ import com.stagora.global.exception.ApiException;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "환자 리포트 목록의 검색 탭·검사일·페이지 조건")
+@Schema(description = "환자 리포트 목록의 검색 탭·검사 분류·질환·검사일 조건")
 public record PatientListSearchRequest(
     @Schema(description = "검색 탭", defaultValue = "SAMPLE_ID", allowableValues = {"SAMPLE_ID", "TEST_CLASSIFICATION"})
     String searchType,
-    @Schema(description = "Sample ID 탭에서 필수. 구분자 분리·중복 제거 후 1건 이상", example = "[\"S26-1015-0231\"]")
+    @Schema(description = "Sample ID 탭에서 필수. 구분자 분리·중복 제거 후 1건 이상", example = "[\"d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad\"]")
     List<String> sampleIds,
     @Schema(description = "검사 분류", defaultValue = "COMPREHENSIVE_PANEL", allowableValues = {"COMPREHENSIVE_PANEL"})
     String testClassification,
@@ -22,11 +22,7 @@ public record PatientListSearchRequest(
     String disease,
     @Schema(description = "검사일 기간. 오늘 포함, 최근 7일은 오늘부터 6일 전까지", defaultValue = "ALL_TIME",
         allowableValues = {"ALL_TIME", "TODAY", "LAST_7_DAYS", "LAST_1_MONTH"})
-    String testDate,
-    @Schema(description = "1부터 시작하는 페이지", defaultValue = "1", minimum = "1")
-    Integer page,
-    @Schema(description = "페이지당 건수 (1~100)", defaultValue = "10", minimum = "1", maximum = "100")
-    Integer size
+    String testDate
 ) {
     private static final Set<String> SEARCH_TYPES = Set.of("SAMPLE_ID", "TEST_CLASSIFICATION");
     private static final Set<String> TEST_CLASSIFICATIONS = Set.of("COMPREHENSIVE_PANEL");
@@ -42,11 +38,8 @@ public record PatientListSearchRequest(
         String classification = code(testClassification, "COMPREHENSIVE_PANEL");
         String diseaseCode = code(disease, "ALL");
         String date = code(testDate, "ALL_TIME");
-        int number = page == null ? 1 : page;
-        int limit = size == null ? 10 : size;
         if (!SEARCH_TYPES.contains(type) || !TEST_CLASSIFICATIONS.contains(classification)
-            || !DISEASES.contains(diseaseCode) || !TEST_DATE_PERIODS.contains(date)
-            || number < 1 || limit < 1 || limit > 100) {
+            || !DISEASES.contains(diseaseCode) || !TEST_DATE_PERIODS.contains(date)) {
             throw new ApiException(ApiResponseCode.E40001);
         }
         List<String> ids = List.of();
@@ -55,7 +48,7 @@ public record PatientListSearchRequest(
         } else if (sampleIds != null && !sampleIds.isEmpty()) {
             throw new ApiException(ApiResponseCode.E40001);
         }
-        return new PatientListSearchRequest(type, ids, classification, diseaseCode, date, number, limit);
+        return new PatientListSearchRequest(type, ids, classification, diseaseCode, date);
     }
 
     private List<String> normalizedIds() {

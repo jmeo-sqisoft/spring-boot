@@ -54,7 +54,7 @@ class ReportDetailMapperTest {
 
         assertThat(sql.getSql()).contains("from comm_files", "a.id in (", "from cte_file_mapping as x",
                 "x.sample_id = ?", "order by a.page", "'" + id + "' as sample_id",
-                "'01a01ce1-5a44-7416-943e-598621a158a2'::uuid as file_id")
+                "'01a03bab-cf2f-790c-af82-9317dc68add6'::uuid as file_id")
             .contains("a.page > 0", "octet_length(a.contents) > 0").doesNotContain("a.page = ?", "?::uuid");
         assertThat(sql.getParameterMappings()).hasSize(1);
         assertThat(statement.getResultMaps()).singleElement()

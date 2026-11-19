@@ -38,46 +38,32 @@ class PatientReportServiceTest {
         Mappers.getMapper(PatientSearchConverter.class));
 
     @Test
-    void returnsPaginationAndReportFieldsWithoutCollapsingRows() {
-        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, 1, 2).normalized();
-        var date = LocalDate.of(2026, 11, 16);
-        var first = new PatientListItem("c2eb2821-5623-3b5d-8272-19971c8b04c2", FIRST_SAMPLE_ID, "COMPREHENSIVE_PANEL",
-            "HPV_STI", "Human Papillomavirus Infections + Sexually Transmitted Infections",
-            "RTI", "HPV + STI Comprehensive Panel", date, 10, date, 0, null);
-        var second = new PatientListItem("dfbffab0-8ce6-2ec4-57a6-c2cf7f55e76c", SECOND_SAMPLE_ID,
-            "COMPREHENSIVE_PANEL", "RP", "Respiratory Tract Infections", "ABI", "Respiratory Comprehensive Panel",
-            date.minusDays(1), 4, date.minusDays(1), 2, LocalDateTime.of(2026, 11, 15, 0, 0));
+    void returnsAllMatchingReportsWithoutCollapsingDuplicateSampleIds() {
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null).normalized();
+        var reports = comprehensiveReports();
         when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(5, 4, 0, 0, 2, 2, 1));
-        when(mapper.getPatientList(request)).thenReturn(List.of(first, second));
+        when(mapper.getPatientList(request)).thenReturn(reports);
 
         var response = service.getPatientList(request);
 
         assertThat(response.totalCount()).isEqualTo(5);
-        assertThat(response.totalPages()).isEqualTo(3);
-        assertThat(response.page()).isEqualTo(1);
-        assertThat(response.size()).isEqualTo(2);
         assertThat(response.sampleSummary()).isEqualTo(ZERO_SAMPLE);
         assertThat(response.classificationSummary()).isEqualTo(CLASSIFICATION_SUMMARY);
-        assertThat(response.items()).hasSize(2).extracting(PatientItemResponse::reportId)
-            .containsExactly("c2eb2821-5623-3b5d-8272-19971c8b04c2", "dfbffab0-8ce6-2ec4-57a6-c2cf7f55e76c");
-        assertThat(response.items()).extracting(PatientItemResponse::sampleId)
-            .containsExactly(FIRST_SAMPLE_ID, SECOND_SAMPLE_ID);
-        assertThat(response.items().get(0)).usingRecursiveComparison().isEqualTo(first);
-        assertThat(response.items().get(1)).usingRecursiveComparison().isEqualTo(second);
+        assertThat(response.items()).hasSize(5).zipSatisfy(reports,
+            (actual, expected) -> assertThat(actual).usingRecursiveComparison().isEqualTo(expected));
         verify(mapper).getPatientListStatistics(request);
         verify(mapper).getPatientList(request);
         verifyNoMoreInteractions(mapper);
     }
 
     @Test
-    void returnsZeroPagesAndSkipsRowsQueryWhenNoReportsMatch() {
-        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, "COMPREHENSIVE_PANEL", "GI",
-            "TODAY", 1, 10).normalized();
+    void returnsZeroCountsAndSkipsRowsQueryWhenNoReportsMatch() {
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, "COMPREHENSIVE_PANEL", "GI", "TODAY")
+            .normalized();
         when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(0, 0, 0, 0, 0, 0, 0));
         var response = service.getPatientList(request);
         assertThat(response.totalCount()).isZero();
         assertThat(response.classificationSummary()).isEqualTo(ZERO_CLASSIFICATION);
-        assertThat(response.totalPages()).isZero();
         assertThat(response.sampleSummary()).isEqualTo(ZERO_SAMPLE);
         assertThat(response.items()).isEmpty();
         verify(mapper).getPatientListStatistics(request);
@@ -85,32 +71,17 @@ class PatientReportServiceTest {
     }
 
     @Test
-    void preservesTotalForOutOfRangePageAndRoundsPartialLastPageUp() {
-        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null,
-            null, 15, 3).normalized();
-        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(5, 4, 0, 0, 2, 2, 1));
-        when(mapper.getPatientList(request)).thenReturn(List.of());
-        var response = service.getPatientList(request);
-        assertThat(response.totalCount()).isEqualTo(5);
-        assertThat(response.totalPages()).isEqualTo(2);
-        assertThat(response.page()).isEqualTo(15);
-        assertThat(response.sampleSummary()).isEqualTo(ZERO_SAMPLE);
-        assertThat(response.classificationSummary()).isEqualTo(CLASSIFICATION_SUMMARY);
-        assertThat(response.items()).isEmpty();
-        verify(mapper).getPatientList(request);
-    }
-
-    @Test
     void diseaseFilterSummaryIncludesZeroCountsForOtherPanelsAndInactiveSampleSummary() {
-        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, "RP", null, 2, 10).normalized();
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, "RP", null).normalized();
         when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(2, 2, 0, 0, 0, 2, 0));
-        when(mapper.getPatientList(request)).thenReturn(List.of());
+        var reports = comprehensiveReports().stream().filter(report -> "ABI".equals(report.panelCode())).toList();
+        when(mapper.getPatientList(request)).thenReturn(reports);
 
         var response = service.getPatientList(request);
 
         assertThat(response.totalCount()).isEqualTo(2);
-        assertThat(response.totalPages()).isEqualTo(1);
-        assertThat(response.items()).isEmpty();
+        assertThat(response.items()).hasSize(2).zipSatisfy(reports,
+            (actual, expected) -> assertThat(actual).usingRecursiveComparison().isEqualTo(expected));
         assertThat(response.sampleSummary()).isEqualTo(ZERO_SAMPLE);
         assertThat(response.classificationSummary())
             .isEqualTo(new PatientClassificationSummaryResponse(2, 2, 0, 2, 0));
@@ -119,13 +90,32 @@ class PatientReportServiceTest {
         verifyNoMoreInteractions(mapper);
     }
 
-    private PatientListSearchRequest request(int page) {
-        return new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, page, 10).normalized();
+    private List<PatientListItem> comprehensiveReports() {
+        var date = LocalDate.of(2026, 11, 16);
+        var first = new PatientListItem("c2eb2821-5623-3b5d-8272-19971c8b04c2", FIRST_SAMPLE_ID, "COMPREHENSIVE_PANEL",
+            "HPV_STI", "Human Papillomavirus Infections + Sexually Transmitted Infections",
+            "RTI", "HPV + STI Comprehensive Panel", date, 10, date, 0, null);
+        var second = new PatientListItem("dfbffab0-8ce6-2ec4-57a6-c2cf7f55e76c", SECOND_SAMPLE_ID,
+            "COMPREHENSIVE_PANEL", "RP", "Respiratory Tract Infections", "ABI", "Respiratory Comprehensive Panel",
+            date.minusDays(1), 4, date.minusDays(1), 2, LocalDateTime.of(2026, 11, 15, 0, 0));
+        var third = new PatientListItem("6085db41-848b-e6eb-82c2-6abd7b0d0c03",
+            "0b83f2fc4bf07a1cb34ff69c96758aec9e6d0d168d8e069db2e69d4872068909",
+            "COMPREHENSIVE_PANEL", "GI", "Gastrointestinal Infections", "GTI", "Gastrointestinal Comprehensive Panel",
+            date.minusDays(2), 10, date.minusDays(2), 0, null);
+        String sharedSampleId = "b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953";
+        var fourth = new PatientListItem("cb4ececd-dcb4-517c-a0bc-ddafd23813b9", sharedSampleId,
+            "COMPREHENSIVE_PANEL", "HPV_STI", "Human Papillomavirus Infections + Sexually Transmitted Infections",
+            "RTI", "HPV + STI Comprehensive Panel", date.minusDays(3), 4, date.minusDays(3), 2,
+            LocalDateTime.of(2026, 11, 15, 0, 0));
+        var fifth = new PatientListItem("e5925354-8ffc-b090-ecc0-cd0944afd27f", sharedSampleId,
+            "COMPREHENSIVE_PANEL", "RP", "Respiratory Tract Infections", "ABI", "Respiratory Comprehensive Panel",
+            date.minusDays(4), 10, date.minusDays(4), 1, LocalDateTime.of(2026, 11, 15, 0, 0));
+        return List.of(first, second, third, fourth, fifth);
     }
 
     @Test
     void statisticsFailureIsNotReturnedAsEmptySearchResults() {
-        var request = request(1);
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null).normalized();
         var failure = new DataAccessResourceFailureException("Statistics query unavailable");
         when(mapper.getPatientListStatistics(request)).thenThrow(failure);
 
@@ -135,18 +125,18 @@ class PatientReportServiceTest {
     }
 
     @Test
-    void summaryCountsUniqueInputAndAllMatchesEvenForEmptyPage() {
+    void summaryCountsUniqueInputAndAllReturnedMatches() {
         var request = new PatientListSearchRequest("SAMPLE_ID",
-            List.of(FIRST_SAMPLE_ID, FIRST_SAMPLE_ID, SECOND_SAMPLE_ID, "S26-1015-9999"),
-            null, null, "TODAY", 20, 1).normalized();
+            List.of(FIRST_SAMPLE_ID, FIRST_SAMPLE_ID, SECOND_SAMPLE_ID, "S26-1015-9999"), null, null, "TODAY")
+            .normalized();
         when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(1, 1, 1, 1, 1, 0, 0));
-        when(mapper.getPatientList(request)).thenReturn(List.of());
+        when(mapper.getPatientList(request)).thenReturn(List.of(comprehensiveReports().get(0)));
 
         var response = service.getPatientList(request);
 
         assertThat(response.totalCount()).isEqualTo(1);
-        assertThat(response.totalPages()).isEqualTo(1);
-        assertThat(response.items()).isEmpty();
+        assertThat(response.items()).singleElement().extracting(PatientItemResponse::sampleId)
+            .isEqualTo(FIRST_SAMPLE_ID);
         assertThat(response.sampleSummary()).isEqualTo(new PatientSampleSummaryResponse(3, 1, 1, 1, 1));
         assertThat(response.classificationSummary()).isEqualTo(ZERO_CLASSIFICATION);
         verify(mapper).getPatientListStatistics(request);
@@ -159,8 +149,7 @@ class PatientReportServiceTest {
         SECOND_SAMPLE_ID + ",TODAY,1,0"})
     void distinguishesNoResultsFromNotFoundWhenNoReportsMatch(String sampleId, String period,
         long noResults, long notFound) {
-        var request = new PatientListSearchRequest("SAMPLE_ID", List.of(sampleId), null, null,
-            period, null, null).normalized();
+        var request = new PatientListSearchRequest("SAMPLE_ID", List.of(sampleId), null, null, period).normalized();
         when(mapper.getPatientListStatistics(request))
             .thenReturn(new PatientListStatistics(0, 0, noResults, notFound, 0, 0, 0));
 

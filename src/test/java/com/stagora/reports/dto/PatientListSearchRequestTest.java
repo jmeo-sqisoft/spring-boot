@@ -8,7 +8,6 @@ import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,8 +17,8 @@ import com.stagora.global.exception.ApiException;
 
 class PatientListSearchRequestTest {
     @Test
-    void defaultsToSampleTabAllTimeAndFirstPageAndDeduplicatesIds() {
-        var input = new PatientListSearchRequest(null, List.of(" S2,S1\r\nS2", "\tS3"), null, null, null, null, null);
+    void defaultsToSampleTabAllTimeAndDeduplicatesIds() {
+        var input = new PatientListSearchRequest(null, List.of(" S2,S1\r\nS2", "\tS3"), null, null, null);
         var request = input.normalized();
 
         assertThat(request.sampleIds()).containsExactly("S2", "S1", "S3");
@@ -27,8 +26,6 @@ class PatientListSearchRequestTest {
         assertThat(request.testClassification()).isEqualTo("COMPREHENSIVE_PANEL");
         assertThat(request.disease()).isEqualTo("ALL");
         assertThat(request.testDate()).isEqualTo("ALL_TIME");
-        assertThat(request.page()).isEqualTo(1);
-        assertThat(request.size()).isEqualTo(10);
     }
 
     @ParameterizedTest
@@ -36,12 +33,10 @@ class PatientListSearchRequestTest {
     void acceptsComprehensiveDiseasesForBothSearchTabs(String disease) {
         for (String type : List.of("SAMPLE_ID", "TEST_CLASSIFICATION")) {
             var input = new PatientListSearchRequest(type, "SAMPLE_ID".equals(type) ? List.of("S1") : null,
-                " comprehensive_panel ", disease.toLowerCase(Locale.ROOT), null, 2, 10);
+                " comprehensive_panel ", disease.toLowerCase(Locale.ROOT), null);
             var request = input.normalized();
             assertThat(request.testClassification()).isEqualTo("COMPREHENSIVE_PANEL");
             assertThat(request.disease()).isEqualTo(disease);
-            assertThat(request.page()).isEqualTo(2);
-            assertThat(request.size()).isEqualTo(10);
             if ("TEST_CLASSIFICATION".equals(type)) {
                 assertThat(request.sampleIds()).isEmpty();
             } else {
@@ -55,7 +50,7 @@ class PatientListSearchRequestTest {
     void rejectsNonComprehensiveClassificationForBothTabs(String classification) {
         for (String type : List.of("SAMPLE_ID", "TEST_CLASSIFICATION")) {
             var input = new PatientListSearchRequest(type, "SAMPLE_ID".equals(type) ? List.of("S1") : null,
-                classification, "ALL", null, null, null);
+                classification, "ALL", null);
             assertThatThrownBy(input::normalized).isInstanceOfSatisfying(ApiException.class, exception -> {
                 assertThat(exception.getStatusCode()).isEqualTo(400);
                 assertThat(exception.getErrorCode()).isEqualTo("E40001");
@@ -68,7 +63,7 @@ class PatientListSearchRequestTest {
     void rejectsUnsupportedDiseaseForBothTabs(String disease) {
         for (String type : List.of("SAMPLE_ID", "TEST_CLASSIFICATION")) {
             var input = new PatientListSearchRequest(type, "SAMPLE_ID".equals(type) ? List.of("S1") : null,
-                null, disease, null, null, null);
+                null, disease, null);
             assertThatThrownBy(input::normalized).isInstanceOfSatisfying(ApiException.class, exception -> {
                 assertThat(exception.getStatusCode()).isEqualTo(400);
                 assertThat(exception.getErrorCode()).isEqualTo("E40001");
@@ -81,7 +76,7 @@ class PatientListSearchRequestTest {
     void acceptsDatePeriodsForBothTabs(String period) {
         for (String type : List.of("SAMPLE_ID", "TEST_CLASSIFICATION")) {
             var input = new PatientListSearchRequest(type, "SAMPLE_ID".equals(type) ? List.of("S1") : null,
-                null, null, period, null, null);
+                null, null, period);
             assertThat(input.normalized().testDate()).isEqualTo(period);
         }
     }
@@ -90,7 +85,7 @@ class PatientListSearchRequestTest {
     @ValueSource(ints = {1, 50, 51, 1000})
     void acceptsSampleIdsWithoutCountLimit(int count) {
         var ids = IntStream.range(0, count).mapToObj(index -> "S" + index).toList();
-        var input = new PatientListSearchRequest(null, ids, null, null, null, null, null);
+        var input = new PatientListSearchRequest(null, ids, null, null, null);
         assertThat(input.normalized().sampleIds()).hasSize(count).containsExactlyElementsOf(ids);
     }
 
@@ -98,24 +93,15 @@ class PatientListSearchRequestTest {
     void removesDuplicatesWithoutLimitingUniqueIdCount() {
         var ids = IntStream.range(0, 100).mapToObj(index -> "S" + index).toList();
         var duplicates = new PatientListSearchRequest(null,
-            IntStream.range(0, 200).mapToObj(index -> "S" + index % 100).toList(), null, null, null, null, null);
+            IntStream.range(0, 200).mapToObj(index -> "S" + index % 100).toList(), null, null, null);
         assertThat(duplicates.normalized().sampleIds()).containsExactlyElementsOf(ids);
-    }
-
-    @ParameterizedTest
-    @CsvSource({"1,1", "2,100"})
-    void acceptsPageSizeBoundaries(int page, int size) {
-        var input = new PatientListSearchRequest(null, List.of("S1"), null, null, null, page, size);
-        var request = input.normalized();
-        assertThat(request.page()).isEqualTo(page);
-        assertThat(request.size()).isEqualTo(size);
     }
 
     @ParameterizedTest
     @ValueSource(ints = {1, 64})
     void acceptsIdLengthBoundariesAndCopiesInputList(int length) {
         var ids = new ArrayList<>(List.of("A".repeat(length)));
-        var input = new PatientListSearchRequest(null, ids, null, null, null, null, null);
+        var input = new PatientListSearchRequest(null, ids, null, null, null);
         var normalized = input.normalized();
         ids.clear();
         assertThat(normalized.sampleIds()).containsExactly("A".repeat(length));
@@ -123,14 +109,13 @@ class PatientListSearchRequestTest {
 
     @Test
     void rejectsOverlongId() {
-        var overlong = new PatientListSearchRequest(null, List.of("A".repeat(65)),
-            null, null, null, null, null);
+        var overlong = new PatientListSearchRequest(null, List.of("A".repeat(65)), null, null, null);
         assertThatThrownBy(overlong::normalized).isInstanceOf(ApiException.class);
     }
 
     @Test
     void classificationTabAcceptsExplicitEmptySampleIds() {
-        var input = new PatientListSearchRequest("TEST_CLASSIFICATION", List.of(), null, null, null, null, null);
+        var input = new PatientListSearchRequest("TEST_CLASSIFICATION", List.of(), null, null, null);
         var normalized = input.normalized();
         assertThat(normalized.sampleIds()).isEmpty();
         assertThat(normalized.searchType()).isEqualTo("TEST_CLASSIFICATION");
@@ -141,7 +126,7 @@ class PatientListSearchRequestTest {
     @ParameterizedTest
     @MethodSource("invalidSampleIds")
     void rejectsMissingOrMalformedSampleIdsWithValidationCode(List<String> ids) {
-        var request = new PatientListSearchRequest(null, ids, null, null, null, null, null);
+        var request = new PatientListSearchRequest(null, ids, null, null, null);
 
         assertThatThrownBy(request::normalized).isInstanceOfSatisfying(ApiException.class, exception -> {
             assertThat(exception.getStatusCode()).isEqualTo(400);

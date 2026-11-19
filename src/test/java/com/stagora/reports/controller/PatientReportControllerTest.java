@@ -43,26 +43,22 @@ class PatientReportControllerTest {
     @ParameterizedTest
     @CsvSource({"ko-KR, 정상적으로 처리 되었습니다.", "en-US, Processed successfully."})
     void sampleTabDefaultsToAllTimeAndReturnsScreenFields(String language, String message) throws Exception {
-        var request = new PatientListSearchRequest("SAMPLE_ID",
-            List.of(FIRST_SAMPLE_ID, "S26-1015-9999"),
-            "COMPREHENSIVE_PANEL", "ALL", "ALL_TIME", 1, 1);
-        var date = LocalDate.of(2026, 11, 16);
-        var item = new PatientItemResponse("c2eb2821-5623-3b5d-8272-19971c8b04c2", FIRST_SAMPLE_ID,
-            "COMPREHENSIVE_PANEL", "HPV_STI", "Human Papillomavirus Infections + Sexually Transmitted Infections",
-            "RTI", "HPV + STI Comprehensive Panel", date, 10, date, 0, null);
+        var request = new PatientListSearchRequest("SAMPLE_ID", List.of(FIRST_SAMPLE_ID, "S26-1015-9999"),
+            "COMPREHENSIVE_PANEL", "ALL", "ALL_TIME");
+        var item = firstRtiItem();
         var summary = new PatientSampleSummaryResponse(2, 1, 1, 0, 1);
         when(service.getPatientList(request))
-            .thenReturn(new PatientListResponse(1, 1, 1, 1, summary, ZERO_CLASSIFICATION, List.of(item)));
+            .thenReturn(new PatientListResponse(1, summary, ZERO_CLASSIFICATION, List.of(item)));
 
         var result = mvc.perform(post("/apis/reports/v1/patient/list")
                 .header("Accept-Language", language).contentType(MediaType.APPLICATION_JSON).content("""
                     {"sampleIds":[" %s, %s ",
-                      "S26-1015-9999"],"size":1}
+                      "S26-1015-9999"]}
                     """.formatted(FIRST_SAMPLE_ID, FIRST_SAMPLE_ID)))
             .andExpect(status().isOk()).andExpect(jsonPath("$.code").value("S0000"))
             .andExpect(jsonPath("$.message").value(message)).andExpect(jsonPath("$.data.totalCount").value(1))
-            .andExpect(jsonPath("$.data.totalPages").value(1)).andExpect(jsonPath("$.data.page").value(1))
-            .andExpect(jsonPath("$.data.size").value(1)).andExpect(jsonPath("$.data.items.length()").value(1))
+            .andExpect(jsonPath("$.data.totalPages").doesNotExist()).andExpect(jsonPath("$.data.page").doesNotExist())
+            .andExpect(jsonPath("$.data.size").doesNotExist()).andExpect(jsonPath("$.data.items.length()").value(1))
             .andExpect(jsonPath("$.data.sampleSummary.enteredSampleIdCount").value(2))
             .andExpect(jsonPath("$.data.sampleSummary.foundSampleIdCount").value(1))
             .andExpect(jsonPath("$.data.sampleSummary.reportCount").value(1))
@@ -89,24 +85,23 @@ class PatientReportControllerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"ALL_TIME,1,10", "TODAY,2,20", "LAST_7_DAYS,3,50", "LAST_1_MONTH,4,100"})
-    void classificationTabForwardsClassificationDiseasePeriodAndPage(String date, int page, int size) throws Exception {
-        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", List.of(),
-            "COMPREHENSIVE_PANEL", "GI", date, page, size);
+    @ValueSource(strings = {"ALL_TIME", "TODAY", "LAST_7_DAYS", "LAST_1_MONTH"})
+    void classificationTabForwardsClassificationDiseaseAndPeriod(String date) throws Exception {
+        var request = new PatientListSearchRequest("TEST_CLASSIFICATION", List.of(), "COMPREHENSIVE_PANEL", "GI", date);
         long total = "TODAY".equals(date) ? 0 : 1;
         var reportDate = LocalDate.of(2026, 11, 14);
         var item = new PatientItemResponse("6085db41-848b-e6eb-82c2-6abd7b0d0c03",
             "0b83f2fc4bf07a1cb34ff69c96758aec9e6d0d168d8e069db2e69d4872068909",
             "COMPREHENSIVE_PANEL", "GI", "Gastrointestinal Infections", "GTI", "Gastrointestinal Comprehensive Panel",
             reportDate, 10, reportDate, 0, null);
-        var items = total > 0 && page == 1 ? List.of(item) : List.<PatientItemResponse>of();
+        var items = total > 0 ? List.of(item) : List.<PatientItemResponse>of();
         var classificationSummary = new PatientClassificationSummaryResponse(total, total, 0, 0, total);
         when(service.getPatientList(request))
-            .thenReturn(new PatientListResponse(total, page, size, total, ZERO_SAMPLE, classificationSummary, items));
+            .thenReturn(new PatientListResponse(total, ZERO_SAMPLE, classificationSummary, items));
         String body = """
             {"searchType":"test_classification","testClassification":"comprehensive_panel",
-             "disease":" gi ","testDate":"%s","page":%d,"size":%d}
-            """.formatted(date, page, size);
+             "disease":" gi ","testDate":"%s"}
+            """.formatted(date);
         var result = mvc.perform(post("/apis/reports/v1/patient/list")
                 .contentType(MediaType.APPLICATION_JSON).content(body))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.totalCount").value(total))
@@ -129,15 +124,15 @@ class PatientReportControllerTest {
     void bothTabsAcceptSupportedDiseasesAndDefaultToComprehensivePanel(String type, String disease) throws Exception {
         boolean sampleTab = "SAMPLE_ID".equals(type);
         var ids = sampleTab ? List.of("S1") : List.<String>of();
-        var request = new PatientListSearchRequest(type, ids, "COMPREHENSIVE_PANEL", disease, "TODAY", 2, 10);
+        var request = new PatientListSearchRequest(type, ids, "COMPREHENSIVE_PANEL", disease, "TODAY");
         long total = !sampleTab && ("ALL".equals(disease) || "HPV_STI".equals(disease)) ? 1 : 0;
         var summary = sampleTab ? new PatientSampleSummaryResponse(1, 0, 0, 0, 1) : ZERO_SAMPLE;
         var classificationSummary = new PatientClassificationSummaryResponse(total, total, total, 0, 0);
-        // 두 번째 페이지이므로 조회 가능한 오늘의 리포트가 있어도 현재 페이지는 비어 있다.
         when(service.getPatientList(request))
-            .thenReturn(new PatientListResponse(total, 2, 10, total, summary, classificationSummary, List.of()));
+            .thenReturn(new PatientListResponse(total, summary, classificationSummary,
+                total == 0 ? List.of() : List.of(firstRtiItem())));
         String body = """
-            {"searchType":"%s","sampleIds":%s,"disease":"%s","testDate":"TODAY","page":2}
+            {"searchType":"%s","sampleIds":%s,"disease":"%s","testDate":"TODAY"}
             """.formatted(type, sampleTab ? "[\"S1\"]" : "[]", disease);
 
         var result = mvc.perform(post("/apis/reports/v1/patient/list")
@@ -152,7 +147,7 @@ class PatientReportControllerTest {
             .andExpect(jsonPath("$.data.sampleSummary.notFoundCount").value(sampleTab ? 1 : 0))
             .andExpect(jsonPath("$.data.classificationSummary.reportCount").value(total))
             .andExpect(jsonPath("$.data.classificationSummary.foundSampleIdCount").value(total))
-            .andExpect(jsonPath("$.data.items").isEmpty());
+            .andExpect(jsonPath("$.data.items.length()").value(total));
         assertPanelCounts(result, total, 0, 0);
         verify(service).getPatientList(request);
     }
@@ -175,9 +170,7 @@ class PatientReportControllerTest {
             "{\"sampleIds\":[\"S1\"],\"testClassification\":\"OTHER_PANELS\"}",
             "{\"searchType\":\"TEST_CLASSIFICATION\",\"sampleIds\":[\"S1\"]}",
             "{\"searchType\":\"TEST_CLASSIFICATION\",\"disease\":\"HPV\"}",
-            "{\"searchType\":\"TEST_CLASSIFICATION\",\"testClassification\":\"UNKNOWN\"}",
-            "{\"sampleIds\":[\"S1\"],\"page\":0}", "{\"sampleIds\":[\"S1\"],\"size\":0}",
-            "{\"sampleIds\":[\"S1\"],\"size\":101}");
+            "{\"searchType\":\"TEST_CLASSIFICATION\",\"testClassification\":\"UNKNOWN\"}");
     }
 
     private static Stream<String> fixedFilterViolations() {
@@ -190,6 +183,13 @@ class PatientReportControllerTest {
                 Stream.of("HPV", "STI", "OTHERS", "UNKNOWN", "").map(disease ->
                     prefix + ",\"disease\":\"" + disease + "\"}"));
         });
+    }
+
+    private PatientItemResponse firstRtiItem() {
+        var date = LocalDate.of(2026, 11, 16);
+        return new PatientItemResponse("c2eb2821-5623-3b5d-8272-19971c8b04c2", FIRST_SAMPLE_ID,
+            "COMPREHENSIVE_PANEL", "HPV_STI", "Human Papillomavirus Infections + Sexually Transmitted Infections",
+            "RTI", "HPV + STI Comprehensive Panel", date, 10, date, 0, null);
     }
 
     private void assertPanelCounts(ResultActions result, long panelRtiCount, long panelAbiCount,
@@ -210,7 +210,7 @@ class PatientReportControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"{", "{\"sampleIds\":{}}", "{\"sampleIds\":[\"S1\"],\"size\":\"ten\"}"})
+    @ValueSource(strings = {"{", "{\"sampleIds\":{}}", "{\"searchType\":{}}"})
     void rejectsUnreadableJsonBeforeCallingService(String body) throws Exception {
         mvc.perform(post("/apis/reports/v1/patient/list").contentType(MediaType.APPLICATION_JSON).content(body))
             .andExpect(status().isBadRequest()).andExpect(result -> assertThat(result.getResolvedException())

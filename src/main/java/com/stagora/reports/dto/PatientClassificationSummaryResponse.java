@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "검사 분류 검색 요약. Sample ID 검색에서는 모든 건수가 0")
 public record PatientClassificationSummaryResponse(
-    @Schema(description = "페이지 제한 전 전체 일치 리포트 수", example = "5")
+    @Schema(description = "검색 조건에 맞는 전체 리포트 수", example = "5")
     long reportCount,
     @Schema(description = "조회된 리포트의 고유 Sample ID 수", example = "4")
     long foundSampleIdCount,

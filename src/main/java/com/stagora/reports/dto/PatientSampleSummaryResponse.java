@@ -8,7 +8,7 @@ public record PatientSampleSummaryResponse(
     int enteredSampleIdCount,
     @Schema(description = "Found Sample IDs: 현재 검색 조건에 맞는 리포트가 있는 고유 Sample ID 수", example = "30")
     long foundSampleIdCount,
-    @Schema(description = "Report: 현재 검색 조건의 전체 리포트 수. 페이지 제한 전 건수", example = "90")
+    @Schema(description = "Report: 현재 검색 조건의 전체 리포트 수", example = "90")
     long reportCount,
     @Schema(description = "No Results: ID는 존재하지만 현재 검색 조건에 맞는 리포트가 없는 Sample ID 수", example = "0")
     long noResultsCount,

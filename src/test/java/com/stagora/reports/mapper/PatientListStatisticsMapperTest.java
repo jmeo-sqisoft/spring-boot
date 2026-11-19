@@ -68,7 +68,7 @@ class PatientListStatisticsMapperTest {
             when(jdbc.getUpdateCount()).thenReturn(-1);
             var statement = configuration.getMappedStatement(
                 PatientReportMapper.class.getName() + ".getPatientListStatistics");
-            var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null, 1, 10)
+            var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null)
                 .normalized();
             var handler = new DefaultResultSetHandler(null, statement, null, null,
                 statement.getBoundSql(request), RowBounds.DEFAULT);

@@ -470,8 +470,6 @@ order by a.test_date desc
        , a.disease
        , a.panel_code
        , a.report_id
-limit #{size}
-offset ((#{page}::bigint - 1) * #{size})
     </select>
 
     <select id="getPatientDetail" resultType="com.stagora.reports.model.PatientSearch">
@@ -646,43 +644,43 @@ where a.sample_id = #{sampleId}
 with cte_file_mapping as (
     select
           'd1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad' as sample_id
-        , '01a01ce1-5d69-7d03-99c9-669409908df7'::uuid as file_id
+        , '01a1867c-a6cd-7d81-bb8e-2f76875927ee'::uuid as file_id
     union all
     select
           'e5e024838ed6cbb8a89c1008877a2e4a9e6e52a19e9379b76af9339f0f14cdd2' as sample_id
-        , '01a01ce1-5a44-7416-943e-598621a158a2'::uuid as file_id
+        , '01a03bab-cf2f-790c-af82-9317dc68add6'::uuid as file_id
     union all
     select
           '0b83f2fc4bf07a1cb34ff69c96758aec9e6d0d168d8e069db2e69d4872068909' as sample_id
-        , '01a01ce1-5f82-7099-bc35-0a139bc766b2'::uuid as file_id
+        , '01a0b207-6082-7ca1-88be-5dd39366cf66'::uuid as file_id
     union all
     select
           'b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953' as sample_id
-        , 'cb4ececd-dcb4-517c-a0bc-ddafd23813b9'::uuid as file_id
+        , '01a03bab-cf2f-790c-af82-9317dc68add6'::uuid as file_id
     union all
     select
           'b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953' as sample_id
-        , 'e5925354-8ffc-b090-ecc0-cd0944afd27f'::uuid as file_id
+        , '01a0b207-6082-7ca1-88be-5dd39366cf66'::uuid as file_id
     union all
     select
           'dfae5c9fe9508c46fb5ced6bc5c885594dcf9f1670664abb3359ab6e48c5b0fb' as sample_id
-        , 'd9031cb6-e11a-8245-e824-5c9ed74ea9ea'::uuid as file_id
+        , '01a09e57-48c1-7784-bf0e-a265c97b7afd'::uuid as file_id
     union all
     select
           'e72f66026b3e166321f10c17c21b5cd57145dab3943e67d093627035020cf800' as sample_id
-        , '9905507f-a179-9d38-269b-ff7a2589a685'::uuid as file_id
+        , '01a069de-8e37-7c00-9acd-07535610e124'::uuid as file_id
     union all
     select
           '6796a717a4a617c8c639ba595e331dec135b6121e28ec23a0f8b517b779fbe51' as sample_id
-        , 'b25a457f-a8da-a4fe-2ff0-4cb47f79a59c'::uuid as file_id
+        , '01a0b207-6082-7ca1-88be-5dd39366cf66'::uuid as file_id
     union all
     select
           '4e2b85248d473cf46d9a684c5d4a2d7260d81e5bf0b6b656b43754b206a9bef1' as sample_id
-        , '415d0160-7bfb-64fa-0b7e-faf0fe064e86'::uuid as file_id
+        , '01a0b207-6082-7ca1-88be-5dd39366cf66'::uuid as file_id
     union all
     select
           '617a79c70e5449b52404a764d6b72f1d5c0622e6ab07c06a6b25df923e25cc20' as sample_id
-        , '02812b6b-6db0-fa4a-3865-82985bd645cf'::uuid as file_id
+        , '01a0b207-6082-7ca1-88be-5dd39366cf66'::uuid as file_id
 )
 select
       a.page

@@ -85,6 +85,13 @@ class ApplicationConfigurationTest {
                     var schemas = JsonMapper.builder().build().readTree(docs.body()).path("components").path("schemas");
                     var schema = schemas.path("PatientListResponse");
                     var properties = schema.path("properties");
+                    for (String field : List.of("page", "size", "totalPages")) {
+                        assertThat(properties.has(field)).isFalse();
+                    }
+                    var requestProperties = schemas.path("PatientListSearchRequest").path("properties");
+                    assertThat(requestProperties.has("page")).isFalse();
+                    assertThat(requestProperties.has("size")).isFalse();
+                    assertThat(schemas.path("PatientPageImageResponse").path("properties").has("page")).isTrue();
                     assertThat(properties.has("summary")).isFalse();
                     assertThat(properties.path("sampleSummary").path("$ref").asString())
                         .isEqualTo("#/components/schemas/PatientSampleSummaryResponse");

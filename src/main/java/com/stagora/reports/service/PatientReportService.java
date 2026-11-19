@@ -29,7 +29,7 @@ public class PatientReportService {
     private final PatientSearchConverter patientSearchConverter;
 
     /**
-     * 탭별 검색 조건으로 전체 건수와 현재 페이지를 조회한다.
+     * 탭별 검색 조건으로 전체 건수와 일치하는 모든 리포트를 조회한다.
      * 같은 Sample ID의 여러 리포트를 각각 반환하며 미조회 ID의 빈 행은 추가하지 않는다.
      */
     public PatientListResponse getPatientList(PatientListSearchRequest request) {
@@ -37,7 +37,6 @@ public class PatientReportService {
         long total = statistics.reportCount();
         List<PatientItemResponse> items = total == 0 ? List.of() : patientReportMapper.getPatientList(request).stream()
                 .map(patientSearchConverter::toItemResponse).toList();
-        long pages = total / request.size() + (total % request.size() == 0 ? 0 : 1);
         var sampleSummary = PatientSampleSummaryResponse.empty();
         var classificationSummary = PatientClassificationSummaryResponse.empty();
         if ("SAMPLE_ID".equals(request.searchType())) {
@@ -47,8 +46,7 @@ public class PatientReportService {
             classificationSummary = new PatientClassificationSummaryResponse(total, statistics.foundSampleIdCount(),
                 statistics.rtiReportCount(), statistics.abiReportCount(), statistics.gtiReportCount());
         }
-        return new PatientListResponse(total, request.page(), request.size(), pages, sampleSummary,
-            classificationSummary, items);
+        return new PatientListResponse(total, sampleSummary, classificationSummary, items);
     }
 
     /**

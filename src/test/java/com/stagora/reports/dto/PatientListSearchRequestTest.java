@@ -18,10 +18,10 @@ import com.stagora.global.exception.ApiException;
 class PatientListSearchRequestTest {
     @Test
     void defaultsToSampleTabAllTimeAndDeduplicatesIds() {
-        var input = new PatientListSearchRequest(null, List.of(" S2,S1\r\nS2", "\tS3"), null, null, null);
+        var input = new PatientListSearchRequest(null, List.of(" s2,S1\r\ns2", "\tS2,S1"), null, null, null);
         var request = input.normalized();
 
-        assertThat(request.sampleIds()).containsExactly("S2", "S1", "S3");
+        assertThat(request.sampleIds()).containsExactly("s2", "S1", "S2");
         assertThat(request.searchType()).isEqualTo("SAMPLE_ID");
         assertThat(request.testClassification()).isEqualTo("COMPREHENSIVE_PANEL");
         assertThat(request.disease()).isEqualTo("ALL");
@@ -86,7 +86,7 @@ class PatientListSearchRequestTest {
     void acceptsSampleIdsWithoutCountLimit(int count) {
         var ids = IntStream.range(0, count).mapToObj(index -> "S" + index).toList();
         var input = new PatientListSearchRequest(null, ids, null, null, null);
-        assertThat(input.normalized().sampleIds()).hasSize(count).containsExactlyElementsOf(ids);
+        assertThat(input.normalized().sampleIds()).containsExactlyElementsOf(ids);
     }
 
     @Test
@@ -105,12 +105,6 @@ class PatientListSearchRequestTest {
         var normalized = input.normalized();
         ids.clear();
         assertThat(normalized.sampleIds()).containsExactly("A".repeat(length));
-    }
-
-    @Test
-    void rejectsOverlongId() {
-        var overlong = new PatientListSearchRequest(null, List.of("A".repeat(65)), null, null, null);
-        assertThatThrownBy(overlong::normalized).isInstanceOf(ApiException.class);
     }
 
     @Test
@@ -136,6 +130,6 @@ class PatientListSearchRequestTest {
 
     private static List<List<String>> invalidSampleIds() {
         return Arrays.asList(null, List.of(), Arrays.asList("S1", null), List.of(" ,\t\r\n "),
-            List.of("S1", "bad id"), List.of("-S1"), List.of("S1_2"));
+            List.of("S1", "bad id"), List.of("-S1"), List.of("S1_2"), List.of("A".repeat(65)));
     }
 }

@@ -14,7 +14,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record PatientListSearchRequest(
     @Schema(description = "검색 탭", defaultValue = "SAMPLE_ID", allowableValues = {"SAMPLE_ID", "TEST_CLASSIFICATION"})
     String searchType,
-    @Schema(description = "Sample ID 탭에서 필수. 구분자 분리·중복 제거 후 1건 이상", example = "[\"d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad\"]")
+    @Schema(description = "Sample ID 탭에서 필수. 구분자 분리·중복 제거 후 1건 이상",
+        example = "[\"d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad\"]")
     List<String> sampleIds,
     @Schema(description = "검사 분류", defaultValue = "COMPREHENSIVE_PANEL", allowableValues = {"COMPREHENSIVE_PANEL"})
     String testClassification,

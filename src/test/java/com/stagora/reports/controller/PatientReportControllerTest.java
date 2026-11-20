@@ -165,12 +165,10 @@ class PatientReportControllerTest {
 
     private static Stream<String> invalidRequests() {
         return Stream.of("", "null", "{}", "{\"sampleIds\":[]}", "{\"sampleIds\":[null]}",
-            "{\"sampleIds\":[\" \"]}", "{\"sampleIds\":[\"x' or 1=1--\"]}", "{\"searchType\":\"UNKNOWN\"}",
+            "{\"sampleIds\":[\" \"]}", "{\"sampleIds\":[\"x' or 1=1--\"]}",
+            "{\"searchType\":\"UNKNOWN\",\"sampleIds\":[\"S1\"]}", "{\"searchType\":\"UNKNOWN\"}",
             "{\"sampleIds\":[\"S1\"],\"testDate\":\"LAST_3_MONTHS\"}",
-            "{\"sampleIds\":[\"S1\"],\"testClassification\":\"OTHER_PANELS\"}",
-            "{\"searchType\":\"TEST_CLASSIFICATION\",\"sampleIds\":[\"S1\"]}",
-            "{\"searchType\":\"TEST_CLASSIFICATION\",\"disease\":\"HPV\"}",
-            "{\"searchType\":\"TEST_CLASSIFICATION\",\"testClassification\":\"UNKNOWN\"}");
+            "{\"searchType\":\"TEST_CLASSIFICATION\",\"sampleIds\":[\"S1\"]}");
     }
 
     private static Stream<String> fixedFilterViolations() {

@@ -125,6 +125,22 @@ class PatientReportServiceTest {
     }
 
     @Test
+    void sampleTabCountsTwoReportsForOneFoundSample() {
+        String sampleId = "b009a5f7798b5fdc35935933cfbd7e01930a7aeb63b907db5876ff4e12f48953";
+        var request = new PatientListSearchRequest("SAMPLE_ID", List.of(sampleId), null, null, null).normalized();
+        var reports = comprehensiveReports().stream().filter(report -> sampleId.equals(report.sampleId())).toList();
+        when(mapper.getPatientListStatistics(request)).thenReturn(new PatientListStatistics(2, 1, 0, 0, 1, 1, 0));
+        when(mapper.getPatientList(request)).thenReturn(reports);
+
+        var response = service.getPatientList(request);
+
+        assertThat(response.totalCount()).isEqualTo(2);
+        assertThat(response.sampleSummary()).isEqualTo(new PatientSampleSummaryResponse(1, 1, 2, 0, 0));
+        assertThat(response.classificationSummary()).isEqualTo(ZERO_CLASSIFICATION);
+        assertThat(response.items()).extracting(PatientItemResponse::panelCode).containsExactly("RTI", "ABI");
+    }
+
+    @Test
     void summaryCountsUniqueInputAndAllReturnedMatches() {
         var request = new PatientListSearchRequest("SAMPLE_ID",
             List.of(FIRST_SAMPLE_ID, FIRST_SAMPLE_ID, SECOND_SAMPLE_ID, "S26-1015-9999"), null, null, "TODAY")

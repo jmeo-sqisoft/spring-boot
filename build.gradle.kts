@@ -55,7 +55,9 @@ val lombokVersion = "1.18.48"
 val mapstructVersion = "1.6.3"
 val lombokMapstructBindingVersion = "0.2.0"
 val postgresqlDriverVersion = "42.7.14"
+val springCloudAzureVersion = "7.4.0"
 
+extra.set("springCloudAzureVersion", springCloudAzureVersion)
 extra["netty.version"] = "4.2.17.Final"
 ext["tomcat.version"] = "11.0.25"
 // Jackson 2와 Jackson 3 계열의 BOM 버전을 각각 지정한다.
@@ -84,6 +86,10 @@ dependencies {
 
 	// PostgreSQL JDBC 드라이버
 	runtimeOnly("org.postgresql:postgresql:$postgresqlDriverVersion")
+
+	// Azure key vault
+	implementation(platform("com.azure.spring:spring-cloud-azure-dependencies:${springCloudAzureVersion}"))
+	implementation("com.azure.spring:spring-cloud-azure-starter-keyvault-secrets")
 
 	// Lombok
 	compileOnly("org.projectlombok:lombok:$lombokVersion")

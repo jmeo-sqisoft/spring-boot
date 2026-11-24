@@ -33,60 +33,55 @@ import com.stagora.reports.model.PatientSearch;
 class PatientReportMapperTest {
     private static final String FIRST_SAMPLE_ID = "d1bad87f41a03fe91c0733a132de1e919b9c72e3dd8884005fffe79578f002ad";
     private static final String LIST_SORT_ORDER = """
-        order by a.test_date desc
+        order by c.expt_dy desc
             , a.sample_id desc
-            , case a.test_classification
-                  when 'COMPREHENSIVE_PANEL' then 0
-                  when 'OTHER_PANELS' then 1
-                  else 2
-              end
-            , case
-                  when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'RTI' then 0
-                  when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'ABI' then 1
-                  when a.test_classification = 'COMPREHENSIVE_PANEL' and a.panel_code = 'GTI' then 2
+            , case a.gmcs_test_cd
+                  when 'RTI' then 0
+                  when 'ABI' then 1
+                  when 'GTI' then 2
                   else 3
               end
-            , case
-                  when a.test_classification = 'OTHER_PANELS' and a.disease = 'OTHERS' then 1
-                  else 0
-              end
-            , a.disease
-            , a.panel_code
-            , a.report_id
+            , a.gmcs_test_cd
+            , a.target_id
         """.replaceAll("\\s+", " ").trim();
 
     @ParameterizedTest
     @MethodSource("searchConditions")
-    void listAndCountShareTabAndDateFiltersWithoutPagination(PatientListSearchRequest request) throws Exception {
+    void listAndStatisticsApplyTabAndDateFilters(PatientListSearchRequest request) throws Exception {
         var configuration = configuration();
         var statement = configuration.getMappedStatement(PatientReportMapper.class.getName() + ".getPatientList");
         var count = configuration.getMappedStatement(PatientReportMapper.class.getName() + ".getPatientListStatistics");
         var bound = statement.getBoundSql(request);
         String sql = bound.getSql().replaceAll("\\s+", " ").trim();
         String countSql = count.getBoundSql(request).getSql().replaceAll("\\s+", " ").trim();
-        String filters = sql.substring(sql.lastIndexOf("where a.test_date"), sql.indexOf("order by a.test_date"));
-        String listSource = sql.substring(sql.indexOf("with cte_reports"), sql.indexOf("select a.report_id")).trim();
-        String statisticsSource = countSql.substring(countSql.indexOf("with cte_reports"),
-            countSql.indexOf(", cte_filtered")).trim();
+        String where = "where nullif(a.sample_id, '') is not null";
+        assertThat(sql).containsOnlyOnce(where).endsWith(LIST_SORT_ORDER);
+        String filters = sql.substring(sql.indexOf(where), sql.indexOf(LIST_SORT_ORDER));
 
-        assertThat(statisticsSource).isEqualTo(listSource);
-        assertThat(countSql).contains(filters.trim()).doesNotContain("limit", "offset")
+        assertThat(countSql).doesNotContain("limit", "offset")
             .contains("count(1) as report_count", "count(distinct a.sample_id) as found_sample_id_count");
         for (String panel : List.of("RTI", "ABI", "GTI")) {
             assertThat(countSql).containsOnlyOnce("count(1) filter (where a.panel_code = '" + panel + "') as "
                 + panel.toLowerCase(Locale.ROOT) + "_report_count");
         }
         assertThat(sql).containsOnlyOnce("/* PatientReportMapper.getPatientList */")
-            .contains("a.detected_analytes_count")
-            .endsWith(LIST_SORT_ORDER).doesNotContain("limit", "offset");
+            .contains("from compre_sample_report_status a");
+        assertThat(filters).doesNotContain("c.expt_dy <", "a.test_date", "limit", "offset");
+        if ("ALL_TIME".equals(request.testDate())) {
+            assertThat(filters).doesNotContain("c.expt_dy");
+        }
         assertThat(statement.getResultMaps()).singleElement().satisfies(result ->
             assertThat(result.getType()).isEqualTo(PatientListItem.class));
-        assertDateFilters(filters, request.testDate());
+        assertDateLowerBound(filters, "c.expt_dy", request.testDate());
+        assertThat(countSql).contains("a.test_date <= current_date");
+        assertDateLowerBound(countSql, "a.test_date", request.testDate());
         var prepared = mock(PreparedStatement.class);
         new DefaultParameterHandler(statement, request, bound).setParameters(prepared);
         int parameter = 1;
         if ("SAMPLE_ID".equals(request.searchType())) {
-            assertThat(filters).contains("a.sample_id in").doesNotContain("a.test_classification =", "a.disease =");
+            assertThat(filters).contains("a.sample_id in")
+                .doesNotContain("'COMPREHENSIVE_PANEL' =", "a.gmcs_test_cd =");
+            assertThat(countSql).contains("a.sample_id in").doesNotContain("a.test_classification =", "a.disease =");
             for (String id : request.sampleIds()) {
                 verify(prepared).setString(parameter++, id);
             }
@@ -94,13 +89,17 @@ class PatientReportMapperTest {
             assertThat(sql).doesNotContain("cte_input_samples", "unnest(array[");
             assertThat(countSql).doesNotContain("cte_input_samples", "unnest(array[");
             assertThat(filters).doesNotContain("a.sample_id in");
-            assertThat(filters).containsOnlyOnce("a.test_classification = ?");
+            assertThat(filters).containsOnlyOnce("'COMPREHENSIVE_PANEL' = ?");
+            assertThat(countSql).containsOnlyOnce("a.test_classification = ?");
             verify(prepared).setString(parameter++, request.testClassification());
             if (!"ALL".equals(request.disease())) {
-                assertThat(filters).contains("a.disease = ?");
+                assertThat(filters).contains("a.gmcs_test_cd = case ? when 'HPV_STI' then 'RTI' "
+                    + "when 'RP' then 'ABI' when 'GI' then 'GTI' end");
+                assertThat(countSql).contains("a.disease = ?");
                 verify(prepared).setString(parameter++, request.disease());
             } else {
-                assertThat(filters).doesNotContain("a.disease =");
+                assertThat(filters).doesNotContain("a.gmcs_test_cd =");
+                assertThat(countSql).doesNotContain("a.disease =");
             }
         }
         assertThat(bound.getParameterMappings()).hasSize(parameter - 1);
@@ -122,24 +121,26 @@ class PatientReportMapperTest {
             new DefaultParameterHandler(statement, request, bound).setParameters(prepared);
 
             var properties = bound.getParameterMappings().stream().map(ParameterMapping::getProperty).toList();
+            String predicate = "getPatientList".equals(method) ? "'COMPREHENSIVE_PANEL' = ?"
+                : "a.test_classification = ?";
             if ("ALL".equals(classification)) {
-                assertThat(sql).doesNotContain("a.test_classification = ?");
+                assertThat(sql).doesNotContain(predicate);
                 assertThat(properties).doesNotContain("testClassification");
             } else {
-                assertThat(sql).containsOnlyOnce("a.test_classification = ?");
+                assertThat(sql).containsOnlyOnce(predicate);
                 assertThat(properties).containsOnlyOnce("testClassification");
                 verify(prepared).setString(1, classification);
             }
         }
     }
 
-    private void assertDateFilters(String filters, String period) {
-        assertThat(filters).contains("a.test_date <= current_date");
+    private void assertDateLowerBound(String filters, String column, String period) {
+        String lowerBound = column + " >= current_date";
         switch (period) {
-            case "TODAY" -> assertThat(filters).contains("a.test_date >= current_date ");
-            case "LAST_7_DAYS" -> assertThat(filters).contains("a.test_date >= current_date - 6");
-            case "LAST_1_MONTH" -> assertThat(filters).contains("a.test_date >= current_date - interval '1 month'");
-            default -> assertThat(filters).doesNotContain("a.test_date >=");
+            case "TODAY" -> assertThat(filters).contains(lowerBound + " ").doesNotContain(lowerBound + " -");
+            case "LAST_7_DAYS" -> assertThat(filters).contains(lowerBound + " - 6");
+            case "LAST_1_MONTH" -> assertThat(filters).contains(lowerBound + " - interval '1 month'");
+            default -> assertThat(filters).doesNotContain(column + " >=");
         }
     }
 
@@ -182,22 +183,22 @@ class PatientReportMapperTest {
     }
 
     @Test
-    void detailUsesExactlyTheSameTenReportsAsList() throws Exception {
+    void detailAndStatisticsUseTheSameTenFixtureReports() throws Exception {
         var configuration = configuration();
         String namespace = PatientReportMapper.class.getName();
         var listRequest = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null)
             .normalized();
-        String listSql = configuration.getMappedStatement(namespace + ".getPatientList").getBoundSql(listRequest)
-            .getSql().replaceAll("\\s+", " ").trim();
+        String statisticsSql = configuration.getMappedStatement(namespace + ".getPatientListStatistics")
+            .getBoundSql(listRequest).getSql().replaceAll("\\s+", " ").trim();
         var detailRequest = new PatientDetailSearchRequest(FIRST_SAMPLE_ID).normalized();
         String detailSql = configuration.getMappedStatement(namespace + ".getPatientDetail").getBoundSql(detailRequest)
             .getSql().replaceAll("\\s+", " ").trim();
-        String listSource = listSql.substring(listSql.indexOf("with cte_reports"),
-            listSql.indexOf("select a.report_id"));
+        String statisticsSource = statisticsSql.substring(statisticsSql.indexOf("with cte_reports"),
+            statisticsSql.indexOf(", cte_filtered")).trim();
         String detailSource = detailSql.substring(detailSql.indexOf("with cte_reports"),
             detailSql.indexOf("select a.sample_id"));
 
-        assertThat(detailSource).isEqualTo(listSource);
+        assertThat(detailSource.trim()).isEqualTo(statisticsSource);
         assertThat(detailSql).endsWith("from cte_reports as a where a.sample_id = ?");
     }
 
@@ -278,10 +279,12 @@ class PatientReportMapperTest {
             "617a79c70e5449b52404a764d6b72f1d5c0622e6ab07c06a6b25df923e25cc20");
         var request = new PatientListSearchRequest("TEST_CLASSIFICATION", null, null, null, null).normalized();
         var configuration = configuration();
-        for (String method : List.of("getPatientList", "getPatientListStatistics")) {
+        for (String method : List.of("getPatientDetail", "getPatientListStatistics")) {
             var statement = configuration.getMappedStatement(PatientReportMapper.class.getName() + "." + method);
-            String sql = statement.getBoundSql(request).getSql();
-            int end = "getPatientList".equals(method) ? sql.indexOf("select\n      a.report_id")
+            Object parameters = "getPatientDetail".equals(method) ? new PatientDetailSearchRequest(FIRST_SAMPLE_ID)
+                : request;
+            String sql = statement.getBoundSql(parameters).getSql().replaceAll("\\s+", " ").trim();
+            int end = "getPatientDetail".equals(method) ? sql.indexOf("select a.sample_id")
                 : sql.indexOf(", cte_filtered");
             String panels = sql.substring(sql.indexOf("with cte_reports"), end);
             var sampleIds = Pattern.compile("'([^']+)' as sample_id").matcher(panels).results()

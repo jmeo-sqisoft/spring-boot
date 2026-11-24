@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,6 +30,8 @@ import jakarta.persistence.EntityManagerFactory;
 import tools.jackson.databind.json.JsonMapper;
 
 class ApplicationConfigurationTest {
+    private static final String KEY_VAULT_PROPERTY_SOURCE = "spring.cloud.azure.keyvault.secret.property-source-enabled";
+
     @ParameterizedTest
     @CsvSource({"dev, true, true, debug", "uat, true, false, debug",
         "prd, false, false, warn", "perf, false, false, debug", "onprem, false, false, warn"})
@@ -36,11 +39,15 @@ class ApplicationConfigurationTest {
         boolean isSwaggerEnabled, String expectedLogLevel) throws Exception {
         SpringApplication application = new SpringApplication(Application.class);
         application.setWebApplicationType(WebApplicationType.SERVLET);
-        try (ConfigurableApplicationContext context = application.run("--spring.profiles.active=" + profile,
+        var arguments = new ArrayList<>(List.of("--spring.profiles.active=" + profile,
                 "--server.port=0", "--spring.datasource.local.url=jdbc:postgresql://localhost:1/config_test",
                 "--spring.datasource.local.username=test", "--spring.datasource.local.password=test",
                 "--spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access=false",
-                "--spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect")) {
+                "--spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect"));
+        if ("dev".equals(profile)) {
+            arguments.add("--" + KEY_VAULT_PROPERTY_SOURCE + "=false");
+        }
+        try (ConfigurableApplicationContext context = application.run(arguments.toArray(String[]::new))) {
             DataSource dataSource = context.getBean(DataSource.class);
             assertThat(context.getBean(PatientReportController.class)).isNotNull();
             assertThat(context.getBean(PatientReportService.class)).isNotNull();
@@ -67,8 +74,8 @@ class ApplicationConfigurationTest {
                 .isEqualTo("Processed successfully.");
             assertThat(context.getMessage("success.default", null, Locale.KOREAN))
                 .isNotEqualTo("Processed successfully.");
-            assertThat(context.getEnvironment()
-                .containsProperty("spring.cloud.azure.keyvault.secret.property-source-enabled")).isFalse();
+            assertThat(context.getEnvironment().getProperty(KEY_VAULT_PROPERTY_SOURCE, Boolean.class))
+                .isEqualTo("dev".equals(profile) ? Boolean.FALSE : null);
             String baseUrl = "http://localhost:" + context.getEnvironment().getProperty("local.server.port");
             try (HttpClient client = HttpClient.newHttpClient()) {
                 HttpResponse<String> invalidPatientDetail = client.send(HttpRequest.newBuilder(URI.create(baseUrl

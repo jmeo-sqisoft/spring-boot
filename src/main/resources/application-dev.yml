@@ -2,6 +2,25 @@ spring:
   config:
     activate:
       on-profile: dev
+  cloud:
+    azure:
+      keyvault:
+        secret:
+          # key vault 적용시 true로 적용
+          property-source-enabled: true
+          property-sources:
+            - endpoint: ${ENV-KEYVAULT-ENDPOINT}
+              credential:
+                managed-identity-enabled: true
+                client-id: ${ENV-CLIENT-ID}
+              # 부팅 시 1회만 적재, 30분 주기 갱신 비활성화
+              refresh-interval: 0s
+              # 서비스가 참조하는 시크릿만 조회 (미지정 시 볼트 전체 조회)
+              secret-keys:
+                - DB-READ-HOST
+                - DB-WRITE-HOST
+                - DB-USERNAME
+                - DB-PASSWORD
 
 app:
   sql-logging:

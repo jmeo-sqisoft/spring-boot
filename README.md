@@ -39,6 +39,7 @@ $env:SPRING_PROFILES_ACTIVE = 'dev'
 | 환경 변수 | 기본값 / 용도 |
 | --- | --- |
 | `DB-READ-HOST` | 필수. PostgreSQL 호스트와 포트 (`localhost:5432` 등) |
+| `DB-WRITE-HOST` | PostgreSQL 호스트와 포트 (`localhost:5432` 등) |
 | `DB-USERNAME` | 필수. DB 계정 |
 | `DB-PASSWORD` | 필수. DB 비밀번호 |
 | `SERVER_PORT` | `8080` |
